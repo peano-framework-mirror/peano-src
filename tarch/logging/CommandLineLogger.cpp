@@ -334,19 +334,6 @@ void tarch::logging::CommandLineLogger::indent( bool indent, const std::string& 
 }
 
 
-void tarch::logging::CommandLineLogger::setLogFormat(const tarch::logging::configurations::LogOutputFormatConfiguration& configuration) {
-  setLogFormat(
-    configuration.getLogColumnSeparator(),
-    configuration.getLogTimeStamp(),
-    configuration.getLogTimeStampHumanReadable(),
-    configuration.getLogMachineName(),
-    configuration.getLogMessageType(),
-    configuration.getLogTrace(),
-    configuration.getLogFileName()
-  );
-}
-
-
 void tarch::logging::CommandLineLogger::setLogFormat(
   const std::string& columnSeparator,
   bool logTimeStamp,

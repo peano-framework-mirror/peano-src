@@ -1,3 +1,4 @@
+#if defined(SharedTBB)
 #include "tarch/multicore/tbb/Core.h"
 #include "tarch/Assertions.h"
 
@@ -50,3 +51,5 @@ int tarch::multicore::tbb::Core::getNumberOfThreads() const {
 bool tarch::multicore::tbb::Core::isInitialised() const {
   return _task_scheduler_init.is_active();
 }
+
+#endif

@@ -1,7 +1,6 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
-#ifndef _TARCH_MULTICORE_TBB_CORE_H_
+// use, please see the copyright notice at www.peano-framework.org
+#if defined( _TARCH_MULTICORE_TBB_CORE_H_) && defined(SharedTBB)
 #define _TARCH_MULTICORE_TBB_CORE_H_
 
 

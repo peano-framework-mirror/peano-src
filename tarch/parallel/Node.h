@@ -1,7 +1,6 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
-#ifndef _TARCH_PARALLEL_NODE_H_
+// use, please see the copyright notice at www.peano-framework.org
+#if !defined( _TARCH_PARALLEL_NODE_H_) && defined(Parallel)
 #define _TARCH_PARALLEL_NODE_H_
 
 #ifdef Parallel

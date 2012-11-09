@@ -1,20 +1,22 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
-#ifndef _TARCH_PARALLEL_STRATEGY_FCFS_NODE_POOL_STRATEGY_H_
-#define _TARCH_PARALLEL_STRATEGY_FCFS_NODE_POOL_STRATEGY_H_
+// use, please see the copyright notice at www.peano-framework.org
+#if !defined(_TARCH_PARALLEL_FCFS_NODE_POOL_STRATEGY_H_) && defined(Parallel)
+#define _TARCH_PARALLEL_FCFS_NODE_POOL_STRATEGY_H_
 
+#ifdef Parallel
 #include <mpi.h>
+#endif
+
 #include "tarch/parallel/NodePoolStrategy.h"
-#include "tarch/parallel/strategy/NodePoolListEntry.h"
+#include "tarch/parallel/NodePoolListEntry.h"
 #include "tarch/logging/Log.h"
+
+#include <list>
 
 
 namespace tarch {
   namespace parallel {
-    namespace strategy {
-      class FCFSNodePoolStrategy;
-    }
+    class FCFSNodePoolStrategy;
   }
 }
 
@@ -22,14 +24,15 @@ namespace tarch {
 /**
  * Node Pool Strategy: Fair
  *
- * This is a very simple node pool strategy.
- *
- * @todo I have to write some comments
+ * This is a very simple node pool strategy. It was written to enable Peano
+ * users to come up with a running parallel prototype fast, but it is not
+ * tuned to any pde-specific properties. It thus makes sense to implement
+ * NodePoolStrategy independently for a given project.
  *
  * @author Tobias Weinzierl
  * @version $Revision: 1.6 $
  */
-class tarch::parallel::strategy::FCFSNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
+class tarch::parallel::FCFSNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
   private:
 
     typedef std::list<NodePoolListEntry>   NodeContainer;

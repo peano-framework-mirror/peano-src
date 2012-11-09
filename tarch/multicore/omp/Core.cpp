@@ -1,4 +1,6 @@
-#include "tarch/multicore/openMP/Core.h"
+#if defined(SharedOMP)
+
+#include "tarch/multicore/omp/Core.h"
 #include "tarch/Assertions.h"
 
 #include <iostream>
@@ -47,3 +49,5 @@ int tarch::multicore::openMP::Core::getNumberOfThreads() const {
 bool tarch::multicore::openMP::Core::isInitialised() const {
   return _numberOfThreads > 0;
 }
+
+#endif

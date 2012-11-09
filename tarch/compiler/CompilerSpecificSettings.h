@@ -1,3 +1,5 @@
+// This file is part of the Peano project. For conditions of distribution and
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _TARCH_COMPILER_COMPILER_SPECIFIC_SETTINGS
 #define _TARCH_COMPILER_COMPILER_SPECIFIC_SETTINGS
 
@@ -24,6 +26,7 @@
  * If BASE_CLASS_PROTECTED_ACCEPTED is defined, the original class structure is
  * preserved, otherwise all base class' members are made public.
  */
+// @todo Kann das evtl. wieder raus?
 #define CompilerSettingsBaseClassProtectedAccepted
 
 
@@ -68,8 +71,10 @@
  * header however is not available on windows machines, i.e. if you are on
  * windows, comment this statement out.
  */
-#define CompilerHasUTSName
+//#define CompilerHasUTSName
 
+
+//#define CompilerHasTimespec
 
 /**
  * Some compiler/MPI combinations define the constant

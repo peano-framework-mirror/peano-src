@@ -1,6 +1,5 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _TARCH_LOGGING_COMMANDLINELOGGER_H_
 #define _TARCH_LOGGING_COMMANDLINELOGGER_H_
 
@@ -13,11 +12,11 @@
 #include <set>
 #include <stack>
 
-#include "tarch/logging/configurations/LogOutputFormatConfiguration.h"
 #include "tarch/services/Service.h"
 
 #include "tarch/multicore/BooleanSemaphore.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
+#include "tarch/logging/Log.h"
 
 
 namespace tarch {
@@ -292,8 +291,6 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
     void setLogMachineName( bool value = true );
     void setLogMessageType( bool value = true );
     void setLogTrace( bool value = true );
-
-    void setLogFormat(const tarch::logging::configurations::LogOutputFormatConfiguration& configuration);
 
     void setLogFormat(
       const std::string& columnSeparator,

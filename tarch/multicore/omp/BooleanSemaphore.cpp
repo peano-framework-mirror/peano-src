@@ -1,4 +1,6 @@
-#include "tarch/multicore/openMP/BooleanSemaphore.h"
+#if defined(SharedOMP)
+
+#include "tarch/multicore/omp/BooleanSemaphore.h"
 
 #include "tarch/compiler/CompilerSpecificSettings.h"
 #include "tarch/multicore/openMP/Core.h"
@@ -37,3 +39,5 @@ void tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack(const std::string
 
 void tarch::multicore::BooleanSemaphore::continueWithTask() {
 }
+
+#endif

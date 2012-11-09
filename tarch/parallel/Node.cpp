@@ -1,3 +1,5 @@
+#ifdef Parallel
+
 #include "tarch/parallel/Node.h"
 #include "tarch/Assertions.h"
 #include "tarch/services/ServiceRepository.h"
@@ -353,3 +355,5 @@ void tarch::parallel::Node::setCommunicator( MPI_Comm communicator ) {
 void tarch::parallel::Node::receiveDanglingMessages() {
   tarch::services::ServiceRepository::getInstance().receiveDanglingMessages();
 }
+
+#endif

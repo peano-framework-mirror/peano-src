@@ -1,3 +1,5 @@
+#if defined(SharedCobra)
+
 #include "tarch/multicore/cobra/Core.h"
 #include "tarch/Assertions.h"
 
@@ -51,3 +53,5 @@ bool tarch::multicore::cobra::Core::isInitialised() const {
   assertion( isInitialised() );
   return *_scheduler;
 }
+
+#endif

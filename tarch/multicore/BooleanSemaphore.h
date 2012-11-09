@@ -7,7 +7,7 @@
 #include <string>
 
 #include "tarch/multicore/cobra/BooleanSemaphore.h"
-#include "tarch/multicore/openMP/BooleanSemaphore.h"
+#include "tarch/multicore/omp/BooleanSemaphore.h"
 #include "tarch/multicore/tbb/BooleanSemaphore.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 

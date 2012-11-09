@@ -1,4 +1,5 @@
-#include "tarch/parallel/strategy/FCFSNodePoolStrategy.h"
+#if defined(Parallel)
+#include "tarch/parallel/FCFSNodePoolStrategy.h"
 
 
 tarch::logging::Log tarch::parallel::strategy::FCFSNodePoolStrategy::_log( "tarch::parallel::strategy::FCFSNodePoolStrategy" );
@@ -194,3 +195,5 @@ int tarch::parallel::strategy::FCFSNodePoolStrategy::reserveNode(int forMaster) 
 void tarch::parallel::strategy::FCFSNodePoolStrategy::setNodePoolTag(int tag) {
   _tag = tag;
 }
+
+#endif

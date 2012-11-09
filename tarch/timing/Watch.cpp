@@ -1,9 +1,11 @@
 #include "tarch/timing/Watch.h"
+#include "tarch/compiler/CompilerSpecificSettings.h"
+
 #include <time.h>
 
 #include <sstream>
 
-#if !defined(SharedTBB) && !defined(SharedOMP)
+#if !defined(SharedTBB) && !defined(SharedOMP) && defined(CompilerHasTimespec)
 /**
  * Forward declaration
  *
@@ -67,16 +69,15 @@ void tarch::timing::Watch::startTimer() {
   mach_timespec_t mts;
   clock_get_time(cclock, &mts);
   _startTime = (double)mts.tv_sec + (double)mts.tv_nsec * 1e-09;
-  #else
-   if( clock_gettime(CLOCK_REALTIME, &ts) == 0 ) {
+  #elif defined(CompilerHasTimespec)
+  if( clock_gettime(CLOCK_REALTIME, &ts) == 0 ) {
 	   _startTime = (double)ts.tv_sec + (double)ts.tv_nsec * 1e-09;
-   }
+  }
   #endif
 }
 
 
 void tarch::timing::Watch::stopTimer() {
-  _elapsedClockTicks   = clock() - _startClockTicks;
   #ifdef SharedOMP
   _elapsedTime         = omp_get_wtime() - _startTime;
   #elif SharedTBB
@@ -85,10 +86,11 @@ void tarch::timing::Watch::stopTimer() {
   mach_timespec_t mts;
   clock_get_time(cclock, &mts);
   _startTime = (double)mts.tv_sec + (double)mts.tv_nsec * 1e-09;
-  #else
-  clock_gettime(CLOCK_REALTIME, &ts);
+  #elif defined(CompilerHasTimespec)
   _elapsedTime         = ((double)ts.tv_sec + (double)ts.tv_nsec * 1e-09)-_startTime;
   //difftime ( std::time(NULL), _startTime );
+  #else
+  _elapsedClockTicks   = clock() - _startClockTicks;
   #endif
   _calledStopManually  = true;
 }

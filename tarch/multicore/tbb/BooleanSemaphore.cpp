@@ -1,3 +1,4 @@
+#if defined(SharedTBB)
 #include "tarch/multicore/BooleanSemaphore.h"
 #include "tarch/logging/Log.h"
 
@@ -63,3 +64,5 @@ void tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack(const std::string
 void tarch::multicore::BooleanSemaphore::continueWithTask() {
   _pauseCounter = 1;
 }
+
+#endif

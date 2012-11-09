@@ -1,6 +1,5 @@
 #include "tarch/logging/Log.h"
 #include "tarch/logging/CommandLineLogger.h"
-#include "tarch/logging/CCALogger.h"
 #include "tarch/compiler/CompilerSpecificSettings.h"
 #include "tarch/Assertions.h"
 

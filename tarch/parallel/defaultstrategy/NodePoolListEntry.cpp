@@ -1,3 +1,4 @@
+#if defined(Parallel)
 #include "tarch/parallel/strategy/NodePoolListEntry.h"
 #include "tarch/Assertions.h"
 
@@ -73,3 +74,5 @@ bool tarch::parallel::strategy::NodePoolListEntry::isIdle() const {
 bool tarch::parallel::strategy::NodePoolListEntry::operator<( const tarch::parallel::strategy::NodePoolListEntry& than ) const {
   return isIdle() && !than.isIdle();
 }
+
+#endif

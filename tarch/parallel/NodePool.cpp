@@ -1,3 +1,5 @@
+#ifdef Parallel
+
 #include "tarch/parallel/NodePool.h"
 #include "tarch/parallel/Node.h"
 
@@ -449,3 +451,5 @@ void tarch::parallel::NodePool::emptyWorkerRequestMessageBuffer() {
     message.receive( MPI_ANY_SOURCE, _jobServicesTag, true );
   }
 }
+
+#endif
