@@ -16,7 +16,9 @@
 
 namespace tarch {
   namespace parallel {
-    class FCFSNodePoolStrategy;
+    namespace defaultstrategies {
+      class FCFSNodePoolStrategy;
+    }
   }
 }
 
@@ -32,7 +34,7 @@ namespace tarch {
  * @author Tobias Weinzierl
  * @version $Revision: 1.6 $
  */
-class tarch::parallel::FCFSNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
+class tarch::parallel::defaultstrategies::FCFSNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
   private:
 
     typedef std::list<NodePoolListEntry>   NodeContainer;

@@ -10,7 +10,7 @@
 
 namespace tarch {
   namespace parallel {
-    namespace strategy {
+    namespace defaultstrategies {
       class NodePoolListEntry;
     }
   }
@@ -32,7 +32,7 @@ namespace tarch {
  * @author Tobias Weinzierl
  * @version $Revision: 1.4 $
  */
-class tarch::parallel::strategy::NodePoolListEntry {
+class tarch::parallel::defaultstrategies::NodePoolListEntry {
   public:
     /**
      * Represents the state of the worker, i.e. whether it is idle or busy.

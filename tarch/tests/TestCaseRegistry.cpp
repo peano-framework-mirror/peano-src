@@ -30,12 +30,10 @@ void tarch::tests::TestCaseRegistry::addIntegrationTestCase(const std::string& t
 
 
 tarch::tests::TestCase& tarch::tests::TestCaseRegistry::getTestCaseCollection() {
-  _globalTestCase.setUp();
   return _globalTestCase;
 }
 
 
 tarch::tests::TestCase& tarch::tests::TestCaseRegistry::getIntegrationTestCaseCollection() {
-  _globalIntegrationTestCase.setUp();
   return _globalIntegrationTestCase;
 }

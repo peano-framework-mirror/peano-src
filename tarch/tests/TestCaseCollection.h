@@ -1,6 +1,5 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _TARCH_TESTS_TESTCASECOLLECTION_H_
 #define _TARCH_TESTS_TESTCASECOLLECTION_H_
 
@@ -69,11 +68,6 @@ class tarch::tests::TestCaseCollection: public tarch::tests::TestCase {
      * Runs all test cases assigned.
      */
     virtual void run();
-
-    /**
-     * Call setUp() on all associated sub test cases.
-     */
-    virtual void setUp();
 
     /**
      * Adds a new test case.

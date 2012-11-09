@@ -17,7 +17,7 @@
 #endif
 
 
-void fillLookupTables() {
+void peano::fillLookupTables() {
   setupLookupTableForTwoPowI();
   setupLookupTableForThreePowI();
   setupLookupTableForFourPowI();
@@ -28,7 +28,7 @@ void fillLookupTables() {
 }
 
 
-int initParallelEnvironment(int* argc, char*** argv) {
+int peano::initParallelEnvironment(int* argc, char*** argv) {
   #ifdef Parallel
   if ( tarch::parallel::Node::getInstance().init(argc,argv) ) {
     tarch::parallel::NodePool::getInstance().init();
@@ -43,7 +43,7 @@ int initParallelEnvironment(int* argc, char*** argv) {
 }
 
 
-void shutdownParallelEnvironment() {
+void peano::shutdownParallelEnvironment() {
   #ifdef Parallel
   tarch::parallel::NodePool::getInstance().shutdown();
   tarch::parallel::Node::getInstance().shutdown();
@@ -51,7 +51,7 @@ void shutdownParallelEnvironment() {
 }
 
 
-int initSharedMemoryEnvironment() {
+int peano::initSharedMemoryEnvironment() {
   #ifdef SharedTBB
   if ( tarch::multicore::tbb::Core::getInstance().isInitialised() ) {
     return 0;
@@ -65,7 +65,7 @@ int initSharedMemoryEnvironment() {
 }
 
 
-void shutdownSharedMemoryEnvironment() {
+void peano::shutdownSharedMemoryEnvironment() {
   #ifdef SharedTBB
   tarch::multicore::tbb::Core::getInstance().shutDown();
   #elif SharedOMP

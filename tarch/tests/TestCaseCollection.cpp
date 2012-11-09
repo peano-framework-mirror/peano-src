@@ -26,13 +26,6 @@ tarch::tests::TestCaseCollection::~TestCaseCollection() {
 }
 
 
-void tarch::tests::TestCaseCollection::setUp() {
-  for (std::list<tarch::tests::TestCase*>::iterator p = _testCases.begin(); p!=_testCases.end(); p++ ) {
-    (*p)->setUp();
-  }
-}
-
-
 void tarch::tests::TestCaseCollection::run() {
   logTraceInWith1Argument( "run()", _testCaseName );
   std::string logInformation = "running test case collection \"" + _testCaseName + "\" ";
