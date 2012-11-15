@@ -1,0 +1,172 @@
+#include "peano/datatraversal/dForRange.h"
+
+#include "tarch/multicore/Lock.h"
+#include "tarch/la/Vector.h"
+#include "peano/utils/Loop.h"
+
+#include "peano/datatraversal/autotuning/Oracle.h"
+
+
+#ifdef SharedTBB
+#include "tbb/parallel_reduce.h"
+#endif
+
+#ifdef SharedOMP
+#include <omp.h>
+#endif
+
+
+template <class LoopBody>
+tarch::logging::Log peano::datatraversal::dForLoop<LoopBody>::_log( "peano::datatraversal::dForLoop" );
+
+
+template <class LoopBody>
+peano::datatraversal::dForLoop<LoopBody>::dForLoop(
+  const tarch::la::Vector<DIMENSIONS,int>&  range,
+  LoopBody&                                 body,
+  int                                       grainSize,
+  bool                                      handleBoundaryOfDomainSequential
+) {
+	assertion( grainSize >= 0 );
+	if (grainSize>0) {
+    #ifdef SharedTBB
+      logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "tbb" );
+      dForLoopInstance loopInstance(body);
+	  	tbb::parallel_reduce(
+  		  dForRange( range, grainSize, handleBoundaryOfDomainSequential ),
+  		  loopInstance
+  		);
+    #elif SharedOMP
+	  	logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "omp" );
+		
+	  	dForLoopInstance loopInstance(body);
+
+	  	std::vector<dForRange> ranges = createRangesVector(range, grainSize, handleBoundaryOfDomainSequential);
+
+      #pragma omp parallel for schedule(dynamic, 1) firstprivate(loopInstance)
+      for( int i=0; i < (int)(ranges.size()); i++ ){
+        loopInstance(ranges[i]);
+      }
+    #elif SharedCobra
+      logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "cobra" );
+
+      tarch::multicore::cobra::Core::getInstance().getScheduler().call([&](::cobra::continuator& ctr) {
+        realiseParallelForAsTaskBipartitioning(
+          peano::datatraversal::dForRange( range, grainSize, handleBoundaryOfDomainSequential ),
+          ctr,
+          dForLoopInstance(body)
+        );
+      });
+    #else
+		logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "no-parallelisation" );
+		dfor(i,range) {
+			body(i);
+		}
+    #endif
+	}
+	else {
+		logTraceInWith2Arguments( "dForLoop(...)", range, grainSize );
+		dfor(i,range) {
+		  body(i);
+		}
+	}
+
+	logTraceOut( "dForLoop(...)" );
+}
+
+
+#ifdef SharedCobra
+template <class LoopBody>
+void peano::datatraversal::dForLoop<LoopBody>::realiseParallelForAsTaskBipartitioning(
+  peano::datatraversal::dForRange  range,
+  ::cobra::continuator&                    ctr,
+   dForLoopInstance                        loopBody
+) {
+  if (range.is_divisible()) {
+    peano::datatraversal::dForRange range1(range);
+    peano::datatraversal::dForRange range2(range1,peano::datatraversal::dForRange::Split());
+    ctr.fork<0>([=](::cobra::continuator &ctr) {
+      realiseParallelForAsTaskBipartitioning(range1, ctr, loopBody);
+    });
+    ctr.fork<1>([=](::cobra::continuator &ctr) {
+      realiseParallelForAsTaskBipartitioning(range2, ctr, loopBody);
+    });
+    ctr.join([]{});
+  }
+  // [=] funktioniert hier leider nicht, aber ich bin mir eh nicht sicher, ob man das join hier braucht
+//  else ctr.join([&] {
+  else {
+    loopBody(range);
+  }
+//  });
+}
+#endif
+
+
+template <class LoopBody>
+std::vector<peano::datatraversal::dForRange> peano::datatraversal::dForLoop<LoopBody>::createRangesVector(
+  const tarch::la::Vector<DIMENSIONS,int>&  range,
+  int                                       grainSize,
+  bool                                      handleBoundaryOfDomainSequential
+) {
+  std::vector<dForRange> ranges;
+  ranges.push_back( dForRange( range, grainSize, handleBoundaryOfDomainSequential ) );
+  bool dividedRange;
+  do {
+    dividedRange = false;
+
+    int length = static_cast<int>( ranges.size() );
+    for(int i = 0; i < length; i++){
+      if(ranges[i].is_divisible()){
+        ranges.push_back( dForRange( ranges[i], dForRange::Split() ) );
+        dividedRange = true;
+      }
+    }
+  } while(dividedRange);
+
+  return ranges;
+}
+
+
+template <class LoopBody>
+peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::dForLoopInstance( const LoopBody& loopBody ):
+  _loopBody(loopBody) {
+}
+
+
+template <class LoopBody>
+peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::dForLoopInstance( const dForLoopInstance& loopBody, SplitFlag ):
+  _loopBody(loopBody._loopBody) {
+}
+
+
+template <class LoopBody>
+void peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::operator() (const dForRange& range) {
+	logTraceInWith1Argument( "dForLoopInstance::operator()", range.toString() );
+	logDebug( "dForLoopInstance::operator()", "copy of loop body created for range " << range.toString() );
+
+	if (range.isSequentialBoundaryRange()) {
+    dfor(i,range.getRange()) {
+      bool isOnBoundary = false;
+      for (int d=0; d<DIMENSIONS; d++) {
+        isOnBoundary |= (i(d)==0);
+        isOnBoundary |= (i(d)==range.getRange()(d)-1);
+      }
+      if (isOnBoundary) {
+        _loopBody(i + range.getOffset());
+      }
+    }
+	}
+	else {
+	  dfor(i,range.getRange()) {
+	    _loopBody(i + range.getOffset());
+	  }
+	}
+
+  logTraceOutWith1Argument( "dForLoopInstance::operator()", range.toString() );
+}
+
+
+template <class LoopBody>
+void peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::join(const dForLoopInstance&  with) {
+}

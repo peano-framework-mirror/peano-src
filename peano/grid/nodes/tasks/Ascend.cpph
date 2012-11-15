@@ -1,0 +1,117 @@
+#include "peano/kernel/datatraversal/dForLoop.h"
+#include "peano/kernel/datatraversal/SingleLevelCellLoop.h"
+
+
+template <class Vertex, class Cell, class State, class EventHandle>
+peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
+  const int              treeDepth,
+  State&                 state,
+  EventHandle&           eventHandle,
+  RegularGridContainer&  gridContainer
+):
+  _treeDepth( treeDepth ),
+  _state(state),
+  _eventHandle( eventHandle ),
+  _gridContainer( gridContainer ),
+  _treeRemainsStatic( true ),
+  _touchVertexLastTimeLoopBody( _treeDepth, _eventHandle, _gridContainer, _treeRemainsStatic ),
+  _leaveCellLoopBody( _eventHandle, _gridContainer ) {
+  assertion( treeDepth>=1 );
+}
+
+
+template <class Vertex, class Cell, class State, class EventHandle>
+void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVerticesLastTime(int level) {
+  if (!_eventHandle.touchVertexLastTimeIsNOP) {
+    const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
+    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+      tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::SpacetreeGridCallTouchLastTimeOnRegularStationaryGrid
+    );
+    _touchVertexLastTimeLoopBody.setLevel( level );
+    peano::datatraversal::dForLoop<TouchVertexLastTimeLoopBody>( NumberOfVertices, _touchVertexLastTimeLoopBody, sharedMemoryGrainSize, false );
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallTouchLastTimeOnRegularStationaryGrid);
+  }
+
+  _gridContainer.haveCalledAllEventsOnThisLevel(level);
+}
+
+
+
+template <class Vertex, class Cell, class State, class EventHandle>
+void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::leaveCells(int level) {
+  if (!_eventHandle.leaveCellIsNOP) {
+    const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
+    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::SpacetreeGridCallLeaveCellOnRegularStationaryGrid
+    );
+
+    _leaveCellLoopBody.setLevel( level );
+    peano::datatraversal::SingleLevelCellLoop<LeaveCellLoopBody> loop(
+      NumberOfCells,
+      _leaveCellLoopBody,
+      sharedMemoryGrainSize
+    );
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallLeaveCellOnRegularStationaryGrid);
+  }
+}
+
+
+template <class Vertex, class Cell, class State, class EventHandle>
+void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::ascend(int fineGridLevel) {
+#ifdef Peano3
+  if (!_eventHandle.ascendIsNOP) {
+    assertionMsg( false, "not implemented yet" );
+//    const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(fineGridLevel-1);
+//    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+//      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::SpacetreeGridCallLeaveCellOnRegularStationaryGrid
+//    );
+//
+//    _leaveCellLoopBody.setLevel( level );
+//    peano::datatraversal::SingleLevelCellLoop<LeaveCellLoopBody> loop(
+//      NumberOfCells,
+//      _leaveCellLoopBody,
+//      sharedMemoryGrainSize
+//    );
+//    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallLeaveCellOnRegularStationaryGrid);
+  }
+#endif
+}
+
+
+template <class Vertex, class Cell, class State, class EventHandle>
+void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator() () {
+  _treeRemainsStatic = true;
+
+  for (int level=_treeDepth+1; level>=1; level--) {
+    if (level==1) {
+      touchVerticesLastTime( level );
+      ascend(level);
+    }
+    else if (level==_treeDepth+1) {
+      leaveCells(level-1);
+    }
+    else {
+      touchVerticesLastTime( level );
+      ascend(level);
+      leaveCells(level-1);
+    }
+  }
+
+  // If vertices are refined/erased in level 2 of the regular subtree, the local copy
+  // of _treeRemainsStatic ist not copied back to _treeRemainsStatic. Thus, we need to
+  // do this operation manually here to ensure the invalidation below is done also in
+  // this case.
+  _treeRemainsStatic &= _touchVertexLastTimeLoopBody.getLocalTreeRemainsStatic();
+
+  if (_treeRemainsStatic) {
+    dfor2(i)
+      _gridContainer.getVertex(0,iScalar).setCurrentAdjacentCellsHeight(static_cast<peano::gridinterface::CellFlags>(_treeDepth));
+    enddforx
+  }
+  else {
+    _state.updateRefinementHistoryBeforeStore(true,true);
+    dfor2(i)
+      _gridContainer.getVertex(0,iScalar).setCurrentAdjacentCellsHeight(peano::gridinterface::NotStationary);
+    enddforx
+  }
+}

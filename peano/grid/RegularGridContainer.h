@@ -1,0 +1,295 @@
+// This file is part of the Peano project. For conditions of distribution and
+// use, please see the copyright notice at www.peano-framework.org
+#ifndef _PEANO_GRID_REGULAR_GRID_CONTAINER_H_
+#define _PEANO_GRID_REGULAR_GRID_CONTAINER_H_
+
+
+#include "tarch/logging/Log.h"
+
+#include "tarch/multicore/BooleanSemaphore.h"
+
+#include "peano/utils/Globals.h"
+
+#include "peano/grid/SingleLevelEnumerator.h"
+#include "peano/grid/UnrolledLevelEnumerator.h"
+
+
+#include <vector>
+
+
+namespace peano {
+  namespace grid {
+    template <
+      class Vertex,
+      class Cell
+    > class RegularGridContainer;
+  }
+}
+
+
+template < class Vertex, class Cell >
+class peano::grid::RegularGridContainer {
+  private:
+    static tarch::logging::Log _log;
+
+    static tarch::multicore::BooleanSemaphore _semaphore;
+
+    /**
+     * Holds the data of one level of the regularly refined subtree
+     */
+    struct LevelData {
+      /**
+       * Vertices
+       */
+      Vertex*  vertex;
+
+      /**
+       * Cells
+       */
+      Cell*    cell;
+
+      /**
+       * Counter
+       *
+       * The counters here always start to count from persistent vertex
+       * upwards. However, they are not always increased/decreased
+       * @f$ 2^d @f$ times - if inner subtrees are deployed to separate
+       * threads, their increases/decreases are not conducted.
+       */
+      int*     counter;
+
+      /**
+       * I need this flag to determine later whether I have to call
+       * touchVertexFirstTime() or not.
+       */
+      bool*    isReadFromTemp;
+
+      /**
+       * I need this flag to determine later whether I have to call
+       * touchVertexLastTime() or not.
+       */
+      bool*    isToBeWrittenToTemp;
+
+      /**
+       * Holds some statistics how often a level is needed. Besides the
+       * statistics, the container also deletes the finest level data if it
+       * has not been used in the iteration before. This way, I try to reduce
+       * the total memory footprint if possible.
+       */
+      int      usedPerTraversal;
+
+      /**
+       * Each level has @f$ 3^d @f$ patches inside that are befilled en block
+       * by Peano. This counter holds how many of them are not set yet.
+       */
+      int      uninitalisedThreeTimeThreePatchesVertices;
+      int      uninitalisedThreeTimeThreePatchesCells;
+
+      /**
+       * Is protected by the vertex semaphore
+       */
+      bool     haveCalledAllEventsOnThisLevel;
+
+      UnrolledLevelEnumerator  enumerator;
+
+      LevelData();
+      ~LevelData();
+
+      /**
+       * Allocates and initialises the data structures but does not set the
+       * enumerator as the enumerator's state depends on the actual spatial
+       * position of the patch, i.e. might change several times throughout each
+       * traversal.
+       */
+      bool init( int level );
+
+      static double getApproximateMemoryFootprint(int level);
+    };
+
+    /**
+     * Holds the data of the individual levels. Entry 0, i.e. the first entry,
+     * is level 0, i.e. the one-cell-level.
+     */
+    std::vector<LevelData*>  _data;
+
+    double                   _maximumMemoryFootprintForTemporaryRegularGrid;
+
+    /**
+     * Only for assert mode
+     */
+    void validateThatRegularSubtreeIsAvailable( int level ) const;
+
+    void validateInitialValuesUpToLevel( int level ) const;
+  public:
+    RegularGridContainer();
+    ~RegularGridContainer();
+
+
+    /**
+     * Does some logging statements, resets the usage counters per grid level,
+     * and frees the biggest level if it hasn't been used in this iteration.
+     * This way, I try permanently to decrease the memory footprint of the
+     * application.
+     */
+    void endOfIteration();
+
+    /**
+     * Ask container whether regular grid is supported
+     *
+     * This is not a const operation though it sounds like that. What the
+     * operation does is a sequence of steps:
+     *
+     * # Check whether such an array can be loaded with the memory already
+     *   allocated before. If yes, return immediately.
+     * # Check whether the container is allowed to allocate additional
+     *   levels.
+     * # Then, the operation tries to allocate memory for up to the given
+     *   level if not available already. If an out-of-memory exception pops up,
+     *   we stop trying.
+     *
+     * If the operation returns false, the grid management is not allowed to do the
+     * recursion unrolling on the tree and falls back to the standard run. As
+     * a consequence, it will automatically try on the next finer level to
+     * use the unrolling there.
+     *
+     * @param requestedHeight>0
+     */
+    bool isRegularSubtreeAvailable( int requestedHeight );
+    
+    void haveReadPatchsVertices( int level );
+
+    void haveReadPatchsVertices( const std::vector<int>& readsOfPatchesPerLevel );
+
+    /**
+     * Is used by the load cells task to inform the container level by level
+     * whenever cells have been read. This operation is used only by the task,
+     * if it runs in parallel to other descend/load tasks. Otherwise, it skips
+     * the level-by-level setter and sets all the level at once in the very
+     * end (see haveReadAllPatchsCells()).
+     */
+    void haveReadPatchsCells( int level );
+
+    void haveReadAllPatchsCells( int maxLevel );
+
+    void haveStoredAllPatchsVertices( int maxLevel );
+    void haveStoredAllPatchsCells( int maxLevel );
+
+    /**
+     * All events called on this level
+     *
+     * This operation is invoked by the ascend task, i.e. when the task runs
+     * bottom-up through the tree and invoked touchVertexLastTime() on each
+     * vertex. It is called only once per level.
+     */
+    void haveCalledAllEventsOnThisLevel( int level );
+    
+    /**
+     * Is a level completely loaded, i.e. is all data read
+     *
+     * Is thread-safe. I have to use two semaphores. As the cell load process   
+     * uses to be signficiantly faster than the vertex load process, the
+     * operation first blocks the cell semaphore (doesn't matter if the cell 
+     * load process is delayed) and then the vertex semaphore.
+     *
+     * @see haveReadPatch()
+     * @see haveStoredPatch()
+     */
+    bool isLevelInitialised( int level ) const;
+
+    /**
+     * Subpart of isLevelIinitialised();
+     */
+    bool areCellsOfLevelLoaded( int level ) const;
+    bool areAllEventsOnThisLevelCalled( int level ) const;
+
+    /**
+     * Attention: Level starts to count with 1.
+     */
+    void setVertexEnumerator(
+      int                             level,
+      const UnrolledLevelEnumerator&  enumerator
+    );
+
+    UnrolledLevelEnumerator& getVertexEnumerator( int level );
+    const UnrolledLevelEnumerator& getVertexEnumerator( int level ) const;
+
+    Cell& getCell( int level, int cellIndex );
+    const Cell& getCell( int level, int cellIndex ) const;
+    void setCell( int level, int cellIndex, const Cell& cell );
+
+    int& getCounter( int level, int vertexIndex );
+
+    Vertex& getVertex( int level, int vertexIndex );
+    const Vertex& getVertex( int level, int vertexIndex ) const;
+    void setVertex( int level, int vertexIndex, const Vertex&  vertex );
+    Vertex* getVertex( int level );
+
+    void setIsReadFromTemporaryStack( int level, int vertexIndex, bool value );
+    void setIsToBeWrittenToTemporaryStack( int level, int vertexIndex, bool value );
+
+    bool isReadFromTemporaryStack( int level, int vertexIndex) const;
+    bool isToBeWrittenToTemporaryStack( int level, int vertexIndex) const;
+
+    /**
+     * Copy cell and vertices into data structure of regular grid. The vertex
+     * enumerator is not copied.
+     */
+    void copyRootNodeDataIntoRegularPatch(
+      const Cell&                               fineGridCell,
+      Vertex                                    fineGridVertices[FOUR_POWER_D],
+      const SingleLevelEnumerator&              fineGridVerticesEnumerator
+    );
+
+    /**
+     * Counterpart of copyRootNodeDataIntoRegularPatch().
+     */
+    void copyRootNodeDataFromRegularPatch(
+      Cell&                                     fineGridCell,
+      Vertex                                    fineGridVertices[FOUR_POWER_D],
+      const SingleLevelEnumerator&              fineGridVerticesEnumerator
+    ) const;
+
+    static tarch::la::Vector<DIMENSIONS,int> getNumberOfCells( int level );
+    static tarch::la::Vector<DIMENSIONS,int> getNumberOfVertices( int level );
+
+    std::string toString() const;
+
+    /**
+     * Are We Allowed to Fork Throughout a Vertex Load or Store Process on a Regular Subtree?
+     *
+     * We are allowed to fork if the following three properties hold.
+     *
+     * - The current level is smaller or equal to the maximum level that may be
+     *   forked.
+     * - The task currently already has processed at least one level. This is
+     *   not the case if the current level equals the coarsest level+1 - if
+     *   the latter holds, we first have to load at least one level before
+     *   forking further.
+     * - The @f$ 3^d @f$ cells to be handled next are not on the whole patch's
+     *   boundary.
+     *
+     * Please note that these conditions comprise that current level always is
+     * the level that is to be loaded next. Consequently,
+     * cellsPerAxisOnCurrentLevel also refers to currentLevel and not to the
+     * current coarse grid cell.
+     */
+    bool mayForkLoadOrStoreVertexTaskOnRegularSubtree(
+      const int   currentLevel,
+      const bool  isParentCellAtPathBoundary,
+      const int   maxLevelToFork,
+      const int   coarsestLevelOfThisTask,
+      const int   expectedNumberOfLoadsOrStores
+    ) const;
+
+    bool isParentCellAtPatchBoundaryWithinRegularSubtree(
+      const tarch::la::Vector<DIMENSIONS,int>&  offsetWithinPatch,
+      const int                                 level
+    ) const;
+
+    void setMaximumMemoryFootprintForTemporaryRegularGrids(double value);
+};
+
+
+#include "peano/grid/RegularGridContainer.cpph"
+
+#endif

@@ -1,0 +1,184 @@
+#ifdef Parallel
+#include "peano/kernel/parallel/messages/LoadBalancingMessage.h"
+#endif
+
+
+#include "tarch/compiler/CompilerSpecificSettings.h"
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+tarch::logging::Log peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::_log( "peano::grid::Grid" );
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::Grid(
+  VertexStack&                                  vertexStack,
+  CellStack&                                    cellStack,
+  peano::geometry::Geometry&                    geometry,
+  State&                                        state,
+  const tarch::la::Vector<DIMENSIONS,double>&   domainSize,
+  const tarch::la::Vector<DIMENSIONS,double>&   domainOffset,
+  RegularGridContainer&                         regularGridContainer,
+  TraversalOrderOnTopLevel&                     traversalOrderOnTopLevel
+):
+  _state(state),
+  _eventHandle(),
+  _regularGridContainer(regularGridContainer),
+  _traversalOrderOnTopLevel(traversalOrderOnTopLevel),
+  _leafNode   (vertexStack,cellStack,_eventHandle,geometry,_refinedNode),
+  _refinedNode(vertexStack,cellStack,_eventHandle,geometry,_leafNode,_regularRefinedNode),
+  _regularRefinedNode(vertexStack,cellStack,_eventHandle,geometry,regularGridContainer),
+  _root       (vertexStack,cellStack,_eventHandle,geometry,_leafNode,_refinedNode, _traversalOrderOnTopLevel) {
+  logTraceIn( "Grid(...)" );
+  _root.restart(state,domainSize,domainOffset,1);
+  logTraceOut( "Grid(...)" );
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::Grid(
+  VertexStack&                                  vertexStack,
+  CellStack&                                    cellStack,
+  peano::geometry::Geometry&                    geometry,
+  State&                                        state,
+  RegularGridContainer&                         regularGridContainer,
+  TraversalOrderOnTopLevel&                     traversalOrderOnTopLevel
+):
+  _state(state),
+  _eventHandle(),
+  _regularGridContainer(regularGridContainer),
+  _traversalOrderOnTopLevel(traversalOrderOnTopLevel),
+  _leafNode   (vertexStack,cellStack,_eventHandle,geometry,_refinedNode),
+  _refinedNode(vertexStack,cellStack,_eventHandle,geometry,_leafNode,_regularRefinedNode),
+  _regularRefinedNode(vertexStack,cellStack,_eventHandle,geometry,regularGridContainer),
+  _root       (vertexStack,cellStack,_eventHandle,geometry,_leafNode,_refinedNode, _traversalOrderOnTopLevel) {
+  logTraceIn( "Grid(...)" );
+  logTraceOut( "Grid(...)" );
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::restart(
+  const tarch::la::Vector<DIMENSIONS,double>&  domainSize,
+  const tarch::la::Vector<DIMENSIONS,double>&  domainOffset,
+  int                                          domainLevel
+) {
+  #ifdef Parallel
+  logTraceInWith3Arguments( "restart(...)", domainSize, domainOffset, domainLevel );
+  assertion( !tarch::parallel::Node::getInstance().isGlobalMaster() );
+
+  _root.restart(domainSize,domainOffset,domainLevel);
+
+  peano::kernel::parallel::JoinDataBufferPool::getInstance().createVertexBufferManually<Vertex>( true, tarch::parallel::NodePool::getInstance().getMasterRank());
+  peano::kernel::parallel::JoinDataBufferPool::getInstance().createCellBufferManually<Cell>( true, tarch::parallel::NodePool::getInstance().getMasterRank());
+  peano::kernel::parallel::SendReceiveBufferPool::getInstance().createBufferManually<Vertex>( tarch::parallel::NodePool::getInstance().getMasterRank(), peano::kernel::parallel::SendReceiveBufferPool::LIFO );
+
+  logTraceOut( "restart(...)" );
+  #else
+  assertionMsg( false, "should not be called in the sequential mode" );
+  #endif
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::receiveStartupDataFromMaster(bool reduceState) {
+  #ifdef Parallel
+  logTraceInWith2Arguments( "receiveStartupDataFromMaster()", _state.toString(), reduceState );
+  if ( tarch::parallel::Node::getInstance().isGlobalMaster()) {
+    _state.setReduceStateAndCell(reduceState);
+  }
+  else if (
+    !_state.isJoiningWithMaster()
+  ) {
+    peano::kernel::parallel::messages::LoadBalancingMessage loadBalancingMessage;
+    loadBalancingMessage.receive(
+      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),
+      true
+    );
+    logDebug( "receiveStartupDataFromMaster()", "received load balancing message " << loadBalancingMessage.toString() );
+
+    assertion(
+      loadBalancingMessage.getLoadBalancingFlag()!=peano::kernel::parallel::loadbalancing::Join ||
+      !peano::kernel::parallel::loadbalancing::Oracle::getInstance().hasWorkers()
+    );
+
+    if ( _state.isInvolvedInJoinOrFork() ) {
+      peano::kernel::parallel::loadbalancing::Oracle::getInstance().receivedStartCommand( peano::kernel::parallel::loadbalancing::Continue );
+    }
+    else {
+      peano::kernel::parallel::loadbalancing::Oracle::getInstance().receivedStartCommand(
+        peano::kernel::parallel::loadbalancing::getLoadBalancingFlag( loadBalancingMessage.getLoadBalancingFlag() )
+      );
+    }
+
+    if (peano::kernel::parallel::loadbalancing::Oracle::getInstance().getLastStartCommand()==peano::kernel::parallel::loadbalancing::Join) {
+      _state.joinWithRank(tarch::parallel::NodePool::getInstance().getMasterRank());
+    }
+
+    _state.receive(
+      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag()
+    );
+
+    logDebug( "receiveStartupDataFromMaster()", "received state " << _state.toString() );
+  }
+
+  logTraceOutWith1Argument( "receiveStartupDataFromMaster()", _state.toString() );
+  #endif
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::sendStateToMaster() {
+  #ifdef Parallel
+  logTraceInWith1Argument( "sendStateToMaster()", _state.toString() );
+  if ( _state.reduceStateAndCell() && !tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+    _state.send(
+      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag()
+    );
+    logDebug( "sendStateToMaster()", "sent state " << _state.toString() );
+
+    tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
+  }
+  logTraceOut( "sendStateToMaster()" );
+  #endif
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::iterate(bool reduceState) {
+  logTraceInWith2Arguments( "iterate(State)", _state.toString(), reduceState );
+
+  receiveStartupDataFromMaster(reduceState);
+
+  _state.resetStateAtBeginOfIteration();
+
+  _root.traverse(_state);
+
+  logDebug( "iterate(State)", "finished iterate" );
+
+  #if defined(UseRecursionUnrollingOnRegularPatches)
+  _regularGridContainer.endOfIteration();
+  #endif
+
+  logDebug( "iterate(State)", "called endOfIteration()" );
+
+  sendStateToMaster();
+
+  #ifdef Parallel
+  peano::kernel::parallel::JoinDataBufferPool::getInstance().releaseMessages();
+  peano::kernel::parallel::SendReceiveBufferPool::getInstance().releaseMessages();
+  #endif
+
+  _state.resetStateAtEndOfIteration();
+
+  logTraceOutWith1Argument( "iterate(State)", _state.toString() );
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::terminate() {
+  _root.terminate();
+}

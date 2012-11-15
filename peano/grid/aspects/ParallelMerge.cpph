@@ -1,0 +1,274 @@
+#include "peano/grid/SingleLevelEnumerator.h"
+
+#ifdef Parallel
+#include "tarch/parallel/NodePool.h"
+#endif
+
+
+template <class Vertex>
+void peano::grid::aspects::ParallelMerge::mergeOnDomainBoundary(
+  Vertex&        localVertex,
+  const Vertex&  neighbourVertex
+) {
+  logTraceInWith2Arguments( "mergeOnDomainBoundary(...)", localVertex, neighbourVertex );
+
+  #ifdef Debug // if we are not in debug mode, these values are not available.
+  assertionVectorNumericalEquals2( localVertex._vertexData.getX(),                   neighbourVertex._vertexData.getX(),                   localVertex.toString(), neighbourVertex.toString() );
+  assertionEquals2( localVertex._vertexData.getLevel(),               neighbourVertex._vertexData.getLevel(),               localVertex.toString(), neighbourVertex.toString() );
+  #endif
+
+  assertionEquals2( localVertex._vertexData.getInsideOutsideDomain(), neighbourVertex._vertexData.getInsideOutsideDomain(), localVertex.toString(), neighbourVertex.toString() );
+  assertion1( !localVertex.isHangingNode(),                           localVertex.toString() );
+
+  const bool OnlyNeighbourHasTriggeredRefinement =
+    neighbourVertex._vertexData.getRefinementControl()==Vertex::Records::RefinementTriggered &&
+    localVertex._vertexData.getRefinementControl()==Vertex::Records::Unrefined;
+  const bool OnlyNeighbourHasTriggeredErase =
+    neighbourVertex._vertexData.getRefinementControl()==Vertex::Records::EraseTriggered &&
+    localVertex._vertexData.getRefinementControl()==Vertex::Records::Refined;
+  const bool OnlyLocalHasTriggeredRefinement =
+    localVertex._vertexData.getRefinementControl()==Vertex::Records::RefinementTriggered &&
+    neighbourVertex._vertexData.getRefinementControl()==Vertex::Records::Unrefined;
+  const bool OnlyLocalHasTriggeredErase =
+    localVertex._vertexData.getRefinementControl()==Vertex::Records::EraseTriggered &&
+    neighbourVertex._vertexData.getRefinementControl()==Vertex::Records::Refined;
+
+  if (OnlyNeighbourHasTriggeredRefinement || OnlyLocalHasTriggeredRefinement) {
+    localVertex._vertexData.setRefinementControl( Vertex::Records::RefinementTriggered );
+  }
+  else if (OnlyNeighbourHasTriggeredErase || OnlyLocalHasTriggeredErase) {
+    localVertex._vertexData.setRefinementControl( Vertex::Records::EraseTriggered );
+  }
+  else {
+    // The second case occurs throughout forks if the fork or the subsequent iteration
+    // refine further.
+    assertion2(
+         (localVertex._vertexData.getRefinementControl()==neighbourVertex._vertexData.getRefinementControl())
+      || (localVertex._vertexData.getRefinementControl()==Vertex::Records::Refined && neighbourVertex._vertexData.getRefinementControl()==Vertex::Records::Refining)
+      , localVertex.toString(), neighbourVertex.toString()
+    );
+  }
+
+  localVertex._vertexData.setNumberOfAdjacentRefinedCells( neighbourVertex._vertexData.getNumberOfAdjacentRefinedCells() );
+
+
+  logTraceOutWith1Argument( "mergeOnDomainBoundary(...)", localVertex );
+}
+
+
+template <class Vertex>
+peano::grid::aspects::ParallelMerge::MergeVertexDueToJoinEffect
+peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
+  Vertex&        localVertex,
+  const Vertex&  workerVertex
+) {
+  logTraceInWith2Arguments( "mergeWithJoinedVertexFromWorker(...)", localVertex, workerVertex );
+
+  MergeVertexDueToJoinEffect result = MasterVertexStateRemainsUnaltered;
+
+  #if defined(Parallel)
+  const bool LocalNodeHasNotBeenResponsibleBefore = !localVertex.isAdjacentToDomainOf( tarch::parallel::Node::getInstance().getRank() );
+
+  #ifdef Debug // if we are not in debug mode, these values are not available.
+  assertionVectorNumericalEquals2( localVertex._vertexData.getX(), workerVertex._vertexData.getX(),     localVertex.toString(), workerVertex.toString() );
+  assertionEquals2( localVertex._vertexData.getLevel(),            workerVertex._vertexData.getLevel(), localVertex.toString(), workerVertex.toString() );
+  #endif
+
+  assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2,  localVertex.toString(), workerVertex.toString() );
+  assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeight()                    <= -2,  localVertex.toString(), workerVertex.toString() );
+  assertion3( workerVertex.isHangingNode() || workerVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2, localVertex.toString(), workerVertex.toString(), toString(static_cast<peano::kernel::gridinterface::CellFlags>(workerVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration())) );
+  assertion2( workerVertex.isHangingNode() || workerVertex._vertexData.getAdjacentCellsHeight()                    <= -2, localVertex.toString(), workerVertex.toString() );
+  assertionEquals2( workerVertex.isHangingNode(), localVertex.isHangingNode(), localVertex.toString(), workerVertex.toString() );
+
+  assertion4(
+    LocalNodeHasNotBeenResponsibleBefore ||
+    localVertex._vertexData.getInsideOutsideDomain() == workerVertex._vertexData.getInsideOutsideDomain(),
+    localVertex.toString(), workerVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
+  );
+
+  const bool  workerIsRefinedLocalVertexIsNot  = workerVertex.getRefinementControl()==Vertex::Records::Refined && localVertex.getRefinementControl()!=Vertex::Records::Refined;
+
+  localVertex._vertexData.setIsHangingNode(       workerVertex._vertexData.getIsHangingNode() );
+  localVertex._vertexData.setRefinementControl(   workerVertex._vertexData.getRefinementControl() );
+
+  #ifdef Debug
+  localVertex._vertexData.setX( workerVertex._vertexData.getX() );
+  localVertex._vertexData.setLevel( workerVertex._vertexData.getLevel() );
+  #endif
+
+  if (LocalNodeHasNotBeenResponsibleBefore) {
+    if (workerVertex.isInside() && localVertex.isOutside()) {
+      result = CreateInnerVertexOnMaster;
+    }
+    if (workerVertex.isBoundary() && localVertex.isOutside()) {
+      result = CreateBoundaryVertexOnMaster;
+    }
+  }
+  else {
+    assertionEquals2( localVertex._vertexData.getInsideOutsideDomain(), workerVertex._vertexData.getInsideOutsideDomain(), localVertex.toString(), workerVertex.toString() );
+  }
+
+  if (workerIsRefinedLocalVertexIsNot) {
+    localVertex._vertexData.setRefinementControl( Vertex::Records::Refining );
+  }
+
+  localVertex.invalidateAdjacentCellInformation();
+  #endif
+
+  logTraceOutWith2Arguments( "mergeWithJoinedVertexFromWorker(...)", localVertex, result );
+  return result;
+}
+
+
+template <class Vertex>
+void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
+  Vertex&        localVertex,
+  const Vertex&  masterVertex
+) {
+  logTraceInWith2Arguments( "mergeWithForkedVertexFromMaster(...)", localVertex, masterVertex );
+
+  #if defined(Parallel)
+  const bool MasterIsNotResponsibleAnymore = !masterVertex.isAdjacentToDomainOf( tarch::parallel::NodePool::getInstance().getMasterRank() );
+
+  #ifdef Debug // if we are not in debug mode, these values are not available.
+  assertionVectorNumericalEquals2( localVertex._vertexData.getX(),                        masterVertex._vertexData.getX(),                                      localVertex.toString(), masterVertex.toString() );
+  assertionEquals2( localVertex._vertexData.getLevel(),                                   masterVertex._vertexData.getLevel(),                                  localVertex.toString(), masterVertex.toString() );
+  #endif
+
+  assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2,  localVertex.toString(), masterVertex.toString() );
+  assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeight()                    <= -2,  localVertex.toString(), masterVertex.toString() );
+  assertion3( masterVertex.isHangingNode() || masterVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2, localVertex.toString(), masterVertex.toString(), toString(static_cast<peano::kernel::gridinterface::CellFlags>(masterVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration())) );
+  assertion2( masterVertex.isHangingNode() || masterVertex._vertexData.getAdjacentCellsHeight()                    <= -2, localVertex.toString(), masterVertex.toString() );
+  assertionEquals2( masterVertex.isHangingNode(), localVertex.isHangingNode(), localVertex.toString(), masterVertex.toString() );
+
+  assertion4(
+    MasterIsNotResponsibleAnymore ||
+    localVertex._vertexData.getInsideOutsideDomain() == masterVertex._vertexData.getInsideOutsideDomain(),
+    localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
+  );
+
+  // @todo Das ist der Fehler, den Bart beschrieben hat; denke ich
+  // If the master does not hold the local rank, it should not be merged
+  assertion2( masterVertex.isAdjacentToDomainOf(tarch::parallel::Node::getInstance().getRank()), masterVertex.toString(), localVertex.toString() );
+
+  const bool                                          masterIsRefinedLocalVertexIsNot  = masterVertex.getRefinementControl()==Vertex::Records::Refined && localVertex.getRefinementControl()!=Vertex::Records::Refined;
+  const typename Vertex::Records::InsideOutsideDomain insideOutsideDomainOfLocalVertex = localVertex._vertexData.getInsideOutsideDomain();
+
+  localVertex._vertexData.setIsHangingNode(       masterVertex._vertexData.getIsHangingNode() );
+  localVertex._vertexData.setRefinementControl(   masterVertex._vertexData.getRefinementControl() );
+  localVertex._vertexData.setInsideOutsideDomain( masterVertex._vertexData.getInsideOutsideDomain() );
+  localVertex._vertexData.setAdjacentRanks(       masterVertex._vertexData.getAdjacentRanks() );
+
+  #ifdef Debug
+  localVertex._vertexData.setX( masterVertex._vertexData.getX() );
+  localVertex._vertexData.setLevel( masterVertex._vertexData.getLevel() );
+  #endif
+
+  if (MasterIsNotResponsibleAnymore) {
+    localVertex._vertexData.setInsideOutsideDomain(insideOutsideDomainOfLocalVertex);
+  }
+  else {
+    assertionEquals2( localVertex._vertexData.getInsideOutsideDomain(), masterVertex._vertexData.getInsideOutsideDomain(),                    localVertex.toString(), masterVertex.toString() );
+  }
+
+  if (masterIsRefinedLocalVertexIsNot) {
+    localVertex._vertexData.setRefinementControl( Vertex::Records::Refining );
+  }
+
+  localVertex.invalidateAdjacentCellInformation();
+  #endif
+
+  logTraceOutWith1Argument( "mergeWithForkedVertexFromMaster(...)", localVertex );
+}
+
+
+template <class Cell>
+void peano::grid::aspects::ParallelMerge::mergeWithForkedCellFromMaster(
+  Cell&        localCell,
+  const Cell&  masterCell
+) {
+  logTraceInWith2Arguments( "mergeWithForkedCellFromMaster(...)", localCell, masterCell );
+
+  #if defined(Asserts) && defined(Parallel)
+  assertionEquals3( localCell._cellData.getEvenFlags(),    masterCell._cellData.getEvenFlags(),    localCell.toString(), masterCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank() );
+  assertionEquals3( localCell._cellData.getAccessNumber(), masterCell._cellData.getAccessNumber(), localCell.toString(), masterCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank() );
+
+  #ifdef Debug // if we are not in debug mode, these values are not available.
+  assertionEquals3( localCell._cellData.getLevel(),        masterCell._cellData.getLevel(),        localCell.toString(), masterCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank() );
+  #endif
+  #endif
+
+  const bool MasterIsRefinedLocalCellIsNot = masterCell.isRefined() && !localCell.isRefined();
+
+
+  localCell._cellData.setIsInside( masterCell._cellData.getIsInside() );
+  localCell._cellData.setState(    masterCell._cellData.getState() );
+  localCell._cellData.setEvenFlags(    masterCell._cellData.getEvenFlags() );
+  localCell._cellData.setAccessNumber(    masterCell._cellData.getAccessNumber() );
+  localCell._cellData.setResponsibleRank(    masterCell._cellData.getResponsibleRank() );
+
+  #ifdef Debug
+  localCell._cellData.setLevel(    masterCell._cellData.getLevel() );
+  #endif
+
+  #ifdef SharedMemoryParallelisation
+  localCell.clearInputOutputStackAccessStatistics();
+  #endif
+
+
+  if (MasterIsRefinedLocalCellIsNot) {
+    localCell._cellData.setState( Cell::Records::Leaf );
+  }
+
+  logTraceOutWith1Argument( "mergeWithForkedCellFromMaster(...)", localCell );
+}
+
+
+template <class Cell>
+bool peano::grid::aspects::ParallelMerge::mergeWithJoinedCellFromWorker(
+  Cell&        localCell,
+  const Cell&  workerCell,
+  int          workerRank
+) {
+  logTraceInWith2Arguments( "mergeWithJoinedCellFromWorker(...)", localCell, workerCell );
+
+  #if !defined(Parallel)
+  const bool result = false;
+  #else
+  assertionEquals3( localCell._cellData.getEvenFlags(),    workerCell._cellData.getEvenFlags(),    localCell.toString(), workerCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank() );
+  assertionEquals3( localCell._cellData.getAccessNumber(), workerCell._cellData.getAccessNumber(), localCell.toString(), workerCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank() );
+
+  #ifdef Debug // if we are not in debug mode, these values are not available.
+  assertionEquals3( localCell._cellData.getLevel(),        workerCell._cellData.getLevel(),        localCell.toString(), workerCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank() );
+  #endif
+
+  const bool WorkerJoinsThisElementToLocalRank  = workerCell._cellData.getResponsibleRank() == workerRank;
+  const bool WorkerIsRefinedLocalCellIsNot      = workerCell.isRefined() && !localCell.isRefined();
+
+  assertion3( !WorkerJoinsThisElementToLocalRank || localCell._cellData.getIsInside()==workerCell._cellData.getIsInside(),     localCell.toString(), workerCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank() );
+
+  bool result = !localCell._cellData.getIsInside() && workerCell._cellData.getIsInside();
+
+  assertionEquals3(workerCell._cellData.getEvenFlags(),    localCell._cellData.getEvenFlags(),     localCell.toString(), workerCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank());
+  assertionEquals3(workerCell._cellData.getAccessNumber(), localCell._cellData.getAccessNumber(),  localCell.toString(), workerCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank());
+  assertion3( !WorkerIsRefinedLocalCellIsNot || WorkerJoinsThisElementToLocalRank,  localCell.toString(), workerCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank() );
+
+  if (WorkerJoinsThisElementToLocalRank) {
+    localCell._cellData.setResponsibleRank(    workerCell._cellData.getResponsibleRank() );
+  }
+
+  #ifdef SharedMemoryParallelisation
+  localCell.clearInputOutputStackAccessStatistics();
+  #endif
+
+  if (WorkerIsRefinedLocalCellIsNot) {
+    localCell._cellData.setState( Cell::Records::Leaf );
+  }
+  else {
+    assertionEquals3(workerCell._cellData.getState(),        localCell._cellData.getState(),         localCell.toString(), workerCell.toString(), tarch::parallel::NodePool::getInstance().getMasterRank());
+  }
+  #endif
+
+  logTraceOutWith2Arguments( "mergeWithJoinedCellFromWorker(...)", localCell, result );
+  return result;
+}

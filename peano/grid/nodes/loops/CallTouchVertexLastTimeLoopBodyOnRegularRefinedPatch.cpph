@@ -1,0 +1,117 @@
+#include "peano/grid/nodes/Constants.h"
+#include "peano/grid/nodes/loops/CallLeaveCellLoopBodyOnRegularRefinedPatch.h"
+
+
+template <class Vertex, class Cell, class EventHandle>
+tarch::logging::Log peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_log( "peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch" );
+
+
+template <class Vertex, class Cell, class EventHandle>
+tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_semaphore;
+
+
+#ifdef Parallel
+#include <set>
+
+#include "peano/kernel/parallel/SendReceiveBufferPool.h"
+#endif
+
+
+template <class Vertex, class Cell, class EventHandle>
+peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch(
+  const int                                                         treeDepth,
+  EventHandle&                                                      eventHandle,
+  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+  bool&                                                             treeRemainsStatic
+):
+  _level(-1),
+  _treeDepth(treeDepth),
+  _eventHandle(eventHandle),
+  _threadLocalEventHandle(eventHandle),
+  _regularGridContainer(regularGridContainer),
+  _treeRemainsStatic(treeRemainsStatic),
+  _localTreeRemainsStatic(treeRemainsStatic),
+  _fineGridEnumerator(_regularGridContainer.getVertexEnumerator(1)),
+  _coarseGridEnumerator(_regularGridContainer.getVertexEnumerator(0)) {
+}
+
+
+template <class Vertex, class Cell, class EventHandle>
+void peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::setLevel(int level) {
+  assertion( level>=0 );
+
+  _fineGridEnumerator   = _regularGridContainer.getVertexEnumerator(level);
+  _coarseGridEnumerator = _regularGridContainer.getVertexEnumerator(level-1);
+
+  tarch::multicore::Lock lock(_semaphore);
+
+  _level = level;
+  _treeRemainsStatic      &= _localTreeRemainsStatic;
+  _localTreeRemainsStatic  = _treeRemainsStatic;
+}
+
+
+template <class Vertex, class Cell, class EventHandle>
+peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::~CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch() {
+  tarch::multicore::Lock lock(_semaphore);
+
+  _treeRemainsStatic      &= _localTreeRemainsStatic;
+
+  #if defined(SharedMemoryParallelisation)
+  _eventHandle.mergeWithWorkerThread( _threadLocalEventHandle );
+  #endif
+}
+
+
+template <class Vertex, class Cell, class EventHandle>
+void peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::operator() (const tarch::la::Vector<DIMENSIONS, int>&  i) {
+  tarch::la::Vector<DIMENSIONS,int> offsetOfCoarseGridEnumerator;
+  tarch::la::Vector<DIMENSIONS,int> positionWithinNextCoarserCell;
+
+  computePositionRelativeToNextCoarserLevelFromFineGridVertexPosition(i,offsetOfCoarseGridEnumerator,positionWithinNextCoarserCell);
+
+  _fineGridEnumerator.setOffset(i);
+  _coarseGridEnumerator.setOffset(offsetOfCoarseGridEnumerator);
+
+  const int fineGridVertexIndex = _fineGridEnumerator.lineariseVertexIndex(i);
+  const int coarseGridCellIndex = _coarseGridEnumerator.lineariseCellIndex(offsetOfCoarseGridEnumerator);
+
+  Vertex& currentVertex = _regularGridContainer.getVertex(_level,fineGridVertexIndex);
+  if (!currentVertex.isOutside() && !_regularGridContainer.isToBeWrittenToTemporaryStack(_level,fineGridVertexIndex) ) {
+    _threadLocalEventHandle.touchVertexLastTime(
+      currentVertex,
+      _fineGridEnumerator.getVertexPosition(),
+      _fineGridEnumerator.getCellSize(),
+      _regularGridContainer.getVertex(_level-1),
+      _coarseGridEnumerator,
+      _regularGridContainer.getCell(_level-1,coarseGridCellIndex),
+      positionWithinNextCoarserCell
+    );
+
+    bool const vertexRemainsStatic = currentVertex.getRefinementControl()==Vertex::Records::Refined || currentVertex.getRefinementControl()==Vertex::Records::Unrefined;
+    if (_localTreeRemainsStatic && !vertexRemainsStatic) {
+      logDebug( "callTouchVertexLastTime(...)", "whole patch is unflagged due to " << currentVertex.toString() );
+    }
+
+    _localTreeRemainsStatic &= vertexRemainsStatic;
+
+    if (!_localTreeRemainsStatic) {
+      currentVertex.updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack();
+      currentVertex.setCurrentAdjacentCellsHeight(peano::gridinterface::NotStationary);
+    }
+    else {
+      currentVertex.setCurrentAdjacentCellsHeight(static_cast<peano::gridinterface::CellFlags>(_treeDepth-_level));
+    }
+  }
+}
+
+
+template <class Vertex, class Cell, class EventHandle>
+int peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::getLevel() const {
+  return _level;
+}
+
+template <class Vertex, class Cell, class EventHandle>
+bool peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::getLocalTreeRemainsStatic() const {
+  return _localTreeRemainsStatic;
+}

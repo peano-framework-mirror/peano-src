@@ -1,0 +1,57 @@
+template < class Vertex, class Cell, class State, class EventHandle>
+tarch::logging::Log peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::_log( "peano::spacetreegrid::nodes::tasks::InvokeLeaveCell" );
+
+
+template < class Vertex, class Cell, class State, class EventHandle>
+peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::InvokeLeaveCell(
+  State&                                                      state,
+  Cell&                                                       fineGridCell,
+  Vertex* const                                               fineGridVertices,
+  const peano::spacetreegrid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
+  Cell&                                                       coarseGridCell,
+  Vertex* const                                               coarseGridVertices,
+  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  const tarch::la::Vector<DIMENSIONS,int>&                    fineGridPositionOfCell,
+  EventHandle&                                                eventHandle
+):
+  _state(state),
+  _fineGridCell(fineGridCell),
+  _fineGridVertices(fineGridVertices),
+  _fineGridVerticesEnumerator(fineGridVerticesEnumerator),
+  _coarseGridCell(coarseGridCell),
+  _coarseGridVertices(coarseGridVertices),
+  _coarseGridVerticesEnumerator(coarseGridVerticesEnumerator),
+  _fineGridPositionOfCell(fineGridPositionOfCell),
+  _eventHandle(eventHandle),
+  _threadLocalEventHandle(eventHandle) {
+}
+
+
+template < class Vertex, class Cell, class State, class EventHandle>
+void peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::operator()() {
+  #ifdef Parallel
+  const bool invokeEvent = _fineGridCell.isInside() && !_fineGridCell.isRemote(_state,true,true);
+  #else
+  const bool invokeEvent = _fineGridCell.isInside();
+  #endif
+
+  if (invokeEvent) {
+    _threadLocalEventHandle.leaveCell(
+      _fineGridCell,
+      _fineGridVertices,
+      _fineGridVerticesEnumerator,
+      _coarseGridVertices,
+      _coarseGridVerticesEnumerator,
+      _coarseGridCell,
+      _fineGridPositionOfCell
+    );
+  }
+}
+
+
+template < class Vertex, class Cell, class State, class EventHandle>
+peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::~InvokeLeaveCell() {
+  #if defined(SharedMemoryParallelisation)
+  _eventHandle.mergeWithWorkerThread( _threadLocalEventHandle );
+  #endif
+}

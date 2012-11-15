@@ -27,16 +27,6 @@ tarch::tests::TreeTestCaseCollection::~TreeTestCaseCollection() {
 }
 
 
-void tarch::tests::TreeTestCaseCollection::setUp() {
-  for (std::list<tarch::tests::TestCase*>::iterator p = _testCases.begin(); p!=_testCases.end(); p++ ) {
-    (*p)->setUp();
-  }
-  for (std::map<std::string, TreeTestCaseCollection*>::iterator p = _subTests.begin(); p!=_subTests.end(); p++ ) {
-    (*p).second->setUp();
-  }
-}
-
-
 bool tarch::tests::TreeTestCaseCollection::isNameWithoutHierarchy(const std::string& testCaseName) {
   return testCaseName.rfind("::") == std::string::npos;
 }

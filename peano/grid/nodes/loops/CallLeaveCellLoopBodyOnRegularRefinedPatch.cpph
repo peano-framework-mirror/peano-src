@@ -1,0 +1,86 @@
+#include "peano/grid/nodes/Constants.h"
+
+
+template <class Vertex, class Cell, class EventHandle>
+tarch::logging::Log peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_log( "peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch" );
+
+
+template <class Vertex, class Cell, class EventHandle>
+tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_semaphore;
+
+
+#ifdef Parallel
+#include <set>
+
+#include "peano/kernel/parallel/SendReceiveBufferPool.h"
+#endif
+
+
+template <class Vertex, class Cell, class EventHandle>
+peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::CallLeaveCellLoopBodyOnRegularRefinedPatch(
+  EventHandle&  eventHandle,
+  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
+):
+  _level(-1),
+  _eventHandle(eventHandle),
+  _threadLocalEventHandle(eventHandle),
+  _regularGridContainer(regularGridContainer),
+  _fineGridEnumerator(_regularGridContainer.getVertexEnumerator(1)),
+  _coarseGridEnumerator(_regularGridContainer.getVertexEnumerator(0)) {
+}
+
+
+template <class Vertex, class Cell, class EventHandle>
+void peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::setLevel(int level) {
+  assertion( level>=1 );
+  _level = level;
+  _fineGridEnumerator   = _regularGridContainer.getVertexEnumerator(level);
+  _coarseGridEnumerator = _regularGridContainer.getVertexEnumerator(level-1);
+}
+
+
+template <class Vertex, class Cell, class EventHandle>
+peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::~CallLeaveCellLoopBodyOnRegularRefinedPatch() {
+  tarch::multicore::Lock lock(_semaphore);
+
+  #if defined(SharedMemoryParallelisation)
+  _eventHandle.mergeWithWorkerThread( _threadLocalEventHandle );
+  #endif
+}
+
+
+template <class Vertex, class Cell, class EventHandle>
+void peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::operator() (const peano::datatraversal::Action& i) {
+  logDebug( "callTouchVertexFirstTime(...)", "study vertex at " << i._cartesianPosition << " on level " << _level );
+
+  tarch::la::Vector<DIMENSIONS,int> offsetOfCoarseGridEnumerator;
+  tarch::la::Vector<DIMENSIONS,int> positionWithinNextCoarserCell;
+
+  computePositionRelativeToNextCoarserLevelFromFineGridCellPosition(i._cartesianPosition,offsetOfCoarseGridEnumerator,positionWithinNextCoarserCell);
+
+  _fineGridEnumerator.setOffset(i._cartesianPosition);
+  _coarseGridEnumerator.setOffset(offsetOfCoarseGridEnumerator);
+
+  const int fineGridCellIndex   = _fineGridEnumerator.lineariseCellIndex(i._cartesianPosition);
+  const int coarseGridCellIndex = _coarseGridEnumerator.lineariseCellIndex(offsetOfCoarseGridEnumerator);
+
+  Cell& currentCell = _regularGridContainer.getCell(_level,fineGridCellIndex);
+
+  if (currentCell.isInside()) {
+    _threadLocalEventHandle.leaveCell(
+      currentCell,
+      _regularGridContainer.getVertex(_level),
+      _fineGridEnumerator,
+      _regularGridContainer.getVertex(_level-1),
+      _coarseGridEnumerator,
+      _regularGridContainer.getCell(_level-1,coarseGridCellIndex),
+       positionWithinNextCoarserCell
+    );
+  }
+}
+
+
+template <class Vertex, class Cell, class EventHandle>
+int peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::getLevel() const {
+  return _level;
+}

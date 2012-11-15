@@ -1,0 +1,587 @@
+#include "peano/utils/Loop.h"
+#include "peano/kernel/stacks/Stacks.h"
+#include "peano/kernel/spacetreegrid/aspects/CellLocalPeanoCurve.h"
+#include "tarch/multicore/Lock.h"
+
+
+
+template <class Vertex, class Cell, class VertexStack>
+tarch::logging::Log peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::_log( "peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch" );
+
+
+template <class Vertex, class Cell, class VertexStack>
+tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::_semaphore;
+
+
+template <class Vertex, class Cell, class VertexStack>
+int peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::_activeStoreTasks(0);
+
+
+template <class Vertex, class Cell, class VertexStack>
+peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::StoreVerticesOnRegularRefinedPatch(
+  const bool                                                        isTraversalInverted,
+  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+  VertexStack&                                                      vertexStack,
+  bool                                                              storeProcessRunsInParallelToOtherTasks,
+  int                                                               maxLevelToFork
+):
+  _isTraversalInverted(isTraversalInverted),
+  _regularGridContainer(regularGridContainer),
+  _vertexStack(vertexStack),
+  _storeProcessRunsInParallelToOtherTasks(storeProcessRunsInParallelToOtherTasks),
+  _maxLevelToFork(maxLevelToFork),
+  _stackView(),
+  _coarsestLevelOfThisTask(0),
+  _coarsestCellsOffset(0) {
+  #ifdef Asserts
+  _haveWrittenToOutputStack = false;
+  #endif
+
+  tarch::multicore::Lock lock( _semaphore );
+  _activeStoreTasks++;
+}
+
+
+template <class Vertex, class Cell, class VertexStack>
+peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::StoreVerticesOnRegularRefinedPatch(
+  const StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>&  copy
+):
+  _isTraversalInverted( copy._isTraversalInverted ),
+  _regularGridContainer( copy._regularGridContainer ),
+  _vertexStack( copy._vertexStack ),
+  _storeProcessRunsInParallelToOtherTasks( copy._storeProcessRunsInParallelToOtherTasks ),
+  _maxLevelToFork( copy._maxLevelToFork ),
+  _stackView( copy._stackView ),
+  _coarsestLevelOfThisTask( copy._coarsestLevelOfThisTask ),
+  _coarsestCellsOffset( copy._coarsestCellsOffset )
+{
+  tarch::multicore::Lock lock( _semaphore );
+  _activeStoreTasks++;
+
+  #ifdef Asserts
+  _haveWrittenToOutputStack = copy._haveWrittenToOutputStack;
+  #endif
+}
+
+
+template <class Vertex, class Cell, class VertexStack>
+peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::StoreVerticesOnRegularRefinedPatch(
+  const bool                                                        isTraversalInverted,
+  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+  VertexStack&                                                      vertexStack,
+  bool                                                              storeProcessRunsInParallelToOtherTasks,
+  int                                                               maxLevelToFork,
+  const int                                                         currentLevel,
+  const tarch::la::Vector<DIMENSIONS,int>&                          offsetWithinPatch,
+  typename VertexStack::PushBlockVertexStackView                    stackView
+):
+  _isTraversalInverted(isTraversalInverted),
+  _regularGridContainer(regularGridContainer),
+  _vertexStack(vertexStack),
+  _storeProcessRunsInParallelToOtherTasks(storeProcessRunsInParallelToOtherTasks),
+  _maxLevelToFork(maxLevelToFork),
+  _stackView(stackView),
+  _coarsestLevelOfThisTask(currentLevel),
+  _coarsestCellsOffset(offsetWithinPatch) {
+  logTraceInWith3Arguments( "StoreVerticesOnRegularRefinedPatch()", _coarsestLevelOfThisTask, _coarsestCellsOffset, _stackView.getTotalViewSize() );
+
+  #ifdef Asserts
+  _haveWrittenToOutputStack = false;
+  #endif
+
+  assertion5(
+    _stackView.isOpen(),
+    _stackView.size(), _stackView.getTotalViewSize(),
+    currentLevel, offsetWithinPatch,
+    _regularGridContainer.getCell(currentLevel, THREE_POWER_D/2).toString()
+  );
+  assertion2(
+    _stackView.getTotalViewSize()>0,
+    _stackView.size(), _stackView.getTotalViewSize()
+  );
+  assertion2(
+    _stackView.size()>0,
+    _stackView.size(), _stackView.getTotalViewSize()
+  );
+  assertion2(
+    _stackView.size() == _stackView.getTotalViewSize(),
+    _stackView.size(), _stackView.getTotalViewSize()
+  );
+
+  tarch::multicore::Lock lock( _semaphore );
+  _activeStoreTasks++;
+
+  logTraceOutWith1Argument( "StoreVerticesOnRegularRefinedPatch()", _stackView.getTotalViewSize() );
+}
+
+
+template <class Vertex, class Cell, class VertexStack>
+peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::~StoreVerticesOnRegularRefinedPatch() {
+  assertion8(
+    !_stackView.isOpen() || !_haveWrittenToOutputStack,
+    _stackView.isOpen(),
+    _haveWrittenToOutputStack,
+    _stackView.size(),
+    _stackView.getTotalViewSize(),
+    _storeProcessRunsInParallelToOtherTasks,
+    _maxLevelToFork,
+    _coarsestLevelOfThisTask,
+    _coarsestCellsOffset
+  );
+
+  tarch::multicore::Lock lock( _semaphore );
+  _activeStoreTasks--;
+}
+
+
+template <class Vertex, class Cell, class VertexStack>
+void peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::storeVerticesOfOneCellWithinRegularSubtree(
+  const Cell&                               currentCell,
+  const tarch::la::Vector<DIMENSIONS,int>&  cellsPositionWithinUnrolledTreeLevel,
+  const int                                 currentLevel
+) {
+  logTraceInWith3Arguments( "storeVerticesOfOneCellWithinRegularSubtree(...)", currentCell, cellsPositionWithinUnrolledTreeLevel, currentLevel );
+
+  peano::spacetreegrid::UnrolledLevelEnumerator  cellsVertexEnumerator( _regularGridContainer.getVertexEnumerator(currentLevel) );
+  cellsVertexEnumerator.setOffset(cellsPositionWithinUnrolledTreeLevel);
+
+  #if defined(CacheActionSets)
+  const peano::datatraversal::ActionSetTraversal& writeVertexSequence = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
+  #else
+  peano::datatraversal::ActionSetTraversal writeVertexSequence = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
+  #endif
+
+  for (int currentStepInPath=0; currentStepInPath < writeVertexSequence.getMaximumPath(); currentStepInPath++) {
+    for (int j=0; j<writeVertexSequence.getActionSet(currentStepInPath).getNumberOfParallelActions(); j++) {
+      const int                               actionFlag      = writeVertexSequence.getActionSet(currentStepInPath).getAction(j)._id;
+      const tarch::la::Vector<DIMENSIONS,int> currentVertex   = writeVertexSequence.getActionSet(currentStepInPath).getAction(j)._cartesianPosition;
+      const int                               positionInArray = cellsVertexEnumerator(currentVertex);
+
+      const bool CaseStorePersistentVertex = actionFlag==peano::stacks::Constants::InOutStack;
+      if ( CaseStorePersistentVertex ) {
+        _regularGridContainer.getVertex(currentLevel,positionInArray).updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack();
+
+        assertion5(
+          _regularGridContainer.getVertex(currentLevel,positionInArray).getCurrentAdjacentCellsHeight()< peano::gridinterface::Undefined,
+          currentLevel,
+          _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+          positionInArray,
+          _regularGridContainer.getVertex(currentLevel,positionInArray).toString(),
+          _regularGridContainer.areAllEventsOnThisLevelCalled(currentLevel)
+        );
+        assertion5(
+          _regularGridContainer.getVertex(currentLevel,positionInArray).getAdjacentCellsHeightOfPreviousIteration()< peano::gridinterface::Undefined &&
+          _regularGridContainer.getVertex(currentLevel,positionInArray).getAdjacentCellsHeightOfPreviousIteration()>= peano::gridinterface::Leaf,
+          currentLevel,
+          _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+          positionInArray,
+          _regularGridContainer.getVertex(currentLevel,positionInArray).toString(),
+          _regularGridContainer.areAllEventsOnThisLevelCalled(currentLevel)
+        );
+
+        if (_stackView.isOpen()) {
+          _stackView.push(_regularGridContainer.getVertex(currentLevel,positionInArray).getRecords() );
+        }
+        else {
+          _vertexStack.push(peano::stacks::Constants::InOutStack, _regularGridContainer.getVertex(currentLevel,positionInArray) );
+        }
+        #ifdef Asserts
+        _haveWrittenToOutputStack = true;
+        #endif
+      }
+    }
+  }
+
+  logTraceOut( "storeVerticesOfOneCellWithinRegularSubtree(...)" );
+}
+
+
+template <class Vertex, class Cell, class VertexStack>
+void peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::storeVerticesOfOneCellAtBoundaryofSubtree(
+  const Cell&                               currentCell,
+  const tarch::la::Vector<DIMENSIONS,int>&  cellsPositionWithinUnrolledTreeLevel,
+  const int                                 currentLevel
+) {
+  logTraceInWith6Arguments( "storeVerticesOfOneCellAtBoundaryofSubtree(...)", currentCell, cellsPositionWithinUnrolledTreeLevel, currentLevel, _stackView.isOpen(), _stackView.getTotalViewSize(), _stackView.size() );
+
+  peano::spacetreegrid::UnrolledLevelEnumerator  cellsVertexEnumerator( _regularGridContainer.getVertexEnumerator(currentLevel) );
+  cellsVertexEnumerator.setOffset(cellsPositionWithinUnrolledTreeLevel);
+
+  #if defined(CacheActionSets)
+  const peano::datatraversal::ActionSetTraversal& writeVertexSequence = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
+  #else
+  peano::datatraversal::ActionSetTraversal writeVertexSequence = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
+  #endif
+
+  for (int currentStepInPath=0; currentStepInPath < writeVertexSequence.getMaximumPath(); currentStepInPath++) {
+    for (int j=0; j<writeVertexSequence.getActionSet(currentStepInPath).getNumberOfParallelActions(); j++) {
+      const int                               actionFlag      = writeVertexSequence.getActionSet(currentStepInPath).getAction(j)._id;
+      const tarch::la::Vector<DIMENSIONS,int> currentVertex   = writeVertexSequence.getActionSet(currentStepInPath).getAction(j)._cartesianPosition;
+      const int                               positionInArray = cellsVertexEnumerator(currentVertex);
+
+      _regularGridContainer.getCounter(currentLevel,positionInArray)--;
+      assertion(_regularGridContainer.getCounter(currentLevel,positionInArray)>=CounterPersistentNode);
+
+      const bool CaseStorePersistentVertex =
+           _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode
+        && actionFlag==peano::stacks::Constants::InOutStack;
+
+      const bool CaseWriteToTempStacks     =
+           cellsVertexEnumerator.isVertexAtPatchBoundaryWithinRegularSubtree(currentVertex)
+        && _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode
+        && actionFlag!=peano::stacks::Constants::InOutStack;
+
+      if ( CaseStorePersistentVertex ) {
+        _regularGridContainer.getVertex(currentLevel,positionInArray).updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack();
+
+//        assertion4(
+//          _regularGridContainer.getVertex(currentLevel,positionInArray).getCurrentAdjacentCellsHeight()< peano::gridinterface::Undefined,
+//          currentLevel,
+//          _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+//          positionInArray,
+//          _regularGridContainer.getVertex(currentLevel,positionInArray).toString()
+//        );
+        assertion4(
+          _regularGridContainer.getVertex(currentLevel,positionInArray).getAdjacentCellsHeightOfPreviousIteration()< peano::gridinterface::Undefined &&
+          _regularGridContainer.getVertex(currentLevel,positionInArray).getAdjacentCellsHeightOfPreviousIteration()>= peano::gridinterface::Leaf,
+          currentLevel,
+          _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+          positionInArray,
+          _regularGridContainer.getVertex(currentLevel,positionInArray).toString()
+        );
+
+        if (_stackView.isOpen()) {
+          _stackView.push(_regularGridContainer.getVertex(currentLevel,positionInArray).getRecords() );
+        }
+        else {
+          _vertexStack.push(peano::stacks::Constants::InOutStack, _regularGridContainer.getVertex(currentLevel,positionInArray) );
+        }
+        #ifdef Asserts
+        _haveWrittenToOutputStack = true;
+        #endif
+      }
+      else if (CaseWriteToTempStacks) {
+        _vertexStack.push(actionFlag,_regularGridContainer.getVertex(currentLevel,positionInArray));
+      }
+    }
+  }
+
+  logTraceOut( "storeVerticesOfOneCellAtBoundaryofSubtree(...)" );
+}
+
+
+template <class Vertex, class Cell, class VertexStack>
+void peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::storeSubVerticesWithCellsFromGridContainer(
+  const int                                 currentLevelOfCoarseCell,
+  const tarch::la::Vector<DIMENSIONS,int>&  currentCoarseCellPositionWithinUnrolledPatch
+) {
+  logTraceInWith2Arguments( "storeSubVerticesWithCellsFromGridContainer(...)", currentLevelOfCoarseCell, currentCoarseCellPositionWithinUnrolledPatch );
+
+  const UnrolledLevelEnumerator& coarseGridEnumerator      = _regularGridContainer.getVertexEnumerator(currentLevelOfCoarseCell);
+  const Cell&                    coarseGridCell            = _regularGridContainer.getCell(currentLevelOfCoarseCell,coarseGridEnumerator.lineariseCellIndex(currentCoarseCellPositionWithinUnrolledPatch));
+
+  peano::utils::LoopDirection    loopDirection1 = peano::spacetreegrid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
+  peano::utils::LoopDirection    loopDirection2 = loopDirection1;
+
+  const bool callStoreOperationsForBoundaryLayer = _regularGridContainer.isParentCellAtPatchBoundaryWithinRegularSubtree(currentCoarseCellPositionWithinUnrolledPatch,currentLevelOfCoarseCell);
+
+  #if defined(SharedMemoryParallelisation)
+  const int ExpectedNumberOfStoresToOutputStack = coarseGridCell.getNumberOfStoresToOutputStack();
+
+  if ( _regularGridContainer.mayForkLoadOrStoreVertexTaskOnRegularSubtree(
+    currentLevelOfCoarseCell,callStoreOperationsForBoundaryLayer,_maxLevelToFork, _coarsestLevelOfThisTask, ExpectedNumberOfStoresToOutputStack
+    )
+  ) {
+    #ifdef Dim2
+    assertion4(
+      _regularGridContainer.getVertexEnumerator(0).getCellFlags()>2
+      || ExpectedNumberOfStoresToOutputStack==3*3  // have already visited two edges, two edges are free
+      || ExpectedNumberOfStoresToOutputStack==3*4  // have touched only one edge
+      || ExpectedNumberOfStoresToOutputStack==3*2, // have touched three edges
+      ExpectedNumberOfStoresToOutputStack,
+      coarseGridCell.toString(),
+      _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+      currentLevelOfCoarseCell
+    );
+    assertion4(
+      _regularGridContainer.getVertexEnumerator(0).getCellFlags()>3
+      || ExpectedNumberOfStoresToOutputStack==3*3 // have already visited two edges, two edges are free
+      || ExpectedNumberOfStoresToOutputStack==3*4 // have touched only one edge
+      || ExpectedNumberOfStoresToOutputStack==3*2 // have touched three edges
+      || ExpectedNumberOfStoresToOutputStack==3*3+9*9
+      || ExpectedNumberOfStoresToOutputStack==3*4+9*10
+      || ExpectedNumberOfStoresToOutputStack==3*2+9*8,
+      ExpectedNumberOfStoresToOutputStack,
+      coarseGridCell.toString(),
+      _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+      currentLevelOfCoarseCell
+    );
+    assertion4(
+      _regularGridContainer.getVertexEnumerator(0).getCellFlags()>4
+      || ExpectedNumberOfStoresToOutputStack==3*3 // have already visited two edges, two edges are free
+      || ExpectedNumberOfStoresToOutputStack==3*4 // have touched only one edge
+      || ExpectedNumberOfStoresToOutputStack==3*2 // have touched three edges
+      || ExpectedNumberOfStoresToOutputStack==3*3+9*9
+      || ExpectedNumberOfStoresToOutputStack==3*4+9*10
+      || ExpectedNumberOfStoresToOutputStack==3*2+9*8
+      || ExpectedNumberOfStoresToOutputStack==3*3+9*9+27*27
+      || ExpectedNumberOfStoresToOutputStack==3*4+9*10+27*28
+      || ExpectedNumberOfStoresToOutputStack==3*2+9*8+27*26,
+      ExpectedNumberOfStoresToOutputStack,
+      coarseGridCell.toString(),
+      _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+      currentLevelOfCoarseCell
+    );
+    #endif
+
+    typedef StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>  ForkedTask;
+    ForkedTask forkedTask(
+      _isTraversalInverted,
+      _regularGridContainer,
+      _vertexStack,
+      _storeProcessRunsInParallelToOtherTasks,
+      _maxLevelToFork,
+      currentLevelOfCoarseCell,
+      currentCoarseCellPositionWithinUnrolledPatch,
+      _stackView.isOpen() ? _stackView.pushBlockOnOutputStack(ExpectedNumberOfStoresToOutputStack) : _vertexStack.pushBlockOnOutputStack(ExpectedNumberOfStoresToOutputStack)
+    );
+    peano::datatraversal::TaskSet spawnTaskAsynchronously(forkedTask);
+
+    logTraceOutWith2Arguments( "storeSubVerticesWithCellsFromGridContainer(...)", "forked", ExpectedNumberOfStoresToOutputStack );
+    return;
+  }
+  else {
+    logDebug( "storeSubVerticesWithCellsFromGridContainer(...)", "this task may not be forked" );
+  }
+  #endif
+
+  const int  cellsPerAxisOnFineGrid             = coarseGridEnumerator.getCellsPerAxis()*3;
+  const int  currentFineGridLevel               = currentLevelOfCoarseCell+1;
+
+  if (currentFineGridLevel<_regularGridContainer.getVertexEnumerator(0).getCellFlags()) {
+    zfor3(k,loopDirection1)
+      const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k + currentCoarseCellPositionWithinUnrolledPatch*3;
+
+      storeSubVerticesWithCellsFromGridContainer(
+        currentFineGridLevel,
+        currentFineCellPosition
+      );
+    endzfor
+  }
+
+  #if !defined(SharedMemoryParallelisation)
+  assertion2(_regularGridContainer.areAllEventsOnThisLevelCalled(currentFineGridLevel), currentFineGridLevel, _regularGridContainer.toString());
+  #else
+  assertion5(
+    _storeProcessRunsInParallelToOtherTasks || _regularGridContainer.areAllEventsOnThisLevelCalled(currentFineGridLevel), currentFineGridLevel,
+    _regularGridContainer.toString(), _coarsestLevelOfThisTask, _regularGridContainer.getCell(0,0).toString(),
+    _regularGridContainer.getVertexEnumerator(0).getCellFlags()
+  );
+  while (_storeProcessRunsInParallelToOtherTasks && !_regularGridContainer.areAllEventsOnThisLevelCalled(currentFineGridLevel)) {
+    sendThisTaskToBackgroundWith2Arguments(
+      "peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch::storeSubVerticesWithCellsFromGridContainer(...)",
+      _coarsestLevelOfThisTask,
+      _coarsestCellsOffset
+    );
+  }
+  tarch::multicore::BooleanSemaphore::continueWithTask();
+  #endif
+
+  zfor3(k,loopDirection2)
+    const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k + currentCoarseCellPositionWithinUnrolledPatch*3;
+    const int                                currentFineCellIndex    = peano::utils::dLinearisedWithoutLookup(currentFineCellPosition,cellsPerAxisOnFineGrid);
+    const Cell&                              currentFineGridCell     = _regularGridContainer.getCell(currentFineGridLevel,currentFineCellIndex);
+
+    if (callStoreOperationsForBoundaryLayer) {
+      storeVerticesOfOneCellAtBoundaryofSubtree(
+        currentFineGridCell,
+        currentFineCellPosition,
+        currentFineGridLevel
+      );
+    }
+    else {
+      storeVerticesOfOneCellWithinRegularSubtree(
+        currentFineGridCell,
+        currentFineCellPosition,
+        currentFineGridLevel
+      );
+    }
+  endzfor
+
+  logTraceOut( "storeSubVerticesWithCellsFromGridContainer(...)" );
+}
+
+
+template <class Vertex, class Cell, class VertexStack>
+void peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::storeSubVerticesWithCellsOnFirstLevelInSharedMemoryMode() {
+  logTraceIn( "storeSubVerticesWithCellsOnFirstLevelInSharedMemoryMode(...)" );
+
+  #if defined(SharedMemoryParallelisation)
+  const UnrolledLevelEnumerator& coarseGridEnumerator      = _regularGridContainer.getVertexEnumerator(0);
+  const Cell&                    coarseGridCell            = _regularGridContainer.getCell(0,coarseGridEnumerator.lineariseCellIndex(0));
+
+  peano::utils::LoopDirection    loopDirection1 = peano::spacetreegrid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
+  peano::utils::LoopDirection    loopDirection2 = loopDirection1;
+  peano::utils::LoopDirection    loopDirection3 = loopDirection1;
+
+  const int  cellsPerAxisOnFineGrid             = coarseGridEnumerator.getCellsPerAxis()*3;
+  const int  currentFineGridLevel               = 1;
+
+  const int NumberOfCentralCell = THREE_POWER_D/2;
+
+  int sizeOfStackViewBeforeWeCanFork = 0;
+  int numberOfCellsHandled           = 0;
+  zfor3(k,loopDirection1)
+    const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k;
+    const int                                currentFineCellIndex    = peano::utils::dLinearisedWithoutLookup(currentFineCellPosition,cellsPerAxisOnFineGrid);
+    const Cell&                              currentFineGridCell     = _regularGridContainer.getCell(currentFineGridLevel,currentFineCellIndex);
+
+    if (numberOfCellsHandled<NumberOfCentralCell) {
+      sizeOfStackViewBeforeWeCanFork += currentFineGridCell.getNumberOfStoresToOutputStack();
+    }
+    numberOfCellsHandled++;
+  endzfor
+
+  _stackView = _vertexStack.pushBlockOnOutputStack(sizeOfStackViewBeforeWeCanFork);
+
+  typename VertexStack::PushBlockVertexStackView  deployedTasksStackView = _vertexStack.pushBlockOnOutputStack(
+    _regularGridContainer.getCell(1,NumberOfCentralCell).getNumberOfStoresToOutputStack()
+  );
+  assertionEquals( deployedTasksStackView.getTotalViewSize(), _regularGridContainer.getCell(1,NumberOfCentralCell).getNumberOfStoresToOutputStack() );
+  assertionEquals( deployedTasksStackView.getTotalViewSize(), deployedTasksStackView.size() );
+  assertion3( deployedTasksStackView.isOpen(), NumberOfCentralCell, _regularGridContainer.getCell(1,NumberOfCentralCell).toString(), _regularGridContainer.getVertexEnumerator(0).getCellFlags() );
+
+  typedef StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>  ForkedTask;
+  ForkedTask forkedTask(
+    _isTraversalInverted,
+    _regularGridContainer,
+    _vertexStack,
+    _storeProcessRunsInParallelToOtherTasks,
+    _maxLevelToFork,
+    1,                       //  currentLevelOfCoarseCell,
+    1,                       //  currentCoarseCellPositionWithinUnrolledPatch,
+    deployedTasksStackView
+  );
+  peano::datatraversal::TaskSet spawnTaskAsynchronously(forkedTask);
+  logDebug(
+    "storeSubVerticesWithCellsOnFirstLevelInSharedMemoryMode(...)",
+    "spawned task with " << _regularGridContainer.getCell(1,NumberOfCentralCell).getNumberOfStoresToOutputStack()
+    << " vertices; local stack view: " << _stackView.getTotalViewSize()
+  );
+
+  numberOfCellsHandled = 0;
+  zfor3(k,loopDirection2)
+    if (numberOfCellsHandled!=NumberOfCentralCell) {
+      const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k;
+
+      storeSubVerticesWithCellsFromGridContainer(
+        currentFineGridLevel,
+        currentFineCellPosition
+      );
+    }
+    numberOfCellsHandled++;
+
+    #ifdef Debug
+    if (numberOfCellsHandled<NumberOfCentralCell) {
+      assertion3( _stackView.isOpen(),
+        _stackView.size(),
+        _stackView.getTotalViewSize(),
+        _regularGridContainer.getCell(0,0).toString()
+      );
+    }
+    if (numberOfCellsHandled>NumberOfCentralCell) {
+      assertion8( !_stackView.isOpen(),
+        _stackView.size(),
+        _stackView.getTotalViewSize(),
+        _regularGridContainer.getCell(0,0).toString(),
+        _regularGridContainer.getCell(1,0).toString(),
+        _regularGridContainer.getCell(1,1).toString(),
+        _regularGridContainer.getCell(1,2).toString(),
+        _regularGridContainer.getCell(1,3).toString(),
+        _regularGridContainer.getCell(1,4).toString()
+      );
+    }
+    #endif
+  endzfor
+
+
+  assertion( _storeProcessRunsInParallelToOtherTasks || _regularGridContainer.areAllEventsOnThisLevelCalled(currentFineGridLevel) );
+  while (_storeProcessRunsInParallelToOtherTasks && !_regularGridContainer.areAllEventsOnThisLevelCalled(currentFineGridLevel)) {
+    tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack( "peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch::storeSubVerticesWithCellsOnFirstLevelInSharedMemoryMode(...)" );
+  }
+  tarch::multicore::BooleanSemaphore::continueWithTask();
+
+  zfor3(k,loopDirection3)
+    const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k;
+    const int                                currentFineCellIndex    = peano::utils::dLinearisedWithoutLookup(currentFineCellPosition,cellsPerAxisOnFineGrid);
+    const Cell&                              currentFineGridCell     = _regularGridContainer.getCell(currentFineGridLevel,currentFineCellIndex);
+
+    storeVerticesOfOneCellAtBoundaryofSubtree(
+      currentFineGridCell,
+      currentFineCellPosition,
+      currentFineGridLevel
+    );
+  endzfor
+
+  #endif
+  logTraceOut( "storeSubVerticesWithCellsOnFirstLevelInSharedMemoryMode(...)" );
+}
+
+
+template <class Vertex, class Cell, class VertexStack>
+void peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::operator()() {
+  logTraceInWith9Arguments( "operator()()", _isTraversalInverted, _storeProcessRunsInParallelToOtherTasks, _maxLevelToFork, _stackView.isOpen(), _stackView.getTotalViewSize(), _coarsestLevelOfThisTask, _coarsestCellsOffset, _regularGridContainer.getVertexEnumerator(0).getCellFlags(), _regularGridContainer.getCell(0,0).toString() );
+
+  #ifdef Asserts
+  tarch::multicore::Lock enterOperatorlock( _semaphore );
+  if (_coarsestLevelOfThisTask==0) {
+    assertion3( _activeStoreTasks==1, _activeStoreTasks, _coarsestLevelOfThisTask, _coarsestCellsOffset );
+  }
+  else {
+    assertion3( _activeStoreTasks>1, _activeStoreTasks, _coarsestLevelOfThisTask, _coarsestCellsOffset );
+  }
+  enterOperatorlock.free();
+  #endif
+
+  const int treeDepth = _regularGridContainer.getVertexEnumerator(0).getCellFlags();
+
+  #ifdef SharedMemoryParallelisation
+  const bool handleFirstLevelSeperately =
+    _coarsestLevelOfThisTask==0 &&
+    _maxLevelToFork>0 &&
+    treeDepth > 1;
+  #else
+  const bool handleFirstLevelSeperately = false;
+  #endif
+
+  if ( handleFirstLevelSeperately ) {
+    storeSubVerticesWithCellsOnFirstLevelInSharedMemoryMode();
+  }
+  else {
+    storeSubVerticesWithCellsFromGridContainer(
+      _coarsestLevelOfThisTask,
+      _coarsestCellsOffset
+    );
+  }
+
+  if (_coarsestLevelOfThisTask==0) {
+    #ifdef SharedMemoryParallelisation
+    tarch::multicore::Lock leaveOperatorlock( _semaphore );
+    assertion3(_activeStoreTasks>=1,_activeStoreTasks,_coarsestLevelOfThisTask,_coarsestCellsOffset);
+    bool allTasksHaveTerminated = _activeStoreTasks == 1;
+    leaveOperatorlock.free();
+    while (!allTasksHaveTerminated) {
+      tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack( "peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch::operator()" );
+      tarch::multicore::Lock lock( _semaphore );
+      allTasksHaveTerminated = _activeStoreTasks == 1;
+    }
+    tarch::multicore::BooleanSemaphore::continueWithTask();
+    #else
+    assertionEquals2(_activeStoreTasks,1,_coarsestLevelOfThisTask,_coarsestCellsOffset);
+    #endif
+
+    _regularGridContainer.haveStoredAllPatchsVertices(treeDepth);
+  }
+
+  logTraceOutWith2Arguments( "operator()()", _coarsestLevelOfThisTask, _coarsestCellsOffset );
+}

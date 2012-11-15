@@ -1,0 +1,556 @@
+#include <limits>
+
+#ifdef Parallel
+#include "tarch/parallel/Node.h"
+
+#include "peano/kernel/parallel/loadbalancing/Oracle.h"
+
+#include "tarch/parallel/NodePool.h"
+
+#endif
+
+
+template <class StateData>
+tarch::logging::Log  peano::grid::State<StateData>::_log( "peano::grid::State" );
+
+
+template <class StateData>
+peano::grid::State<StateData>::State():
+  _stateData() {
+  _stateData.setIsTraversalInverted(false);
+
+  #ifdef Parallel
+  _stateData.setLoadRebalancingState( StateData::NoRebalancing );
+  _stateData.setReduceStateAndCell(true);
+  _loadRebalancingRemoteRanks.clear();
+  #endif
+}
+
+#ifdef PackedRecords
+template <class StateData>
+peano::grid::State<StateData>::State(const PersistentState& argument):
+  _stateData( (typename StateData::Packed(argument)).convert() ) {
+}
+#else
+template <class StateData>
+peano::grid::State<StateData>::State(const PersistentState& argument):
+  _stateData( argument ) {
+}
+#endif
+
+template <class StateData>
+peano::grid::State<StateData>::~State() {
+}
+
+
+
+template <class StateData>
+void peano::grid::State<StateData>::restart() {
+  #ifdef Parallel
+  _stateData.setLoadRebalancingState( StateData::NoRebalancing );
+  #endif
+}
+
+
+
+template <class StateData>
+std::string peano::grid::State<StateData>::toString() const {
+  std::ostringstream out;
+  toString(out);
+  return out.str();
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::toString(std::ostream& out) const {
+  _stateData.toString(out);
+  #ifdef Parallel
+  if (!_loadRebalancingRemoteRanks.empty()) {
+    out << "[ ";
+    for (std::set<int>::const_iterator p=_loadRebalancingRemoteRanks.begin(); p!=_loadRebalancingRemoteRanks.end(); p++) {
+      out << *p;
+      out << " ";
+    }
+    out << "]";
+  }
+  #endif
+}
+
+
+template <class StateData>
+std::ostream& operator<<(std::ostream& out, const peano::grid::State<StateData>& arg) {
+  arg.toString(out);
+  return out;
+}
+
+
+template <class StateData>
+double peano::grid::State<StateData>::getNumberOfInnerVertices() const {
+  return _stateData.getNumberOfInnerVertices();
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::changedCellState() {
+  _stateData.setHasChangedVertexOrCellState( true );
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isGridStationary() const {
+  return !_stateData.getHasChangedVertexOrCellState()
+      && !_stateData.getHasRefined()
+      && !_stateData.getHasErased()
+      && !_stateData.getHasTriggeredRefinementForNextIteration()
+      && !_stateData.getHasTriggeredEraseForNextIteration();
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::updateRefinementHistoryBeforeStore( bool hasTriggeredRefinementForNextIteration, bool hasTriggeredEraseForNextIteration ) {
+  _stateData.setHasTriggeredRefinementForNextIteration( _stateData.getHasTriggeredRefinementForNextIteration() || hasTriggeredRefinementForNextIteration );
+  _stateData.setHasTriggeredEraseForNextIteration( _stateData.getHasTriggeredEraseForNextIteration() || hasTriggeredEraseForNextIteration );
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::updateRefinementHistoryAfterLoad( bool hasRefinened, bool hasErased, bool hasChangedVertexState ) {
+  _stateData.setHasRefined( _stateData.getHasRefined() || hasRefinened );
+  _stateData.setHasErased( _stateData.getHasErased() || hasErased );
+  _stateData.setHasChangedVertexOrCellState( _stateData.getHasChangedVertexOrCellState() || hasChangedVertexState );
+}
+
+
+template <class StateData>
+double peano::grid::State<StateData>::getNumberOfBoundaryVertices() const {
+  return _stateData.getNumberOfBoundaryVertices();
+}
+
+
+template <class StateData>
+double peano::grid::State<StateData>::getNumberOfOuterVertices() const {
+  return _stateData.getNumberOfOuterVertices();
+}
+
+
+template <class StateData>
+double peano::grid::State<StateData>::getNumberOfInnerCells() const {
+  return _stateData.getNumberOfInnerCells();
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isTraversalInverted() const {
+  return _stateData.getIsTraversalInverted();
+}
+
+
+template <class StateData>
+double peano::grid::State<StateData>::getNumberOfOuterCells() const {
+  return _stateData.getNumberOfOuterCells();
+}
+
+
+template <class StateData>
+tarch::la::Vector<DIMENSIONS,double> peano::grid::State<StateData>::getMaximumMeshWidth() const {
+  return _stateData.getMaxMeshWidth();
+}
+
+
+template <class StateData>
+tarch::la::Vector<DIMENSIONS,double> peano::grid::State<StateData>::getMinimumMeshWidth() const {
+  return _stateData.getMinMeshWidth();
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::resetStateAtEndOfIteration() {
+  logTraceInWith1Argument( "resetStateAtEndOfIteration()", toString() );
+
+  _stateData.setIsTraversalInverted(!_stateData.getIsTraversalInverted());
+
+  #ifdef Parallel
+  switch (_stateData.getLoadRebalancingState() ) {
+    case StateData::NoRebalancing:
+      assertion( _loadRebalancingRemoteRanks.empty());
+      _stateData.setHasChangedVertexOrCellState(false);
+      break;
+    case StateData::ForkTriggered:
+      assertion( !_loadRebalancingRemoteRanks.empty());
+      assertion2(!isGridStationary(),toString(),tarch::parallel::Node::getInstance().getRank());
+      _stateData.setLoadRebalancingState(StateData::Forking);
+      _stateData.setHasChangedVertexOrCellState(true);
+      break;
+    case StateData::Forking:
+      assertion( !_loadRebalancingRemoteRanks.empty());
+      _stateData.setLoadRebalancingState(StateData::NoRebalancing);
+      _stateData.setHasChangedVertexOrCellState(true);
+      _loadRebalancingRemoteRanks.clear();
+      break;
+    case StateData::JoinTriggered:
+      assertion( !_loadRebalancingRemoteRanks.empty());
+      assertion2(!isGridStationary(),toString(),tarch::parallel::Node::getInstance().getRank());
+      _stateData.setLoadRebalancingState(StateData::Joining);
+      _stateData.setHasChangedVertexOrCellState(true);
+      break;
+    case StateData::Joining:
+      assertion( !_loadRebalancingRemoteRanks.empty());
+      assertion2(!isGridStationary(),toString(),tarch::parallel::Node::getInstance().getRank());
+      _stateData.setLoadRebalancingState(StateData::NoRebalancing);
+      _stateData.setHasChangedVertexOrCellState(true);
+      _loadRebalancingRemoteRanks.clear();
+      break;
+    case StateData::IsNewWorkerDueToForkOfExistingDomain:
+      assertion2(!isGridStationary(),toString(),tarch::parallel::Node::getInstance().getRank());
+      _stateData.setHasChangedVertexOrCellState(true);
+      _stateData.setLoadRebalancingState(StateData::NoRebalancing);
+      break;
+    case StateData::JoinWithMasterTriggered:
+      assertion2(!isGridStationary(),toString(),tarch::parallel::Node::getInstance().getRank());
+      assertion(_loadRebalancingRemoteRanks.empty());
+      _stateData.setHasChangedVertexOrCellState(true);
+      _stateData.setLoadRebalancingState(StateData::JoiningWithMaster);
+      break;
+    case StateData::JoiningWithMaster:
+      assertion(_loadRebalancingRemoteRanks.empty());
+      assertion2(!isGridStationary(),toString(),tarch::parallel::Node::getInstance().getRank());
+      _stateData.setHasChangedVertexOrCellState(true);
+      _stateData.setLoadRebalancingState(StateData::HasJoinedWithMaster);
+      break;
+    default:
+      assertion3( false, "unknown rebalancing state", _stateData.toString(), tarch::parallel::Node::getInstance().getRank() );
+      break;
+  }
+  #endif
+
+  logTraceOutWith1Argument( "resetStateAtEndOfIteration()", toString() );
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::resetStateAtBeginOfIteration() {
+  logTraceInWith1Argument( "resetStateAtBeginOfIteration()", toString() );
+
+  _stateData.setHasChangedVertexOrCellState(false);
+  _stateData.setHasErased(false);
+  _stateData.setHasRefined(false);
+  _stateData.setHasTriggeredEraseForNextIteration(false);
+  _stateData.setHasTriggeredRefinementForNextIteration(false);
+
+  _stateData.setMaxLevel(0);
+  _stateData.setMaxMeshWidth(tarch::la::Vector<DIMENSIONS,double>(0.0));
+  _stateData.setMinMeshWidth(tarch::la::Vector<DIMENSIONS,double>(std::numeric_limits<double>::max()));
+
+  _stateData.setNumberOfInnerVertices(0.0);
+  _stateData.setNumberOfBoundaryVertices(0.0);
+  _stateData.setNumberOfOuterVertices(0.0);
+  _stateData.setNumberOfInnerCells(0.0);
+  _stateData.setNumberOfOuterCells(0.0);
+
+  logTraceOutWith1Argument( "resetStateAtBeginOfIteration()", toString() );
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::updateInLeaf( int level, const tarch::la::Vector<DIMENSIONS,double>& h ) {
+  _stateData.setMaxLevel(
+    _stateData.getMaxLevel()>level ? _stateData.getMaxLevel() : level
+  );
+  for (int d=0; d<DIMENSIONS; d++) {
+    _stateData.setMaxMeshWidth(d,
+      _stateData.getMaxMeshWidth(d)<h(d) ? h(d) : _stateData.getMaxMeshWidth(d)
+	);
+    _stateData.setMinMeshWidth(d,
+      _stateData.getMinMeshWidth(d)>h(d) ? h(d) : _stateData.getMinMeshWidth(d)
+	);
+  }
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::incNumberOfInnerVertices( double increment ) {
+  _stateData.setNumberOfInnerVertices(_stateData.getNumberOfInnerVertices()+increment);
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::incNumberOfBoundaryVertices( double increment ) {
+  _stateData.setNumberOfBoundaryVertices(_stateData.getNumberOfBoundaryVertices()+increment);
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::incNumberOfOuterVertices( double increment ) {
+  _stateData.setNumberOfOuterVertices(_stateData.getNumberOfOuterVertices()+increment);
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::incNumberOfInnerCells( double increment ) {
+  _stateData.setNumberOfInnerCells(_stateData.getNumberOfInnerCells()+increment);
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::incNumberOfOuterCells( double increment ) {
+  _stateData.setNumberOfOuterCells(_stateData.getNumberOfOuterCells()+increment);
+}
+
+
+#ifdef Parallel
+template <class StateData>
+std::set<int> peano::grid::State<StateData>::getForkingOrJoiningOrTriggeredForRebalancingRanks() const {
+  return _loadRebalancingRemoteRanks;
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::mergeWithWorkerState(const peano::grid::State<StateData>& workerState) {
+  logTraceInWith2Arguments( "mergeWithWorkerState(...)", toString(), workerState.toString() );
+
+  incNumberOfInnerVertices(workerState._stateData.getNumberOfInnerVertices());
+  incNumberOfBoundaryVertices(workerState._stateData.getNumberOfBoundaryVertices());
+  incNumberOfOuterVertices(workerState._stateData.getNumberOfOuterVertices());
+  incNumberOfInnerCells(workerState._stateData.getNumberOfInnerCells());
+  incNumberOfOuterCells(workerState._stateData.getNumberOfOuterCells());
+
+  _stateData.setHasChangedVertexOrCellState(workerState._stateData.getHasChangedVertexOrCellState() || _stateData.getHasChangedVertexOrCellState());
+
+  _stateData.setMaxLevel( workerState._stateData.getMaxLevel() > _stateData.getMaxLevel() ? workerState._stateData.getMaxLevel() : _stateData.getMaxLevel() );
+  for (int d=0; d<DIMENSIONS; d++) {
+    _stateData.setMaxMeshWidth(d,
+      workerState._stateData.getMaxMeshWidth(d) > _stateData.getMaxMeshWidth(d) ? workerState._stateData.getMaxMeshWidth(d) : _stateData.getMaxMeshWidth(d)
+    );
+    _stateData.setMinMeshWidth(d,
+      workerState._stateData.getMaxMeshWidth(d) < _stateData.getMaxMeshWidth(d) ? workerState._stateData.getMaxMeshWidth(d) : _stateData.getMaxMeshWidth(d)
+    );
+  }
+
+  logTraceOutWith1Argument( "mergeWithWorkerState(...)", toString() );
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::initDatatype() {
+  if (MPIDatatypeContainer::Datatype==0) {
+    MPIDatatypeContainer::initDatatype();
+  }
+
+  assertion(MPIDatatypeContainer::Datatype!=0);
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::send(int destination, int tag) {
+  assertion(MPIDatatypeContainer::Datatype!=0);
+
+  #if defined(ParallelExchangePackedRecords)
+  MPIDatatypeContainer copy = _stateData.convert();
+  copy.setHasWorkerWithWorker( peano::kernel::parallel::loadbalancing::Oracle::getInstance().hasWorkers() );
+  copy.send(destination,tag,true);
+  #else
+  StateData copy = _stateData;
+  copy.setHasWorkerWithWorker( peano::kernel::parallel::loadbalancing::Oracle::getInstance().hasWorkers() );
+  copy.send(destination,tag,true);
+  #endif
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::receive(int source, int tag) {
+  assertion(MPIDatatypeContainer::Datatype!=0);
+
+  #if defined(ParallelExchangePackedRecords)
+  typename StateData::LoadBalancingState oldLoadBalancingState       = _stateData.getLoadRebalancingState();
+
+  MPIDatatypeContainer receivedMessage;
+  receivedMessage.receive(source,tag,true);
+  _stateData = receivedMessage.convert();
+
+  _stateData.setLoadRebalancingState(oldLoadBalancingState);
+  #else
+  #ifdef Asserts
+  typename StateData::LoadBalancingState oldLoadBalancingState       = _stateData.getLoadRebalancingState();
+  #endif
+
+  _stateData.receive(source,tag,true);
+
+  assertionEquals2( oldLoadBalancingState, _stateData.getLoadRebalancingState(),tarch::parallel::Node::getInstance().getRank(),this->toString());
+  #endif
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::joinWithRank( int rank ) {
+  assertion( rank!=tarch::parallel::Node::getInstance().getRank() );
+
+  if (rank==tarch::parallel::NodePool::getInstance().getMasterRank()) {
+    assertion(  _stateData.getLoadRebalancingState()==StateData::NoRebalancing );
+    assertion( _loadRebalancingRemoteRanks.empty() );
+    _stateData.setLoadRebalancingState( StateData::JoinWithMasterTriggered );
+  }
+  else {
+    assertion(
+      (_stateData.getLoadRebalancingState()==StateData::NoRebalancing) ||
+      (_stateData.getLoadRebalancingState()==StateData::JoinTriggered)
+    );
+    _stateData.setLoadRebalancingState( StateData::JoinTriggered );
+    _loadRebalancingRemoteRanks.insert(rank);
+  }
+
+  changedCellState();
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::splitIntoRank( int rank ) {
+  assertion(
+    (_stateData.getLoadRebalancingState()==StateData::NoRebalancing) ||
+    (_stateData.getLoadRebalancingState()==StateData::ForkTriggered)
+  );
+  assertion( rank!=tarch::parallel::Node::getInstance().getRank() );
+  assertion( _loadRebalancingRemoteRanks.count(rank)==0 );
+
+  _stateData.setLoadRebalancingState( StateData::ForkTriggered );
+  _loadRebalancingRemoteRanks.insert(rank);
+
+  changedCellState();
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isForking() const {
+  return _stateData.getLoadRebalancingState() == StateData::Forking;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isInvolvedInJoinOrFork() const {
+  return _stateData.getLoadRebalancingState() != StateData::NoRebalancing;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isForkTriggeredForRank(int rank) const {
+  assertion( rank!=tarch::parallel::Node::getInstance().getRank() || _loadRebalancingRemoteRanks.count(rank)==0 );
+  return _stateData.getLoadRebalancingState() == StateData::ForkTriggered && _loadRebalancingRemoteRanks.count(rank)>0;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isJoinTriggeredForRank(int rank) const {
+    assertion( rank!=tarch::parallel::Node::getInstance().getRank() || _loadRebalancingRemoteRanks.count(rank)==0 );
+  return _stateData.getLoadRebalancingState() == StateData::JoinTriggered && _loadRebalancingRemoteRanks.count(rank)>0;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isForkTriggered() const {
+  return _stateData.getLoadRebalancingState() == StateData::ForkTriggered;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isForkingRank( int rank ) const {
+    assertion( rank!=tarch::parallel::Node::getInstance().getRank() || _loadRebalancingRemoteRanks.count(rank)==0 );
+  return _stateData.getLoadRebalancingState() == StateData::Forking && _loadRebalancingRemoteRanks.count(rank)>0;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isJoiningRank(int rank) const {
+    // @todo Gilt wirklich nur fuer die Worker nach Definition
+  return
+//       (_stateData.getLoadRebalancingState() == StateData::JoiningWithMaster &&  tarch::parallel::NodePool::getInstance().getMasterRank() == rank)
+//    ||
+    (_stateData.getLoadRebalancingState() == StateData::Joining           &&  _loadRebalancingRemoteRanks.count(rank) > 0);
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isNewWorkerDueToForkOfExistingDomain() const {
+  return _stateData.getLoadRebalancingState() == StateData::IsNewWorkerDueToForkOfExistingDomain;
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::setIsNewWorkerDueToForkOfExistingDomain(bool value) {
+  if (value) {
+    _stateData.setLoadRebalancingState( StateData::IsNewWorkerDueToForkOfExistingDomain );
+  }
+  else {
+    _stateData.setLoadRebalancingState( StateData::NoRebalancing );
+  }
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isJoinWithMasterTriggered() const {
+  return _stateData.getLoadRebalancingState() == StateData::JoinWithMasterTriggered;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isJoiningWithMaster() const {
+  return _stateData.getLoadRebalancingState() == StateData::JoiningWithMaster;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isJoiningWithWorker() const {
+  return _stateData.getLoadRebalancingState()      == StateData::Joining;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::hasJoinedWithMaster() const {
+  bool result = _stateData.getLoadRebalancingState()      == StateData::HasJoinedWithMaster;
+  return result;
+}
+
+
+template <class StateData>
+void peano::grid::State<StateData>::setReduceStateAndCell( bool value ) {
+  _stateData.setReduceStateAndCell(value);
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::reduceStateAndCell() const {
+  return _stateData.getReduceStateAndCell() && _stateData.getLoadRebalancingState() != StateData::JoiningWithMaster && _stateData.getLoadRebalancingState() != StateData::IsNewWorkerDueToForkOfExistingDomain;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::mayForkDueToLoadBalancing(int workerRank) const {
+  // @todo raus wieder am Ende
+  if (isTraversalInverted()) return false;
+
+  return _stateData.getLoadRebalancingState() == StateData::NoRebalancing ||
+         _stateData.getLoadRebalancingState() == StateData::ForkTriggered;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::mayJoinDueToLoadBalancing(int workerRank) const {
+  // @todo raus wieder am Ende
+  if (isTraversalInverted()) return false;
+
+  const bool StateWouldAllowJoin =
+         _stateData.getLoadRebalancingState() == StateData::NoRebalancing ||
+         _stateData.getLoadRebalancingState() == StateData::JoinTriggered;
+
+  const bool RankCouldJoin =
+      !peano::kernel::parallel::loadbalancing::Oracle::getInstance().hasWorkerAWorker(workerRank);
+
+  return StateWouldAllowJoin && RankCouldJoin;
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::hasWorker() const {
+  return _stateData.getHasWorkerWithWorker();
+}
+
+#endif
+

@@ -1,0 +1,95 @@
+#include "peano/datatraversal/ActionSetTraversalLoop.h"
+#include "tarch/multicore/MulticoreDefinitions.h"
+
+
+template <class LoopBody>
+peano::datatraversal::SingleLevelCellLoop<LoopBody>::SingleLevelCellLoop(
+  const tarch::la::Vector<DIMENSIONS,int>&  range,
+  LoopBody&                                 loopBody,
+  int                                       grainSize
+) {
+  assertion( tarch::la::volume(range)!=0 );
+
+  #if defined(SharedMemoryParallelisation)
+  if (grainSize>0) {
+    run(
+      loopBody,
+      grainSize,
+      peano::datatraversal::ActionSetTraversal::getParallelCartesianGridTraversal(range)
+    );
+  }
+  else {
+    run(
+      loopBody,
+      grainSize,
+      peano::datatraversal::ActionSetTraversal::getSequentialCartesianGridTraversal(range)
+    );
+  }
+  #else
+  run(
+    loopBody,
+    grainSize,
+    peano::datatraversal::ActionSetTraversal::getSequentialCartesianGridTraversal(range)
+  );
+  #endif
+}
+
+
+template <class LoopBody>
+peano::datatraversal::SingleLevelCellLoop<LoopBody>::SingleLevelCellLoop() {
+}
+
+
+template <class LoopBody>
+void peano::datatraversal::SingleLevelCellLoop<LoopBody>::run(
+  LoopBody&                                 loopBody,
+  int                                       grainSize,
+  const tarch::la::Vector<DIMENSIONS,int>&  range
+) {
+  assertion( tarch::la::volume(range)!=0 );
+
+  #if defined(SharedMemoryParallelisation)
+  run(
+    loopBody,
+    grainSize,
+    peano::datatraversal::ActionSetTraversal::getParallelCartesianGridTraversal(range)
+  );
+  #else
+  run(
+    loopBody,
+    grainSize,
+    peano::datatraversal::ActionSetTraversal::getSequentialCartesianGridTraversal(range)
+  );
+  #endif
+}
+
+
+template <class LoopBody>
+void peano::datatraversal::SingleLevelCellLoop<LoopBody>::run(
+  LoopBody&                                                loopBody,
+  int                                                      grainSize,
+  const peano::datatraversal::ActionSetTraversal&  cellTraversal
+) {
+  #if defined(SharedMemoryParallelisation)
+  if (grainSize>0) {
+    ActionSetTraversalLoop<LoopBody>(
+      cellTraversal,
+      loopBody,
+      grainSize
+    );
+  }
+  else {
+    ActionSetTraversalLoop<LoopBody>(
+      cellTraversal,
+      loopBody,
+      0
+    );
+  }
+  #else
+  ActionSetTraversalLoop<LoopBody>(
+    cellTraversal,
+    loopBody,
+    0
+  );
+  #endif
+}

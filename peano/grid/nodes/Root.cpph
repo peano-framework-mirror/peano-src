@@ -1,0 +1,490 @@
+#include "tarch/Assertions.h"
+#include "peano/grid/aspects/CellRefinement.h"
+#include "peano/utils/Loop.h"
+#include "peano/grid/nodes/Constants.h"
+#include "peano/grid/AscendDescendLevelEnumerator.h"
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+tarch::logging::Log peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::_log( "peano::grid::nodes::Root" );
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::Root(
+  VertexStack&                vertexStack,
+  CellStack&                  cellStack,
+  EventHandle&                eventHandle,
+  peano::geometry::Geometry&  geometry,
+  LeafNode&                   leafNode,
+  RefinedNode&                refinedNode,
+  peano::grid::TraversalOrderOnTopLevel&  cellTraversal
+):
+  Base        (vertexStack,cellStack,eventHandle,geometry),
+  _cellTraversal( cellTraversal ),
+  _leafNode   (leafNode),
+  _refinedNode(refinedNode) {
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::~Root() {
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::terminate() {
+  #ifdef Parallel
+  if (!tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+    _coarseGridCell.switchToLeaf();
+    _coarseGridCell.assignToLocalNode();
+  }
+  #endif
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::setCoarsestLevelAttributes(
+  const tarch::la::Vector<DIMENSIONS,double>&   domainSize,
+  const tarch::la::Vector<DIMENSIONS,double>&   domainOffset,
+  int                                           levelOfCentralElement
+) {
+  logTraceInWith3Arguments( "setCoarsestLevelAttributes(...)", domainSize, domainOffset, levelOfCentralElement );
+
+  assertion( levelOfCentralElement>0 );
+
+  _sizeOfEnclosingCoarseCell   = domainSize * 3.0;
+  _offsetOfEnclosingCoarseCell = domainOffset - domainSize;
+  _levelOfEnclosingCell        = levelOfCentralElement-1;
+
+  _coarseGridCell.switchToRoot(_levelOfEnclosingCell);
+
+  #ifdef Asserts
+  SingleLevelEnumerator coarseGridEnumerator( _sizeOfEnclosingCoarseCell*3.0, _offsetOfEnclosingCoarseCell, _levelOfEnclosingCell );
+  dfor2(k)
+    _coarseGridVertices[kScalar].setPosition( coarseGridEnumerator.getVertexPosition(k), _levelOfEnclosingCell );
+  enddforx
+  #endif
+
+  for (int i=0; i<FOUR_POWER_D; i++) {
+    _coarseGridVertices[i].invalidateAdjacentCellInformation();
+    _coarseGridVertices[i].switchToOutside();
+    #ifdef Parallel
+    _coarseGridVertices[i].setAdjacentRanks(tarch::la::Vector<TWO_POWER_D,int>(tarch::parallel::Node::getInstance().getRank()));
+    #endif
+  }
+
+  #ifdef Parallel
+  if (!tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+    _coarseGridCell.assignToRemoteNode(tarch::parallel::NodePool::getInstance().getMasterRank());
+  }
+  #endif
+
+  logTraceOut( "setCoarsestLevelAttributes(...)" );
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::restart(
+  State&                                        state,
+  const tarch::la::Vector<DIMENSIONS,double>&   domainSize,
+  const tarch::la::Vector<DIMENSIONS,double>&   domainOffset,
+  int                                           levelOfCentralElement
+) {
+  logTraceInWith4Arguments( "restart()", state, domainSize, domainOffset, levelOfCentralElement );
+
+  setCoarsestLevelAttributes(domainSize,domainOffset,levelOfCentralElement);
+
+  _cellTraversal.initialiseWithPeanoSFC(peano::grid::aspects::CellPeanoCurve::getLoopDirection(_coarseGridCell, state.isTraversalInverted()));
+
+  if (Base::_cellStack.isInputStackEmpty()) {
+    createFineGridCellsAndFillCellStacks();
+  }
+  
+  state.incNumberOfOuterCells(THREE_POWER_D+1);
+  state.incNumberOfOuterVertices(TWO_POWER_D+FOUR_POWER_D-TWO_POWER_D);
+  state.updateRefinementHistoryAfterLoad( true, false, true );
+
+  logTraceOut( "restart()" );
+}
+
+
+#ifdef Parallel
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::restart(
+  const tarch::la::Vector<DIMENSIONS,double>&  sizeOfCentralElement,
+  const tarch::la::Vector<DIMENSIONS,double>&  offsetOfCentralElement,
+  int                                          levelOfCentralElement
+) {
+  logTraceInWith3Arguments( "restart()", sizeOfCentralElement, offsetOfCentralElement, levelOfCentralElement );
+
+  setCoarsestLevelAttributes(sizeOfCentralElement,offsetOfCentralElement,levelOfCentralElement);
+
+  _cellTraversal.reset();
+
+  if (Base::_cellStack.isInputStackEmpty()) {
+    createFineGridCellsAndFillCellStacks();
+  }
+
+  logTraceOut( "restart()" );
+}
+#endif
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::prepareLevelOneVertices(
+  Vertex  fineGridVertices[FOUR_POWER_D],
+  int     counter[FOUR_POWER_D]
+) {
+  logTraceInWith1Argument( "prepareLevelOneVertices(...)", Base::_vertexStack.isInputStackEmpty() );
+
+  SingleLevelEnumerator fineGridEnumerator(  _sizeOfEnclosingCoarseCell, _offsetOfEnclosingCoarseCell, _levelOfEnclosingCell );
+  dfor4(k)
+    #ifdef Asserts
+    fineGridEnumerator.setOffset(k);
+    fineGridVertices[kScalar].setPosition( fineGridEnumerator.getVertexPosition(SingleLevelEnumerator::LocalVertexIntegerIndex(0)), _levelOfEnclosingCell+1 );
+    #endif
+    #ifdef Parallel
+    if (!tarch::parallel::Node::getInstance().isGlobalMaster()) {
+      fineGridVertices[kScalar].setAdjacentRanks(tarch::la::Vector<TWO_POWER_D,int>(tarch::parallel::NodePool::getInstance().getMasterRank()));
+    }
+    #endif
+    counter[kScalar] = CounterNodeWithoutLifecycle;
+  enddforx
+
+  fineGridEnumerator.setOffset(SingleLevelEnumerator::LocalVertexIntegerIndex(1));
+  dfor2(k)
+    if (Base::_vertexStack.isInputStackEmpty()) {
+      counter[ fineGridEnumerator(k) ] = CounterNewNode;
+    }
+    else {
+      counter[ fineGridEnumerator(k) ] = CounterPersistentNode;
+    }
+  enddforx
+
+  logTraceOut( "prepareLevelOneVertices(...)" );
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::createFineGridCellsAndFillCellStacks() {
+  logTraceIn( "createFineGridCellsAndFillCellStacks()" );
+
+  Cell    fineGridCells[THREE_POWER_D];
+  peano::grid::aspects::CellRefinement::refine( _coarseGridCell, fineGridCells );
+  #ifdef Parallel
+  if (fineGridCells[THREE_POWER_D/2].isAssignedToRemoteRank()) {
+    fineGridCells[THREE_POWER_D/2].assignToLocalNode();
+  }
+  #endif
+  for (int i=THREE_POWER_D-1; i>=0; i--) {
+    Base::_cellStack.push(peano::kernel::stacks::Constants::InOutStack, fineGridCells[i] );
+  }
+  Base::_cellStack.flipInputAndOutputStack();
+
+  logTraceOut( "createFineGridCellsAndFillCellStacks()" );
+}
+
+
+#ifdef Parallel
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::receiveCellAndVerticesFromMaster(
+  const State&                                 state,
+  Cell&                                        centralFineGridCell,
+  const SingleLevelEnumerator&                 centralFineGridVerticesEnumerator,
+  Vertex*                                      fineGridVertices
+) {
+  logTraceIn( "receiveCellAndVerticesFromMaster(...)" );
+
+  if (
+    !tarch::parallel::Node::getInstance().isGlobalMaster() &&
+    !state.isJoiningWithMaster()
+  ) {
+    Cell    masterCell;
+    Vertex  masterVertices[TWO_POWER_D];
+
+    masterCell.receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+    logDebug( "receiveCellAndVerticesFromMaster(...)", "received cell " << masterCell.toString() << " from master" );
+    dfor2(i)
+      masterVertices[iScalar].receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+      logDebug( "receiveCellAndVerticesFromMaster(...)", "received vertex " << masterVertices[iScalar].toString() << " from master" );
+
+      assertion2(
+        masterVertices[iScalar].getRefinementControl() == fineGridVertices[ centralFineGridVerticesEnumerator(i) ].getRefinementControl() ||
+        (masterVertices[iScalar].getRefinementControl()==Vertex::Records::Refined && fineGridVertices[ centralFineGridVerticesEnumerator(i) ].getRefinementControl() == Vertex::Records::Refining) ||
+        masterVertices[iScalar].isAdjacentToDomainOf(tarch::parallel::Node::getInstance().getRank()),
+        masterVertices[iScalar].toString(),
+        fineGridVertices[ centralFineGridVerticesEnumerator(i) ].toString()
+      );
+      // Diesen Fall habe ich mir noch nicht ueberlegt -> der geht aber genau schief, d.h. wir haben ihn jetzt
+      // vermutlich muss dann einfach die Adjazenzliste lokal so gesetzt werden, dass kein Master dabei ist
+      assertion2(
+        !masterVertices[iScalar].isHangingNode(),
+        masterVertices[iScalar].toString(),
+        fineGridVertices[ centralFineGridVerticesEnumerator(i) ].toString()
+      );
+    enddforx
+
+    Base::_eventHandle.mergeWithWorker(
+      centralFineGridCell,
+      masterCell,
+      fineGridVertices,
+      centralFineGridVerticesEnumerator,
+      masterVertices
+    );
+
+    tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
+  }
+
+  logTraceOut( "receiveCellAndVerticesFromMaster(...)" );
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::sendCellAndVerticesToMaster(
+  const State&                                 state,
+  Cell&                                        centralFineGridCell,
+  const SingleLevelEnumerator&                 centralFineGridVerticesEnumerator,
+  Vertex*                                      fineGridVertices
+) {
+  logTraceIn( "sendCellAndVerticesToMaster(...)" );
+
+  if (
+    state.reduceStateAndCell() &&
+    !tarch::parallel::Node::getInstance().isGlobalMaster()
+  ) {
+    Base::_eventHandle.prepareSendToMaster(centralFineGridCell,fineGridVertices,centralFineGridVerticesEnumerator);
+
+    logDebug( "sendCellAndVerticesToMaster(...)", "send cell " << centralFineGridCell.toString() << " to master" );
+    centralFineGridCell.send(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+    dfor2(k)
+      logDebug( "sendCellAndVerticesToMaster(...)", "send vertex " << fineGridVertices[ centralFineGridVerticesEnumerator(k) ].toString() << " to master" );
+      fineGridVertices[ centralFineGridVerticesEnumerator(k) ].send(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+    enddforx
+  }
+
+  logTraceOut( "sendCellAndVerticesToMaster(...)" );
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::splitUpGrid(
+  State&                                       state,
+  const SingleLevelEnumerator&                 coarseGridVerticesEnumerator,
+  Cell&                                        centralFineGridCell,
+  const SingleLevelEnumerator&                 centralFineGridVerticesEnumerator,
+  Vertex*                                      fineGridVertices
+) {
+  if (
+    tarch::parallel::Node::getInstance().isGlobalMaster() &&
+    !centralFineGridCell.isAssignedToRemoteRank() &&
+    !state.isInvolvedInJoinOrFork()
+  ) {
+    std::bitset<THREE_POWER_D> localInnerCells;
+    localInnerCells.set(THREE_POWER_D/2,true);
+    peano::kernel::parallel::SpacetreeGridPartitioner partitioner( localInnerCells );
+    partitioner.reserveNodes();
+
+    if ( partitioner.hasSuccessfullyReservedAdditionalWorkers() )  {
+      assertion( partitioner.getNumberOfReservedWorkers()==1 );
+      logDebug( "splitUpGrid(...)", "fork has been successful" );
+      partitioner.sendForkMessages(
+        coarseGridVerticesEnumerator.getVertexPosition(),
+        centralFineGridVerticesEnumerator.getCellSize(),
+        peano::grid::aspects::CellPeanoCurve::getLoopDirection(_coarseGridCell, state.isTraversalInverted()),
+        coarseGridVerticesEnumerator.getLevel(),
+        centralFineGridCell.getEvenFlags()
+      );
+
+      tarch::la::Vector<DIMENSIONS,int> centralCell = SingleLevelEnumerator::LocalVertexIntegerIndex(1);
+      const int NewRemoteRank =  partitioner.getRankOfWorkerReponsibleForCell(centralCell);
+      assertion( NewRemoteRank != tarch::parallel::Node::getInstance().getRank() );
+      state.splitIntoRank(NewRemoteRank);
+      makeCellRemoteCell(state,NewRemoteRank,centralFineGridCell,fineGridVertices,centralFineGridVerticesEnumerator);
+    }
+
+  }
+}
+#endif
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::traverse(State& state) {
+  logTraceInWith1Argument( "traverse(State)", state );
+
+  #ifdef Parallel
+  if ( !_cellTraversal.isValid() ) {
+    state.setIsNewWorkerDueToForkOfExistingDomain(true);
+    logDebug( "traverse(State)", "reset state due to invalid/incomplete traversal: " << state.toString() );
+  }
+  #endif
+
+  Vertex  fineGridVertices[FOUR_POWER_D];
+  int     counter[FOUR_POWER_D];
+  Cell    fineGridCells[THREE_POWER_D];
+  for (int i=0; i<THREE_POWER_D; i++) {
+    fineGridCells[i] = Base::_cellStack.pop(peano::kernel::stacks::Constants::InOutStack );
+  }
+  prepareLevelOneVertices(
+    fineGridVertices,
+    counter
+  );
+
+  SingleLevelEnumerator        coarseGridEnumerator( _sizeOfEnclosingCoarseCell*3.0, _offsetOfEnclosingCoarseCell, _levelOfEnclosingCell-1 );
+  SingleLevelEnumerator        fineGridEnumerator( coarseGridEnumerator.getRefinedEnumerator() );
+
+  Base::_eventHandle.beginIteration(state);
+
+  int  loadLoopCounter           = 0;
+  int  traverseLoopCounter       = 0;
+  int  storeLoopCounter          = 0;
+
+  do {
+    logDebug( "traverse(State)", "start/continue to traverse with cell " << loadLoopCounter );
+
+    do {
+      tarch::la::Vector<DIMENSIONS,int> currentCellTraversal = _cellTraversal.getNextCellToTraverseOnLevelOne(loadLoopCounter,state.isTraversalInverted());
+      const int linearisedCellIndex = SingleLevelEnumerator::lineariseCellIndex( currentCellTraversal );
+      Cell& currentCell        = fineGridCells[linearisedCellIndex];
+
+      logDebug( "traverse(State)", "load cell " << currentCell.toString() << " at " << currentCellTraversal );
+      #ifdef Parallel
+      if (state.isNewWorkerDueToForkOfExistingDomain()) {
+        const Cell newCell = peano::kernel::parallel::JoinDataBufferPool::getInstance().getCellFromStream<Cell>(tarch::parallel::NodePool::getInstance().getMasterRank());
+        logDebug(
+          "traverse(State)",
+          "cell access flags at " << currentCellTraversal << " might be invalid, so take replacement from fork/join buffer and replace "
+            << currentCell.toString() << "'s flags with flags of " << newCell.toString()
+        );
+        currentCell.replaceAccessNumbersAndEvenFlags( newCell );
+      }
+      #endif
+      fineGridEnumerator.setOffset( currentCellTraversal );
+      if ( currentCell.isLeaf() ) {
+        _leafNode.load( state, currentCell, fineGridVertices, fineGridEnumerator, _coarseGridCell, _coarseGridVertices, coarseGridEnumerator, currentCellTraversal, counter );
+      }
+      else if ( currentCell.isRefined() ) {
+        _refinedNode.load( state, currentCell, fineGridVertices, fineGridEnumerator, _coarseGridCell, _coarseGridVertices, coarseGridEnumerator, currentCellTraversal, counter );
+      }
+      else {
+        assertion1(false,currentCell);
+      }
+
+      #ifdef Parallel
+      if (linearisedCellIndex==THREE_POWER_D/2) {
+        receiveCellAndVerticesFromMaster(
+          state,
+          fineGridCells[THREE_POWER_D/2],
+          fineGridEnumerator,
+          fineGridVertices
+        );
+      }
+      #endif
+      loadLoopCounter++;
+    } while ( loadLoopCounter<THREE_POWER_D && !_cellTraversal.descendBeforeContinuingWithCell(loadLoopCounter,state.isTraversalInverted()));
+
+    #ifdef Parallel
+    assertion2( loadLoopCounter==THREE_POWER_D  || !tarch::parallel::Node::getInstance().isGlobalMaster(), loadLoopCounter, tarch::parallel::Node::getInstance().getRank() );
+
+    fineGridEnumerator.setOffset( SingleLevelEnumerator::LocalVertexIntegerIndex(1) );
+    splitUpGrid(
+      state,
+      coarseGridEnumerator,
+      fineGridCells[THREE_POWER_D/2],
+      fineGridEnumerator,
+      fineGridVertices
+    );
+    #endif
+    assertion2( loadLoopCounter>traverseLoopCounter, loadLoopCounter, traverseLoopCounter);
+
+    #if defined(Peano3)
+    const AscendDescendLevelEnumerator fineGridAscendDescendEnumerator(fineGridEnumerator);
+    if (!Base::_eventHandle.descendIsNOP) {
+      Base::_eventHandle.descend(
+        fineGridCells,
+        fineGridVertices,
+        fineGridAscendDescendEnumerator,
+        _coarseGridVertices,
+        coarseGridEnumerator,
+        _coarseGridCell
+      );
+    }
+    #endif
+
+    do {
+      tarch::la::Vector<DIMENSIONS,int> currentCellTraversal = _cellTraversal.getNextCellToTraverseOnLevelOne(traverseLoopCounter,state.isTraversalInverted());
+      Cell& currentCell = fineGridCells[SingleLevelEnumerator::lineariseCellIndex( currentCellTraversal )];
+      logDebug( "traverse(State)", "traverse cell " << currentCell.toString() << " at " << currentCellTraversal );
+      fineGridEnumerator.setOffset( currentCellTraversal );
+      if ( currentCell.isRefined() ) {
+        _refinedNode.traverse( state, currentCell, fineGridVertices, fineGridEnumerator, _coarseGridCell, _coarseGridVertices, coarseGridEnumerator, currentCellTraversal );
+      }
+      else if ( currentCell.isLeaf() ) {
+        _leafNode.traverse( state, currentCell, fineGridVertices, fineGridEnumerator, _coarseGridCell, _coarseGridVertices, coarseGridEnumerator, currentCellTraversal );
+      }
+      else {
+        assertion1(false,currentCell);
+      }
+      traverseLoopCounter++;
+    } while (traverseLoopCounter < loadLoopCounter);
+
+    assertion2( loadLoopCounter>storeLoopCounter, loadLoopCounter, storeLoopCounter);
+
+    #if defined(Peano3)
+    if (Base::_eventHandle.ascendIsNOP) {
+      Base::_eventHandle.ascend(
+        fineGridCells,
+        fineGridVertices,
+        fineGridAscendDescendEnumerator,
+        _coarseGridVertices,
+        coarseGridEnumerator,
+        _coarseGridCell
+      );
+    }
+    #endif
+
+    do {
+      tarch::la::Vector<DIMENSIONS,int> currentCellTraversal = _cellTraversal.getNextCellToTraverseOnLevelOne(storeLoopCounter,state.isTraversalInverted());
+      const int linearisedCellIndex = SingleLevelEnumerator::lineariseCellIndex( currentCellTraversal );
+      Cell& currentCell = fineGridCells[linearisedCellIndex];
+
+      #ifdef Parallel
+      if (linearisedCellIndex==THREE_POWER_D/2) {
+        sendCellAndVerticesToMaster(
+          state,
+          fineGridCells[THREE_POWER_D/2],
+          fineGridEnumerator,
+          fineGridVertices
+        );
+      }
+      #endif
+      logDebug( "traverse(State)", "store cell " << currentCell.toString() << " at " << currentCellTraversal );
+      fineGridEnumerator.setOffset( currentCellTraversal );
+      if ( currentCell.isLeaf() ) {
+        _leafNode.store( state, currentCell, fineGridVertices, fineGridEnumerator, _coarseGridCell, _coarseGridVertices, coarseGridEnumerator, currentCellTraversal, counter );
+      }
+      else if ( currentCell.isRefined() ) {
+        _refinedNode.store( state, currentCell, fineGridVertices, fineGridEnumerator, _coarseGridCell, _coarseGridVertices, coarseGridEnumerator, currentCellTraversal, counter );
+      }
+      else {
+        assertion1(false,currentCell);
+      }
+      storeLoopCounter++;
+    } while (storeLoopCounter < loadLoopCounter);
+  } while (loadLoopCounter<THREE_POWER_D);
+
+  for (int i=THREE_POWER_D-1; i>=0; i--) {
+    Base::_cellStack.push(peano::kernel::stacks::Constants::InOutStack, fineGridCells[i] );
+  }
+
+  Base::_cellStack.flipInputAndOutputStack();
+  Base::_vertexStack.flipInputAndOutputStack();
+
+  Base::_eventHandle.endIteration(state);
+
+  assertion( _cellTraversal.isValid() );
+
+  logInfo( "traverse(State)", "local cells: "    << Base::_cellStack.sizeOfInputStack() );
+  logInfo( "traverse(State)", "local vertices: " << Base::_vertexStack.sizeOfInputStack() );
+
+  logTraceOutWith3Arguments( "traverse(State)", state.toString(), Base::_cellStack.sizeOfInputStack(), Base::_vertexStack.sizeOfInputStack() );
+}

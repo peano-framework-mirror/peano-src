@@ -1,0 +1,95 @@
+#include "peano/utils/Globals.h"
+#include "peano/stacks/Stacks.h"
+#include "tarch/compiler/CompilerSpecificSettings.h"
+
+#include <map>
+
+
+#if defined(CacheActionSets)
+template <class Cell>
+const peano::datatraversal::ActionSetTraversal& peano::grid::aspects::CellLocalPeanoCurve::getWriteVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible ) {
+  static std::map<int,peano::datatraversal::ActionSetTraversal*> cachedEntries;
+
+  const int key = getUniqueKey(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted, parallelIfPossible );
+  assertion( key>=0 );
+
+  if (cachedEntries.count(key)==0) {
+    if (parallelIfPossible) {
+      cachedEntries[key] = new peano::datatraversal::ActionSetTraversal(
+        createParallelWriteVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted)
+      );
+    }
+    else {
+      cachedEntries[key] = new peano::datatraversal::ActionSetTraversal(
+        createSequentialWriteVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted)
+      );
+    }
+  }
+
+  return *cachedEntries[key];
+}
+#else
+template <class Cell>
+peano::datatraversal::ActionSetTraversal
+peano::grid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(
+  const Cell& cell, bool isTraversalInverted, bool parallelIfPossible
+) {
+  #if defined(SharedMemoryParallelisation)
+  if (parallelIfPossible) {
+    return createParallelWriteVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted);
+  }
+  else {
+    return createSequentialWriteVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted);
+  }
+  #else
+  return createSequentialWriteVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted);
+  #endif
+}
+#endif
+
+
+
+
+#if defined(CacheActionSets)
+template <class Cell>
+const peano::datatraversal::ActionSetTraversal& peano::grid::aspects::CellLocalPeanoCurve::getReadVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible ) {
+  static std::map<int,peano::datatraversal::ActionSetTraversal*> cachedEntries;
+
+  const int key = getUniqueKey(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted, parallelIfPossible );
+  assertion( key>=0 );
+
+  if (cachedEntries.count(key)==0) {
+    if (parallelIfPossible) {
+      cachedEntries[key] = new peano::datatraversal::ActionSetTraversal(
+        createParallelReadVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted)
+      );
+    }
+    else {
+      cachedEntries[key] = new peano::datatraversal::ActionSetTraversal(
+        createSequentialReadVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted)
+      );
+    }
+  }
+
+  return *cachedEntries[key];
+}
+#else
+template <class Cell>
+peano::datatraversal::ActionSetTraversal
+peano::grid::aspects::CellLocalPeanoCurve::getReadVertexSequence(
+  const Cell& cell,
+  bool isTraversalInverted,
+  bool parallelIfPossible
+) {
+  #if defined(SharedMemoryParallelisation)
+  if (parallelIfPossible) {
+    return createParallelReadVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted);
+  }
+  else {
+    return createSequentialReadVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted);
+  }
+  #else
+  return createSequentialReadVertexSequence(cell._cellData.getAccessNumber(), cell._cellData.getEvenFlags(), isTraversalInverted);
+  #endif
+}
+#endif

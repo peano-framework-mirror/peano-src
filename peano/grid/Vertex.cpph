@@ -1,0 +1,490 @@
+#ifdef Parallel
+#include "tarch/parallel/Node.h"
+#include "tarch/parallel/NodePool.h"
+#include "peano/kernel/parallel/AdjacencyList.h"
+#include "tarch/la/WrappedVector.h"
+#endif
+
+
+#include "peano/grid/SingleLevelEnumerator.h"
+
+
+template <class VertexData>
+peano::grid::Vertex<VertexData>::Vertex():
+  _vertexData() {
+  _vertexData.setInsideOutsideDomain(Records::Outside);
+  _vertexData.setIsHangingNode(true);
+  _vertexData.setAdjacentCellsHeightOfPreviousIteration( peano::grid::StationaryButIrregular );
+  _vertexData.setAdjacentCellsHeight( peano::grid::StationaryButIrregular );
+  _vertexData.setRefinementControl(Records::Unrefined);
+  _vertexData.setNumberOfAdjacentRefinedCells(0);
+}
+
+
+template <class VertexData>
+peano::grid::Vertex<VertexData>::Vertex(const typename Vertex::DoNotCallStandardConstructor&) {
+}
+
+#ifdef PackedRecords
+template <class VertexData>
+peano::grid::Vertex<VertexData>::Vertex( const PersistentVertex& argument ):
+  _vertexData( (typename VertexData::Packed(argument)).convert() ) {
+}
+#else
+template <class VertexData>
+peano::grid::Vertex<VertexData>::Vertex( const PersistentVertex& argument ):
+  _vertexData( argument ) {
+}
+#endif
+
+template <class VertexData>
+peano::grid::Vertex<VertexData>::~Vertex() {
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::saveAndClearAdjacentCellsInformation() {
+  _vertexData.setAdjacentCellsHeightOfPreviousIteration(
+    _vertexData.getAdjacentCellsHeight()==peano::grid::NotStationaryDueToInvalidation ?
+        peano::grid::NotStationary: _vertexData.getAdjacentCellsHeight()
+  );
+
+  int newFlag = peano::grid::Undefined;
+  if ( _vertexData.getRefinementControl()==VertexData::Unrefined ) {
+    newFlag = peano::grid::Leaf;
+  }
+  else if ( _vertexData.getRefinementControl()!=VertexData::Refined ) {
+    newFlag = peano::grid::NotStationary;
+  }
+
+  #ifdef Parallel
+  if ( newFlag > peano::grid::NotStationary && isAdjacentToRemoteRank() && isAdjacentToDomainOf(tarch::parallel::Node::getInstance().getRank()) ) {
+    newFlag = peano::grid::StationaryWithParallelBoundary;
+  }
+  #endif
+
+  _vertexData.setAdjacentCellsHeight( newFlag );
+}
+
+
+template <class VertexData>
+std::string peano::grid::Vertex<VertexData>::toString() const {
+  return _vertexData.toString();
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::toString( std::ostream& out ) const {
+  _vertexData.toString(out);
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::switchToNonhangingNode() {
+  assertion1( _vertexData.getRefinementControl()==VertexData::Unrefined, _vertexData.toString() );
+
+  _vertexData.setIsHangingNode(false);
+
+  invalidateAdjacentCellInformation();
+}
+
+
+template <class VertexData>
+std::ostream& operator<<(std::ostream& out, const peano::grid::Vertex<VertexData>& attr) {
+  attr.toString(out);
+  return out;
+}
+
+
+template <class VertexData>
+typename peano::grid::Vertex<VertexData>::PersistentVertex
+peano::grid::Vertex<VertexData>::getRecords() const {
+  #if defined(StoreOnlyPersistentAttributes) && defined(PackedRecords)
+  return _vertexData.convert().getPersistentRecords();
+  #endif
+  #if !defined(StoreOnlyPersistentAttributes) && defined(PackedRecords)
+  return _vertexData.convert();
+  #endif
+  #if defined(StoreOnlyPersistentAttributes) && !defined(PackedRecords)
+  return _vertexData.getPersistentRecords();
+  #endif
+  #if !defined(StoreOnlyPersistentAttributes) && !defined(PackedRecords)
+  return _vertexData;
+  #endif
+}
+
+
+#ifdef Asserts
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::setPosition(
+  const tarch::la::Vector<DIMENSIONS,double>&  x,
+  int                                          level
+) {
+  _vertexData.setX(x);
+  _vertexData.setLevel(level);
+}
+
+
+template <class VertexData>
+int peano::grid::Vertex<VertexData>::getLevel() const {
+  return _vertexData.getLevel();
+}
+#endif
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::isOutside() const {
+  return _vertexData.getInsideOutsideDomain() == Records::Outside;
+}
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::isBoundary() const {
+  return _vertexData.getInsideOutsideDomain() == Records::Boundary;
+}
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::isInside() const {
+  return _vertexData.getInsideOutsideDomain() == Records::Inside;
+}
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::switchRefinementTriggeredToRefining() {
+  const bool doTransition = _vertexData.getRefinementControl()==VertexData::RefinementTriggered;
+  if( doTransition ) {
+    _vertexData.setRefinementControl( VertexData::Refining );
+    assertion1(_vertexData.getAdjacentCellsHeight() <= peano::grid::NotStationary ,toString());
+    invalidateAdjacentCellInformation();
+  }
+  return doTransition;
+}
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::switchEraseTriggeredToErasing() {
+  bool doTransition = _vertexData.getRefinementControl()==VertexData::EraseTriggered;
+  if ( doTransition ) {
+    _vertexData.setRefinementControl( VertexData::Erasing );
+    assertion1(_vertexData.getAdjacentCellsHeight() <= peano::grid::NotStationary ,toString());
+    invalidateAdjacentCellInformation();
+  }
+  return doTransition;
+}
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::isHangingNode() const {
+  return _vertexData.getIsHangingNode();
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::switchToInside() {
+  assertion1(
+    _vertexData.getInsideOutsideDomain() == Records::Boundary ||
+    _vertexData.getInsideOutsideDomain() == Records::Outside,
+    *this
+  );
+  _vertexData.setInsideOutsideDomain(Records::Inside);
+  assertion1(
+    _vertexData.getAdjacentCellsHeight()==peano::grid::NotStationary || _vertexData.getAdjacentCellsHeight()==peano::grid::NotStationaryDueToInvalidation ||
+    (isHangingNode() && _vertexData.getAdjacentCellsHeight()==peano::grid::StationaryButIrregular),
+    toString()
+  );
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack() {
+  if (_vertexData.getRefinementControl()==VertexData::Refining) {
+    _vertexData.setRefinementControl( VertexData::Refined );
+  }
+  else if (_vertexData.getRefinementControl()==VertexData::Erasing) {
+    _vertexData.setRefinementControl( VertexData::Unrefined );
+  }
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::refine() {
+  assertion2( !_vertexData.getIsHangingNode(), toString(), "may not call refine on hanging node" );
+  assertion2( _vertexData.getRefinementControl()!=VertexData::Refined, toString(), "tried to call refine on vertex that was already refined" );
+
+  if (_vertexData.getRefinementControl()==VertexData::Unrefined) {
+	  _vertexData.setRefinementControl(VertexData::RefinementTriggered);
+	  _vertexData.setAdjacentCellsHeight( peano::grid::NotStationary );
+  }
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::erase() {
+  assertion1( !_vertexData.getIsHangingNode(), toString() );
+
+  if (_vertexData.getAdjacentCellsHeightOfPreviousIteration()>=peano::grid::StationaryButIrregular) {
+    if (_vertexData.getRefinementControl()==VertexData::Refined) {
+      _vertexData.setRefinementControl(VertexData::EraseTriggered);
+      _vertexData.setAdjacentCellsHeight( peano::grid::NotStationary );
+    }
+    else if (_vertexData.getRefinementControl()==VertexData::RefinementTriggered) {
+      _vertexData.setRefinementControl(VertexData::Unrefined);
+    }
+  }
+}
+
+
+template <class VertexData>
+typename VertexData::RefinementControl peano::grid::Vertex<VertexData>::getRefinementControl() const {
+  return _vertexData.getRefinementControl();
+}
+
+
+template <class VertexData>
+peano::grid::CellFlags peano::grid::Vertex<VertexData>::getCurrentAdjacentCellsHeight() const {
+  return static_cast<peano::grid::CellFlags>(_vertexData.getAdjacentCellsHeight());
+}
+
+
+template <class VertexData>
+peano::grid::CellFlags peano::grid::Vertex<VertexData>::getAdjacentCellsHeightOfPreviousIteration() const {
+  return static_cast<peano::grid::CellFlags>(_vertexData.getAdjacentCellsHeightOfPreviousIteration());
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::setCurrentAdjacentCellsHeight(peano::grid::CellFlags value) {
+  _vertexData.setAdjacentCellsHeight(
+    min(static_cast<peano::grid::CellFlags>(_vertexData.getAdjacentCellsHeight()),value)
+  );
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::invalidateAdjacentCellInformation() {
+  _vertexData.setAdjacentCellsHeight( peano::grid::NotStationaryDueToInvalidation );
+  _vertexData.setAdjacentCellsHeightOfPreviousIteration( peano::grid::NotStationaryDueToInvalidation );
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::switchToBoundary() {
+  _vertexData.setInsideOutsideDomain(Records::Boundary);
+
+  assertion1(
+    _vertexData.getAdjacentCellsHeight()==peano::grid::NotStationary || _vertexData.getAdjacentCellsHeight()==peano::grid::NotStationaryDueToInvalidation ||
+    (isHangingNode() && _vertexData.getAdjacentCellsHeight()==peano::grid::StationaryButIrregular),
+    toString()
+  );
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::switchToOutside() {
+  _vertexData.setInsideOutsideDomain(Records::Outside);
+
+  assertion3(
+    _vertexData.getAdjacentCellsHeight()==peano::grid::NotStationary || _vertexData.getAdjacentCellsHeight()==peano::grid::NotStationaryDueToInvalidation ||
+    (isHangingNode() && _vertexData.getAdjacentCellsHeight()==peano::grid::StationaryButIrregular),
+    toString(),
+    ::toString( static_cast<peano::grid::CellFlags>(_vertexData.getAdjacentCellsHeight()) ),
+    ::toString( static_cast<peano::grid::CellFlags>(_vertexData.getAdjacentCellsHeightOfPreviousIteration()) )
+  );
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::clearCounterOfAdjacentRefinedCells() {
+  _vertexData.setNumberOfAdjacentRefinedCells(0);
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::incCounterOfAdjacentRefinedCells() {
+  _vertexData.setNumberOfAdjacentRefinedCells(_vertexData.getNumberOfAdjacentRefinedCells()+1);
+  assertion1( !isInside() || _vertexData.getNumberOfAdjacentRefinedCells()<=TWO_POWER_D, toString() );
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::refineVertexIfItHasOnlyRefinedAdjacentCells() {
+  if (
+    isInside() &&
+    _vertexData.getNumberOfAdjacentRefinedCells()==TWO_POWER_D &&
+    getRefinementControl() == Vertex::Records::Unrefined
+  ) {
+    refine();
+  }
+}
+
+
+#ifdef Asserts
+template <class VertexData>
+tarch::la::Vector<DIMENSIONS,double> peano::grid::Vertex<VertexData>::getX() const {
+  return _vertexData.getX();
+}
+#endif
+
+
+#ifdef Parallel
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::isRemote(
+  const peano::grid::State&  state,
+  bool                                        considerForkingNodesToBeRemote,
+  bool                                        considerJoiningNodesToBeRemote
+) const {
+  return peano::kernel::parallel::AdjacencyListAspect<peano::grid::Vertex<VertexData> >::isRemote(*this,state,considerForkingNodesToBeRemote,considerJoiningNodesToBeRemote);
+}
+
+
+template <class VertexData>
+std::set<int> peano::grid::Vertex<VertexData>::getAdjacentRemoteRanks() const {
+  assertion( isAdjacentToRemoteRank() );
+  return peano::kernel::parallel::AdjacencyListAspect<peano::grid::Vertex<VertexData> >::getAdjacentRemoteRanks(*this);
+}
+
+
+template <class VertexData>
+tarch::la::Vector<TWO_POWER_D,int> peano::grid::Vertex<VertexData>::getAdjacentRanks() const {
+  return _vertexData.getAdjacentRanks();
+}
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::isAdjacentToRemoteRank() const {
+  for (int i=0; i<TWO_POWER_D; i++) {
+    if (
+      _vertexData.getAdjacentRanks(i) != tarch::parallel::Node::getInstance().getRank()
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::initDatatype() {
+  if (MPIDatatypeContainer::Datatype==0) {
+    MPIDatatypeContainer::initDatatype();
+  }
+
+  assertion(MPIDatatypeContainer::Datatype!=0);
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallel) {
+  assertion(MPIDatatypeContainer::Datatype!=0);
+
+  #if defined(ParallelExchangePackedRecords)
+  _vertexData.convert().send(destination,tag,exchangeOnlyAttributesMarkedWithParallel);
+  #else
+  _vertexData.send(destination,tag,exchangeOnlyAttributesMarkedWithParallel);
+  #endif
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallel) {
+  assertion(MPIDatatypeContainer::Datatype!=0);
+
+  #if defined(ParallelExchangePackedRecords)
+  MPIDatatypeContainer receivedMessage;
+  receivedMessage.receive(source,tag,exchangeOnlyAttributesMarkedWithParallel);
+  _vertexData = receivedMessage.convert();
+  #else
+  _vertexData.receive(source,tag,exchangeOnlyAttributesMarkedWithParallel);
+  #endif
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::setAdjacentRanks( const tarch::la::Vector<TWO_POWER_D,int>& ranks ) {
+  for(int i=0; i<TWO_POWER_D; i++) {
+    assertion1(ranks(i)>=0, toString() );
+  }
+  _vertexData.setAdjacentRanks( ranks );
+  invalidateAdjacentCellInformation();
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::setVertexData(const VertexData& vertexData) {
+  _vertexData = vertexData;
+  setCurrentAdjacentCellsHeight(peano::grid::NotStationary);
+}
+
+
+template <class VertexData>
+VertexData peano::grid::Vertex<VertexData>::getVertexData() const {
+  return _vertexData;
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::setAdjacentRank( int position, int rank ) {
+  assertion(rank>=0);
+  _vertexData.setAdjacentRanks(position,rank);
+  invalidateAdjacentCellInformation();
+}
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::isAdjacentToDomainOf( const std::set<int>& ranks ) const {
+  for (int i=0; i<TWO_POWER_D; i++) {
+    for (std::set<int>::const_iterator p=ranks.begin(); p!=ranks.end(); p++) {
+      if ( _vertexData.getAdjacentRanks(i) == *p ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+
+template <class VertexData>
+bool peano::grid::Vertex<VertexData>::isAdjacentToDomainOf( int rank ) const {
+  for (int i=0; i<TWO_POWER_D; i++) {
+    if ( _vertexData.getAdjacentRanks(i) == rank ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::replaceAdjancyEntriesOfLocalRankWithMaster() {
+  for (int i=0; i<TWO_POWER_D; i++) {
+    if ( _vertexData.getAdjacentRanks(i) == tarch::parallel::Node::getInstance().getRank() ) {
+      _vertexData.setAdjacentRanks( i, tarch::parallel::NodePool::getInstance().getMasterRank() );
+    }
+  }
+}
+
+
+template <class VertexData>
+void peano::grid::Vertex<VertexData>::replaceAdjancyEntriesOfRemoteRankWithLocalRank(int rank) {
+  for (int i=0; i<TWO_POWER_D; i++) {
+    if ( _vertexData.getAdjacentRanks(i) == rank ) {
+      _vertexData.setAdjacentRanks( i, tarch::parallel::Node::getInstance().getRank() );
+    }
+  }
+}
+
+
+
+template <class VertexData>
+tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> peano::grid::Vertex<VertexData>::readAdjacencyLists(
+  const peano::grid::VertexEnumerator&  enumerator,
+  const Vertex* const                                    vertices
+) {
+  tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> result;
+  dfor2(x)
+    tarch::la::slice<TWO_POWER_D>(result,xScalar*TWO_POWER_D) = vertices[ enumerator(x) ]._vertexData.getAdjacentRanks();
+  enddforx
+  return result;
+}
+#endif

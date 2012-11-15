@@ -1,0 +1,121 @@
+#include "peano/grid/nodes/Constants.h"
+#include "peano/grid/aspects/VertexStateAnalysis.h"
+
+
+template <class Vertex>
+peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::SetCounterLoopBody(
+  Vertex const * const                                        coarseGridVertices,
+  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  int * const                                                 fineGridCounter
+):
+  _coarseGridVertices(coarseGridVertices),
+  _coarseGridVerticesEnumerator(coarseGridVerticesEnumerator),
+  _fineGridCounter(fineGridCounter) {
+}
+
+
+template <class Vertex>
+int peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
+  bool oneFatherCarriesDeleteFlag,
+  bool oneFatherCarriesRefiningFlag,
+  bool oneFatherCarriesRefinedFlag
+) {
+  // Optimization performed, for furhter details please refer to
+  // https://opt-patterns.wiki.tum.de/Conditions+merging
+
+  if(oneFatherCarriesRefinedFlag){
+    return CounterPersistentNode;
+  }
+  else {
+    if(!oneFatherCarriesRefiningFlag) {
+      if(!oneFatherCarriesDeleteFlag) {
+        return CounterHangingNode;
+      }
+      else {
+        return CounterPersistentNodeDelete;
+      }
+    }
+    else {
+      if(!oneFatherCarriesDeleteFlag) {
+        return CounterNewNode;
+      }
+      else {
+        return CounterPersistentNode;
+      }
+    }
+  }
+
+  assertionMsg(false, "all cases handled in the if construct from above");
+
+  return CounterPersistentNode;
+}
+
+
+template <class Vertex>
+int peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
+  Vertex const * const                                        coarseVertices,
+  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  const tarch::la::Vector<DIMENSIONS,int>&                    coordinates
+) {
+  bool oneFatherCarriesDeleteFlag   = false;
+  bool oneFatherCarriesRefiningFlag = false;
+  bool oneFatherCarriesRefinedFlag  = false;
+  tarch::la::Vector<DIMENSIONS,int>  parentCoordinates(0);
+  analyseFineGridVertex(
+    coarseVertices,
+    coarseGridVerticesEnumerator,
+    coordinates,
+    parentCoordinates,
+    oneFatherCarriesDeleteFlag,
+    oneFatherCarriesRefiningFlag,
+    oneFatherCarriesRefinedFlag,
+    DIMENSIONS-1
+  );
+  return analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag);
+}
+
+
+
+
+template <class Vertex>
+void peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
+  Vertex const * const                                        coarseVertices,
+  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  const tarch::la::Vector<DIMENSIONS,int>&                    coordinates,
+  tarch::la::Vector<DIMENSIONS,int>                           parentCoordinates,
+  bool&                                                       oneFatherCarriesDeleteFlag,
+  bool&                                                       oneFatherCarriesRefiningFlag,
+  bool&                                                       oneFatherCarriesRefinedFlag,
+  int                                                         dimension
+) {
+  assertion(dimension<DIMENSIONS);
+
+  if (dimension<0) {
+    oneFatherCarriesDeleteFlag    |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Erasing;
+    oneFatherCarriesRefiningFlag  |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Refining;
+    oneFatherCarriesRefinedFlag   |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Refined;
+  }
+  else {
+    if ( coordinates(dimension)==0 ) {
+      parentCoordinates(dimension)=0;
+      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,dimension-1);
+    }
+    else if ( coordinates(dimension)==3 ) {
+      parentCoordinates(dimension)=1;
+      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,dimension-1);
+    }
+    else {
+      parentCoordinates(dimension)=0;
+      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,dimension-1);
+      parentCoordinates(dimension)=1;
+      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,dimension-1);
+    }
+  }
+}
+
+
+template <class Vertex>
+void peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::operator() (const tarch::la::Vector<DIMENSIONS,int>& i) const {
+  int indexInCounterArray = peano::spacetreegrid::SingleLevelEnumerator::lineariseVertexIndex(i);
+  _fineGridCounter[indexInCounterArray] = analyseFineGridVertex(_coarseGridVertices,_coarseGridVerticesEnumerator,i);
+}
