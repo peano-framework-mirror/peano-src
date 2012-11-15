@@ -15,20 +15,20 @@
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace loops {
-          template <class Vertex, class Cell, class EventHandle>
-          class CallLeaveCellLoopBodyOnRegularRefinedPatch;
+  namespace grid {
+    namespace nodes {
+      namespace loops {
+        template <class Vertex, class Cell, class EventHandle>
+        class CallLeaveCellLoopBodyOnRegularRefinedPatch;
 
-          /**
-           * Forward declaration
-           */
-          template <class Vertex, class Cell, class EventHandle>
-          class CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch;
-        }
+        /**
+         * Forward declaration
+         */
+        template <class Vertex, class Cell, class EventHandle>
+        class CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch;
       }
     }
+  }
 }
 
 
@@ -44,7 +44,7 @@ namespace peano {
  * @author Tobias Weinzierl
  */
 template <class Vertex, class Cell, class EventHandle>
-class peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch {
+class peano::grid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch {
   private:
     static tarch::logging::Log _log;
 
@@ -60,7 +60,7 @@ class peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedP
     EventHandle&                                                _threadLocalEventHandle;
 #endif
 
-    peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
+    peano::grid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
 
 
     UnrolledLevelEnumerator  _fineGridEnumerator;
@@ -68,8 +68,8 @@ class peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedP
 
   public:
     CallLeaveCellLoopBodyOnRegularRefinedPatch(
-      EventHandle&                                                       eventHandle,
-      peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&   regularGridContainer
+      EventHandle&                                      eventHandle,
+      peano::grid::RegularGridContainer<Vertex,Cell>&   regularGridContainer
     );
 
     ~CallLeaveCellLoopBodyOnRegularRefinedPatch();
@@ -84,7 +84,7 @@ class peano::spacetreegrid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedP
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/loops/CallLeaveCellLoopBodyOnRegularRefinedPatch.cpph"
+#include "peano/grid/nodes/loops/CallLeaveCellLoopBodyOnRegularRefinedPatch.cpph"
 
 
 #endif

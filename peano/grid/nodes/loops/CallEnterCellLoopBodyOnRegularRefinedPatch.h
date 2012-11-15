@@ -15,20 +15,20 @@
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace loops {
-          template <class Vertex, class Cell, class State, class EventHandle>
-          class CallEnterCellLoopBodyOnRegularRefinedPatch;
+  namespace grid {
+    namespace nodes {
+      namespace loops {
+        template <class Vertex, class Cell, class State, class EventHandle>
+        class CallEnterCellLoopBodyOnRegularRefinedPatch;
 
-          /**
-           * Forward declaration.
-           */
-          template <class Vertex, class Cell, class State, class EventHandle>
-          class CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch;
-        }
+        /**
+         * Forward declaration.
+         */
+        template <class Vertex, class Cell, class State, class EventHandle>
+        class CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch;
       }
     }
+  }
 }
 
 
@@ -44,7 +44,7 @@ namespace peano {
  * @author Tobias Weinzierl
  */
 template <class Vertex, class Cell, class State, class EventHandle>
-class peano::spacetreegrid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch {
+class peano::grid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch {
   private:
     static tarch::logging::Log _log;
 
@@ -62,7 +62,7 @@ class peano::spacetreegrid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedP
     EventHandle&                                                _threadLocalEventHandle;
 #endif
 
-    peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
+    peano::grid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
 
     double _numberOfInnerCells;
     double _numberOfOuterCells;
@@ -73,7 +73,7 @@ class peano::spacetreegrid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedP
     CallEnterCellLoopBodyOnRegularRefinedPatch(
       State&        state,
       EventHandle&  eventHandle,
-      peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
+      peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
     );
 
     ~CallEnterCellLoopBodyOnRegularRefinedPatch();
@@ -88,7 +88,7 @@ class peano::spacetreegrid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedP
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/loops/CallEnterCellLoopBodyOnRegularRefinedPatch.cpph"
+#include "peano/grid/nodes/loops/CallEnterCellLoopBodyOnRegularRefinedPatch.cpph"
 
 
 #endif

@@ -1,18 +1,18 @@
 #include "peano/utils/Loop.h"
-#include "peano/kernel/stacks/Stacks.h"
-#include "peano/kernel/spacetreegrid/aspects/CellPeanoCurve.h"
-#include "peano/kernel/spacetreegrid/aspects/CellRefinement.h"
-#include "peano/kernel/datatraversal/TaskSet.h"
+#include "peano/stacks/Stacks.h"
+#include "peano/grid/aspects/CellPeanoCurve.h"
+#include "peano/grid/aspects/CellRefinement.h"
+#include "peano/datatraversal/TaskSet.h"
 
 
 template <class Vertex, class Cell, class VertexStack>
-tarch::logging::Log peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::_log( "peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch" );
+tarch::logging::Log peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::_log( "peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch" );
 
 
 template <class Vertex, class Cell, class VertexStack>
-peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::LoadVerticesOnRegularRefinedPatch(
+peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::LoadVerticesOnRegularRefinedPatch(
   const bool                                                        isTraversalInverted,
-  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+  peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
   VertexStack&                                                      vertexStack,
   bool                                                              loadProcessRunsInParallelToOtherTasks,
   int                                                               maxLevelToFork
@@ -31,9 +31,9 @@ peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cel
 
 
 template <class Vertex, class Cell, class VertexStack>
-peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::LoadVerticesOnRegularRefinedPatch(
+peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::LoadVerticesOnRegularRefinedPatch(
   const bool                                                        isTraversalInverted,
-  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+  peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
   VertexStack&                                                      vertexStack,
   bool                                                              loadProcessRunsInParallelToOtherTasks,
   int                                                               maxLevelToFork,
@@ -71,30 +71,30 @@ peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cel
 
 
 template <class Vertex, class Cell, class VertexStack>
-peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::~LoadVerticesOnRegularRefinedPatch() {
+peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::~LoadVerticesOnRegularRefinedPatch() {
 }
 
 
 template <class Vertex, class Cell, class VertexStack>
-void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadVerticesOfOneCellWithinRegularSubtree(
+void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadVerticesOfOneCellWithinRegularSubtree(
   const Cell&                               currentCell,
   const tarch::la::Vector<DIMENSIONS,int>&  cellsPositionWithinUnrolledTreeLevel,
   const int                                 currentLevel
 ) {
   logTraceInWith3Arguments( "loadVerticesOfOneCellWithinRegularSubtree(...)", currentCell, cellsPositionWithinUnrolledTreeLevel, currentLevel );
 
-  peano::spacetreegrid::UnrolledLevelEnumerator  cellsVertexEnumerator( _regularGridContainer.getVertexEnumerator(currentLevel) );
+  peano::grid::UnrolledLevelEnumerator  cellsVertexEnumerator( _regularGridContainer.getVertexEnumerator(currentLevel) );
   cellsVertexEnumerator.setOffset(cellsPositionWithinUnrolledTreeLevel);
 
   #if defined(CacheActionSets)
-  const peano::datatraversal::ActionSetTraversal& readVertexSequence  = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getReadVertexSequence(currentCell,_isTraversalInverted,false);
+  const peano::datatraversal::ActionSetTraversal& readVertexSequence  = peano::grid::aspects::CellLocalPeanoCurve::getReadVertexSequence(currentCell,_isTraversalInverted,false);
   #ifdef Asserts
-  const peano::datatraversal::ActionSetTraversal& writeVertexSequence = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
+  const peano::datatraversal::ActionSetTraversal& writeVertexSequence = peano::grid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
   #endif
   #else
-  peano::datatraversal::ActionSetTraversal readVertexSequence  = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getReadVertexSequence(currentCell,_isTraversalInverted,false);
+  peano::datatraversal::ActionSetTraversal readVertexSequence  = peano::grid::aspects::CellLocalPeanoCurve::getReadVertexSequence(currentCell,_isTraversalInverted,false);
   #ifdef Asserts
-  peano::datatraversal::ActionSetTraversal writeVertexSequence = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
+  peano::datatraversal::ActionSetTraversal writeVertexSequence = peano::grid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
   #endif
   #endif
 
@@ -201,22 +201,22 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
 
 
 template <class Vertex, class Cell, class VertexStack>
-void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadVerticesOfOneCellAtBoundaryofSubtree(
+void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadVerticesOfOneCellAtBoundaryofSubtree(
   const Cell&                               currentCell,
   const tarch::la::Vector<DIMENSIONS,int>&  cellsPositionWithinUnrolledTreeLevel,
   const int                                 currentLevel
 ) {
   logTraceInWith3Arguments( "loadVerticesOfOneCellAtBoundaryofSubtree(...)", currentCell, cellsPositionWithinUnrolledTreeLevel, currentLevel );
 
-  peano::spacetreegrid::UnrolledLevelEnumerator  cellsVertexEnumerator( _regularGridContainer.getVertexEnumerator(currentLevel) );
+  peano::grid::UnrolledLevelEnumerator  cellsVertexEnumerator( _regularGridContainer.getVertexEnumerator(currentLevel) );
   cellsVertexEnumerator.setOffset(cellsPositionWithinUnrolledTreeLevel);
 
   #if defined(CacheActionSets)
-  const peano::datatraversal::ActionSetTraversal& readVertexSequence  = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getReadVertexSequence(currentCell,_isTraversalInverted,false);
-  const peano::datatraversal::ActionSetTraversal& writeVertexSequence = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
+  const peano::datatraversal::ActionSetTraversal& readVertexSequence  = peano::grid::aspects::CellLocalPeanoCurve::getReadVertexSequence(currentCell,_isTraversalInverted,false);
+  const peano::datatraversal::ActionSetTraversal& writeVertexSequence = peano::grid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
   #else
-  peano::datatraversal::ActionSetTraversal readVertexSequence  = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getReadVertexSequence(currentCell,_isTraversalInverted,false);
-  peano::datatraversal::ActionSetTraversal writeVertexSequence = peano::spacetreegrid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
+  peano::datatraversal::ActionSetTraversal readVertexSequence  = peano::grid::aspects::CellLocalPeanoCurve::getReadVertexSequence(currentCell,_isTraversalInverted,false);
+  peano::datatraversal::ActionSetTraversal writeVertexSequence = peano::grid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(currentCell,_isTraversalInverted,false);
   #endif
 
   for (int currentStepInPath=0; currentStepInPath < readVertexSequence.getMaximumPath(); currentStepInPath++) {
@@ -337,14 +337,14 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
 
 
 template <class Vertex, class Cell, class VertexStack>
-void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadVerticesWithOnTheFlyCellReconstruction(
+void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadVerticesWithOnTheFlyCellReconstruction(
   Cell&                                     coarseGridCell,
   const int                                 currentLevelOfCoarseCell,
   const tarch::la::Vector<DIMENSIONS,int>&  currentCoarseCellPositionWithinUnrolledPatch
 ) {
   logTraceInWith2Arguments( "loadVerticesWithOnTheFlyCellReconstruction(...)", currentLevelOfCoarseCell, currentCoarseCellPositionWithinUnrolledPatch );
 
-  peano::utils::LoopDirection    loopDirection1 = peano::spacetreegrid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
+  peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
   peano::utils::LoopDirection    loopDirection2 = loopDirection1;
 
   // We never handle any boundary
@@ -356,7 +356,7 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
   #endif
 
   Cell  fineGridCells[THREE_POWER_D];
-  peano::spacetreegrid::aspects::CellRefinement::refine(coarseGridCell, fineGridCells );
+  peano::grid::aspects::CellRefinement::refine(coarseGridCell, fineGridCells );
 
   const int  currentFineGridLevel               = currentLevelOfCoarseCell+1;
 
@@ -398,7 +398,7 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
 
 
 template <class Vertex, class Cell, class VertexStack>
-void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadSubVerticesWithCellsFromGridContainer(
+void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadSubVerticesWithCellsFromGridContainer(
   const int                                 currentLevelOfCoarseCell,
   const tarch::la::Vector<DIMENSIONS,int>&  currentCoarseCellPositionWithinUnrolledPatch
 ) {
@@ -407,7 +407,7 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
   const UnrolledLevelEnumerator& coarseGridEnumerator      = _regularGridContainer.getVertexEnumerator(currentLevelOfCoarseCell);
   const Cell&                    coarseGridCell            = _regularGridContainer.getCell(currentLevelOfCoarseCell,coarseGridEnumerator.lineariseCellIndex(currentCoarseCellPositionWithinUnrolledPatch));
 
-  peano::utils::LoopDirection    loopDirection1 = peano::spacetreegrid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
+  peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
   peano::utils::LoopDirection    loopDirection2 = loopDirection1;
 
   const bool callLoadOperationsForBoundaryLayer = _regularGridContainer.isParentCellAtPatchBoundaryWithinRegularSubtree(currentCoarseCellPositionWithinUnrolledPatch,currentLevelOfCoarseCell);
@@ -488,7 +488,7 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
     _loadProcessRunsInParallelToOtherTasks &&
     !_regularGridContainer.areCellsOfLevelLoaded(currentFineGridLevel)
   ) {
-    tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack( "peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch::loadSubVerticesWithCellsFromGridContainer(...)" );
+    tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack( "peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch::loadSubVerticesWithCellsFromGridContainer(...)" );
   };
   tarch::multicore::BooleanSemaphore::continueWithTask();
 
@@ -538,7 +538,7 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
 
 
 template <class Vertex, class Cell, class VertexStack>
-void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadSubVerticesWithCellsOnFirstLevelInSharedMemoryMode() {
+void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::loadSubVerticesWithCellsOnFirstLevelInSharedMemoryMode() {
   logTraceIn( "loadSubVerticesWithCellsOnFirstLevelInSharedMemoryMode(...)" );
 
   #if defined(SharedMemoryParallelisation)
@@ -546,7 +546,7 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
   const UnrolledLevelEnumerator& coarseGridEnumerator      = _regularGridContainer.getVertexEnumerator(0);
   const Cell&                    coarseGridCell            = _regularGridContainer.getCell(0,coarseGridEnumerator.lineariseCellIndex(0));
 
-  peano::utils::LoopDirection    loopDirection1 = peano::spacetreegrid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
+  peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
   peano::utils::LoopDirection    loopDirection2 = loopDirection1;
 
   const int  cellsPerAxisOnFineGrid             = coarseGridEnumerator.getCellsPerAxis()*3;
@@ -556,7 +556,7 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
     _loadProcessRunsInParallelToOtherTasks &&
     !_regularGridContainer.areCellsOfLevelLoaded(currentFineGridLevel)
   ) {
-    tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack( "peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch::loadSubVerticesWithCellsOnFirstLevelInSharedMemoryMode()" );
+    tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack( "peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch::loadSubVerticesWithCellsOnFirstLevelInSharedMemoryMode()" );
   };
   tarch::multicore::BooleanSemaphore::continueWithTask();
 
@@ -628,7 +628,7 @@ void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Verte
 
 
 template <class Vertex, class Cell, class VertexStack>
-void peano::spacetreegrid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::operator()() {
+void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::operator()() {
   logTraceInWith7Arguments( "operator()()", _isTraversalInverted, _loadProcessRunsInParallelToOtherTasks, _maxLevelToFork, _stackView.isEmpty(), _coarsestLevelOfThisTask, _coarsestCellsOffset, _regularGridContainer.getVertexEnumerator(0).getCellFlags() );
 
   const bool UseOnTheFlyReconstruction =

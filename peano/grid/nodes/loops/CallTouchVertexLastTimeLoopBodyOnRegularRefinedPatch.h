@@ -15,13 +15,13 @@
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace loops {
-          template <class Vertex, class Cell, class EventHandle>
-          class CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch;
-        }
+  namespace grid {
+    namespace nodes {
+      namespace loops {
+        template <class Vertex, class Cell, class EventHandle>
+        class CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch;
       }
+    }
   }
 }
 
@@ -38,7 +38,7 @@ namespace peano {
  * @author Tobias Weinzierl
  */
 template <class Vertex, class Cell, class EventHandle>
-class peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch {
+class peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch {
   private:
     static tarch::logging::Log _log;
 
@@ -55,7 +55,7 @@ class peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegul
     EventHandle&                                                _threadLocalEventHandle;
 #endif
 
-    peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
+    peano::grid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
 
     /**
      * This field is shared among all threads.
@@ -68,10 +68,10 @@ class peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegul
 
   public:
     CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch(
-      const int     treeDepth,
-      EventHandle&  eventHandle,
-      peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
-      bool&                                                             treeRemainsStatic
+      const int                                        treeDepth,
+      EventHandle&                                     eventHandle,
+      peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+      bool&                                            treeRemainsStatic
     );
 
     /**
@@ -101,7 +101,7 @@ class peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegul
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/loops/CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch.cpph"
+#include "peano/grid/nodes/loops/CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch.cpph"
 
 
 #endif

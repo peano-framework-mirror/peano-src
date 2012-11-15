@@ -62,7 +62,7 @@ VertexStack& peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,Ev
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
 void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::validatePositionOfVertices(
   Vertex                                                 fineGridVertices[FOUR_POWER_D],
-  const peano::kernel::gridinterface::VertexEnumerator&  fineGridVerticesEnumerator
+  const peano::grid::VertexEnumerator&  fineGridVerticesEnumerator
 ) {
   logTraceIn( "validatePositionOfVertices(...)" );
   #if defined(Asserts) && defined(Debug)
@@ -641,9 +641,9 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
   logTraceInWith2Arguments( "updateCellsGeometryInformationAfterLoad(...)", state.toString(), fineGridCell.toString() );
 
   #ifdef Parallel
-  const bool studyCell                   = (fineGridVerticesEnumerator.getCellFlags()<=peano::kernel::gridinterface::NotStationary) && !fineGridCell.isRemote(state,false,false);
+  const bool studyCell                   = (fineGridVerticesEnumerator.getCellFlags()<=peano::grid::NotStationary) && !fineGridCell.isRemote(state,false,false);
   #else
-  const bool studyCell                   = fineGridVerticesEnumerator.getCellFlags()<=peano::kernel::gridinterface::NotStationary;
+  const bool studyCell                   = fineGridVerticesEnumerator.getCellFlags()<=peano::grid::NotStationary;
   #endif
 
   const SingleLevelEnumerator::Vector cellCenter      = peano::geometry::GeometryHelper::getCellCenter(fineGridVerticesEnumerator.getVertexPosition(),fineGridVerticesEnumerator.getCellSize());
@@ -693,9 +693,9 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
 
   #ifdef Parallel
-  const bool checkWhetherToRefineOutCell = (fineGridVerticesEnumerator.getCellFlags()<=peano::kernel::gridinterface::NotStationary) && !fineGridCell.isRemote(state,false,false) && fineGridCell.isOutside();
+  const bool checkWhetherToRefineOutCell = (fineGridVerticesEnumerator.getCellFlags()<=peano::grid::NotStationary) && !fineGridCell.isRemote(state,false,false) && fineGridCell.isOutside();
   #else
-  const bool checkWhetherToRefineOutCell = fineGridVerticesEnumerator.getCellFlags()<=peano::kernel::gridinterface::NotStationary && fineGridCell.isOutside();
+  const bool checkWhetherToRefineOutCell = fineGridVerticesEnumerator.getCellFlags()<=peano::grid::NotStationary && fineGridCell.isOutside();
   #endif
 
   if (checkWhetherToRefineOutCell) {

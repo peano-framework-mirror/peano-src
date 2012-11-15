@@ -9,40 +9,37 @@
 
 
 namespace peano {
-    namespace datatraversal {
-      namespace autotuning {
-        class OracleForOnePhase;
+  namespace datatraversal {
+    namespace autotuning {
+      class OracleForOnePhase;
 
-        enum MethodTrace {
-          RegularGridLoadVertices                                       = 0,
-          RegularGridStoreVertices                                      = 1,
-          RegularGridHandleCells                                        = 2,
-          SpacetreeGridLoadVertices                                     = 3,
-          SpacetreeGridLoadVerticesOnRegularStationaryGrid              = 4, // not unrolled
-          SpacetreeGridLoadVerticesOnIrregularStationaryGrid            = 5,
-          SpacetreeGridLoadVerticesOnStationaryGridWithParallelBoundary = 6,
-          SpacetreeGridStoreVertices                                    = 7,
-          SpacetreeGridStoreVerticesOnRegularStationaryGrid             = 8, // not unrolled
-          SpacetreeGridStoreVerticesOnIrregularStationaryGrid           = 9,
-          SpacetreeGridSetCounter                                       = 10,
-          SpacetreeGridCallEnterCellAndLoadSubCellsWithinTraverse       = 11,
-          SpacetreeGridCallLeaveCellAndStoreSubCellsWithinTraverse      = 12,
-          SpacetreeGridCallEnterCellAndInitialiseEnumeratorsOnRegularStationaryGrid = 13,
-          SpacetreeGridCallTouchFirstTimeOnRegularStationaryGrid        = 14,
-          SpacetreeGridCallTouchLastTimeOnRegularStationaryGrid         = 15,
-          SpacetreeGridCallEnterCellOnRegularStationaryGrid             = 16,
-          SpacetreeGridCallLeaveCellOnRegularStationaryGrid             = 17,
-          SpacetreeGridParalleliseAscend                                = 18,
-          SpacetreeGridParalleliseDescend                               = 19,
-          SpacetreeGridSplitLoadVerticesTaskOnRegularStationaryGrid     = 20,
-          SpacetreeGridSplitStoreVerticesTaskOnRegularStationaryGrid    = 21,
-          NumberOfDifferentMethodsCalling                               = 22
-        };
+      enum MethodTrace {
+        LoadVertices                                     = 3,
+        LoadVerticesOnRegularStationaryGrid              = 4, // not unrolled
+        LoadVerticesOnIrregularStationaryGrid            = 5,
+        LoadVerticesOnStationaryGridWithParallelBoundary = 6,
+        StoreVertices                                    = 7,
+        StoreVerticesOnRegularStationaryGrid             = 8, // not unrolled
+        StoreVerticesOnIrregularStationaryGrid           = 9,
+        SetCounter                                       = 10,
+        CallEnterCellAndLoadSubCellsWithinTraverse       = 11,
+        CallLeaveCellAndStoreSubCellsWithinTraverse      = 12,
+        CallEnterCellAndInitialiseEnumeratorsOnRegularStationaryGrid = 13,
+        CallTouchFirstTimeOnRegularStationaryGrid        = 14,
+        CallTouchLastTimeOnRegularStationaryGrid         = 15,
+        CallEnterCellOnRegularStationaryGrid             = 16,
+        CallLeaveCellOnRegularStationaryGrid             = 17,
+        ParalleliseAscend                                = 18,
+        ParalleliseDescend                               = 19,
+        SplitLoadVerticesTaskOnRegularStationaryGrid     = 20,
+        SplitStoreVerticesTaskOnRegularStationaryGrid    = 21,
+        NumberOfDifferentMethodsCalling                               = 22
+      };
 
-        std::string toString( const MethodTrace& methodTrace );
-        MethodTrace toMethodTrace(int value);
-      }
+      std::string toString( const MethodTrace& methodTrace );
+      MethodTrace toMethodTrace(int value);
     }
+  }
 }
 
 

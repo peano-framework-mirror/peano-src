@@ -6,22 +6,22 @@
 
 #include "peano/utils/Globals.h"
 
-#include "peano/kernel/spacetreegrid/nodes/Node.h"
-#include "peano/kernel/spacetreegrid/RegularGridContainer.h"
+#include "peano/grid/nodes/Node.h"
+#include "peano/grid/RegularGridContainer.h"
 
-#include "peano/kernel/datatraversal/autotuning/OracleForOnePhase.h"
+#include "peano/datatraversal/autotuning/OracleForOnePhase.h"
 
-#include "peano/kernel/spacetreegrid/nodes/loops/CallEnterCellLoopBodyOnRegularRefinedPatch.h"
-#include "peano/kernel/spacetreegrid/nodes/loops/CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch.h"
+#include "peano/grid/nodes/loops/CallEnterCellLoopBodyOnRegularRefinedPatch.h"
+#include "peano/grid/nodes/loops/CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch.h"
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace tasks {
-          template <class Vertex, class Cell, class State, class EventHandle>
-          class Descend;
-        }
+  namespace grid {
+    namespace nodes {
+      namespace tasks {
+        template <class Vertex, class Cell, class State, class EventHandle>
+        class Descend;
+      }
     }
   }
 }
@@ -39,11 +39,11 @@ namespace peano {
  * be deployed to an additional thread.
  */
 template <class Vertex, class Cell, class State, class EventHandle>
-class peano::spacetreegrid::nodes::tasks::Descend {
+class peano::grid::nodes::tasks::Descend {
   private:
-    typedef peano::spacetreegrid::RegularGridContainer<Vertex,Cell>                                                                    RegularGridContainer;
-    typedef peano::spacetreegrid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>              EnterCellLoopBody;
-    typedef peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>   TouchVertexFirstTimeLoopBody;
+    typedef peano::grid::RegularGridContainer<Vertex,Cell>                                                                    RegularGridContainer;
+    typedef peano::grid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>              EnterCellLoopBody;
+    typedef peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>   TouchVertexFirstTimeLoopBody;
 
     const int              _treeDepth;
     State&                 _state;
@@ -85,7 +85,7 @@ public:
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/tasks/Descend.cpph"
+#include "peano/grid/nodes/tasks/Descend.cpph"
 
 #endif
 

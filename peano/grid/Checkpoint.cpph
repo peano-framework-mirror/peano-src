@@ -6,55 +6,55 @@
 #include "tarch/compiler/CompilerSpecificSettings.h"
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::StandardFilenameExtension = "peano-checkpoint";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::StandardFilenameExtension = "peano-checkpoint";
 
 
 template <class Vertex, class Cell>
-tarch::logging::Log peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::_log( "peano::kernel::gridinterface::Checkpoint" );
+tarch::logging::Log peano::grid::Checkpoint<Vertex,Cell>::_log( "peano::grid::Checkpoint" );
 
 
 template <class Vertex, class Cell>
-const char peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::CheckpointFileEntrySeparator = ';';
+const char peano::grid::Checkpoint<Vertex,Cell>::CheckpointFileEntrySeparator = ';';
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::CheckpointFileHeader = "peano-checkpoint";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::CheckpointFileHeader = "peano-checkpoint";
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::CheckpointFileValueMapEntriesKeyword = "checkpoint.value-map-entries";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::CheckpointFileValueMapEntriesKeyword = "checkpoint.value-map-entries";
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::CheckpointFileVertexEntriesKeyword = "checkpoint.vertex-entries";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::CheckpointFileVertexEntriesKeyword = "checkpoint.vertex-entries";
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::CheckpointFileCellEntriesKeyword = "checkpoint.cell-entries";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::CheckpointFileCellEntriesKeyword = "checkpoint.cell-entries";
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::ValueKeyIsPacked = "compile-flag.packed";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::ValueKeyIsPacked = "compile-flag.packed";
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::ValueKeyIsDebug = "compile-flag.debug";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::ValueKeyIsDebug = "compile-flag.debug";
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::ValueKeyIsParallel = "compile-flag.parallel";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::ValueKeyIsParallel = "compile-flag.parallel";
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::ValueKeyIsAsserts = "compile-flag.asserts";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::ValueKeyIsAsserts = "compile-flag.asserts";
 
 
 template <class Vertex, class Cell>
-const std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::ValueKeyIsPersistentRecords = "compile-flag.persistent-records";
+const std::string peano::grid::Checkpoint<Vertex,Cell>::ValueKeyIsPersistentRecords = "compile-flag.persistent-records";
 
 
 template <class Vertex, class Cell>
-peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::Checkpoint():
+peano::grid::Checkpoint<Vertex,Cell>::Checkpoint():
   _valueMap(),
   _vertexContainer(),
   _cellContainer(),
@@ -64,7 +64,7 @@ peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::Checkpoint():
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readFromFile( const std::string& fullQualifiedFileName ) {
+void peano::grid::Checkpoint<Vertex,Cell>::readFromFile( const std::string& fullQualifiedFileName ) {
   logTraceInWith1Argument( "readFromFile()", fullQualifiedFileName );
 
   std::ifstream in(fullQualifiedFileName.c_str(),std::ios::binary);
@@ -87,7 +87,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readFromFile( const 
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::createBuiltInValueMapEntries() {
+void peano::grid::Checkpoint<Vertex,Cell>::createBuiltInValueMapEntries() {
   #ifdef Parallel
   storeValueAsBool(ValueKeyIsParallel,true);
   #else
@@ -116,10 +116,10 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::createBuiltInValueMa
 
 #ifdef CompilerCLX
   template <class Vertex, class Cell>
-  typename peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::ValueMap::size_type peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readCheckpointHeader(std::istream& in) {
+  typename peano::grid::Checkpoint<Vertex,Cell>::ValueMap::size_type peano::grid::Checkpoint<Vertex,Cell>::readCheckpointHeader(std::istream& in) {
 #else
   template <class Vertex, class Cell>
-  peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::ValueMap::size_type peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readCheckpointHeader(std::istream& in) {
+  peano::grid::Checkpoint<Vertex,Cell>::ValueMap::size_type peano::grid::Checkpoint<Vertex,Cell>::readCheckpointHeader(std::istream& in) {
 #endif
 
   std::string          header;
@@ -175,7 +175,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::createBuiltInValueMa
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readValueMap(const typename ValueMap::size_type& numberOfValueMapEntries, std::istream& in) {
+void peano::grid::Checkpoint<Vertex,Cell>::readValueMap(const typename ValueMap::size_type& numberOfValueMapEntries, std::istream& in) {
   logTraceIn( "readValueMap()" );
   for (ValueMap::size_type i=0; i<numberOfValueMapEntries; i++) {
     std::string key   = readStringEntryFromInputStream(in);
@@ -188,19 +188,19 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readValueMap(const t
 
 
 template <class Vertex, class Cell>
-int peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getNumberOfVertices() const {
+int peano::grid::Checkpoint<Vertex,Cell>::getNumberOfVertices() const {
   return static_cast<int>(_vertexContainer.size());
 }
 
 
 template <class Vertex, class Cell>
-int peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getNumberOfCells() const {
+int peano::grid::Checkpoint<Vertex,Cell>::getNumberOfCells() const {
   return static_cast<int>(_cellContainer.size());
 }
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeVertices(std::ostream& out) const {
+void peano::grid::Checkpoint<Vertex,Cell>::writeVertices(std::ostream& out) const {
   for (typename VertexContainer::const_iterator p=_vertexContainer.begin(); p<_vertexContainer.end(); p++) {
     out.write((char *)&(*p), sizeof(Vertex));
   }
@@ -208,7 +208,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeVertices(std::o
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeCells(std::ostream& out) const {
+void peano::grid::Checkpoint<Vertex,Cell>::writeCells(std::ostream& out) const {
   for (typename CellContainer::const_iterator p=_cellContainer.begin(); p<_cellContainer.end(); p++) {
     out.write((char *)&(*p), sizeof(Cell));
   }
@@ -216,7 +216,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeCells(std::ostr
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readVertices(const typename VertexContainer::size_type& numberOfVertexEntries, std::istream& in) {
+void peano::grid::Checkpoint<Vertex,Cell>::readVertices(const typename VertexContainer::size_type& numberOfVertexEntries, std::istream& in) {
   for (typename VertexContainer::size_type i=0; i<numberOfVertexEntries; i++) {
     Vertex myVertex;
     in.read((char *)&myVertex, sizeof(Vertex));
@@ -226,7 +226,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readVertices(const t
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readCells(const typename CellContainer::size_type& numberOfCellEntries, std::istream& in) {
+void peano::grid::Checkpoint<Vertex,Cell>::readCells(const typename CellContainer::size_type& numberOfCellEntries, std::istream& in) {
   for (typename CellContainer::size_type i=0; i<numberOfCellEntries; i++) {
     Cell myCell;
     in.read((char *)&myCell, sizeof(Cell));
@@ -236,12 +236,12 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readCells(const type
 
 
 template <class Vertex, class Cell>
-peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::~Checkpoint() {
+peano::grid::Checkpoint<Vertex,Cell>::~Checkpoint() {
 }
 
 
 template <class Vertex, class Cell>
-std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readStringEntryFromInputStream(std::istream& in) {
+std::string peano::grid::Checkpoint<Vertex,Cell>::readStringEntryFromInputStream(std::istream& in) {
   char inputBuffer[80];
   int  inputBufferPosition = -1;
 
@@ -257,7 +257,7 @@ std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::readStringEnt
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::skipEntrySeparatorInInputStream(std::istream& in) {
+void peano::grid::Checkpoint<Vertex,Cell>::skipEntrySeparatorInInputStream(std::istream& in) {
   char separator;
   in >> separator;
 
@@ -268,7 +268,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::skipEntrySeparatorIn
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeCheckpointHeader(std::ostream& out) const {
+void peano::grid::Checkpoint<Vertex,Cell>::writeCheckpointHeader(std::ostream& out) const {
   out << CheckpointFileHeader << CheckpointFileEntrySeparator;
   out << CheckpointFileValueMapEntriesKeyword << CheckpointFileEntrySeparator << _valueMap.size()        << CheckpointFileEntrySeparator;
   out << CheckpointFileVertexEntriesKeyword  << CheckpointFileEntrySeparator << _vertexContainer.size()  << CheckpointFileEntrySeparator;
@@ -277,7 +277,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeCheckpointHeade
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeValueMap(std::ostream& out) const {
+void peano::grid::Checkpoint<Vertex,Cell>::writeValueMap(std::ostream& out) const {
   for (ValueMap::const_iterator p0=_valueMap.begin(); p0!=_valueMap.end(); p0++) {
     out << p0->first << CheckpointFileEntrySeparator << p0->second << CheckpointFileEntrySeparator;
   }
@@ -285,7 +285,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeValueMap(std::o
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeToFile( const std::string& fullQualifiedFileName ) const {
+void peano::grid::Checkpoint<Vertex,Cell>::writeToFile( const std::string& fullQualifiedFileName ) const {
   std::ofstream out;
   out.open(fullQualifiedFileName.c_str(),std::ios::binary);
 
@@ -301,7 +301,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::writeToFile( const s
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeValueAsString(const std::string& valueKey, const std::string& value) {
+void peano::grid::Checkpoint<Vertex,Cell>::storeValueAsString(const std::string& valueKey, const std::string& value) {
   logTraceInWith2Arguments("storeValueAsString", valueKey, value);
   if ( _valueMap.find(valueKey) != _valueMap.end() ) {
     logError( "storeValue(string,string)", "value " << value << " with Key " << valueKey << " already written to checkpoint" );
@@ -316,7 +316,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeValueAsString(c
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeValueAsInt(const std::string& valueKey, int value) {
+void peano::grid::Checkpoint<Vertex,Cell>::storeValueAsInt(const std::string& valueKey, int value) {
   std::ostringstream stringValue;
   stringValue << value;
   storeValueAsString(valueKey,stringValue.str());
@@ -324,7 +324,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeValueAsInt(cons
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeValueAsBool(const std::string& valueKey, bool value) {
+void peano::grid::Checkpoint<Vertex,Cell>::storeValueAsBool(const std::string& valueKey, bool value) {
   std::ostringstream stringValue;
   stringValue << value;
   storeValueAsString(valueKey,stringValue.str());
@@ -332,7 +332,7 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeValueAsBool(con
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeValueAsDouble(const std::string& valueKey, double value) {
+void peano::grid::Checkpoint<Vertex,Cell>::storeValueAsDouble(const std::string& valueKey, double value) {
   std::ostringstream stringValue;
   stringValue << value;
   storeValueAsString(valueKey,stringValue.str());
@@ -340,13 +340,13 @@ void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeValueAsDouble(c
 
 
 template <class Vertex, class Cell>
-bool peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::hasValue(const std::string& valueKey) const {
+bool peano::grid::Checkpoint<Vertex,Cell>::hasValue(const std::string& valueKey) const {
   return _valueMap.count(valueKey)>0;
 }
 
 
 template <class Vertex, class Cell>
-std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getValueAsString(const std::string& valueKey) const {
+std::string peano::grid::Checkpoint<Vertex,Cell>::getValueAsString(const std::string& valueKey) const {
   logTraceInWith1Argument( "getValueAsString()", valueKey );
   if ( _valueMap.count(valueKey)==0 ) {
     logError( "getValue(string,string)", "value with Key " << valueKey << " not hold by checkpoint" );
@@ -362,7 +362,7 @@ std::string peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getValueAsStr
 
 
 template <class Vertex, class Cell>
-bool peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getValueAsBool(const std::string& valueKey) const {
+bool peano::grid::Checkpoint<Vertex,Cell>::getValueAsBool(const std::string& valueKey) const {
   std::istringstream inputStream( getValueAsString(valueKey) );
   bool result;
   if (inputStream>>result) {
@@ -376,7 +376,7 @@ bool peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getValueAsBool(const
 
 
 template <class Vertex, class Cell>
-int peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getValueAsInt(const std::string& valueKey) const {
+int peano::grid::Checkpoint<Vertex,Cell>::getValueAsInt(const std::string& valueKey) const {
   std::istringstream inputStream( getValueAsString(valueKey) );
   int result;
   if (inputStream>>result) {
@@ -390,7 +390,7 @@ int peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getValueAsInt(const s
 
 
 template <class Vertex, class Cell>
-double peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getValueAsDouble(const std::string& valueKey) const {
+double peano::grid::Checkpoint<Vertex,Cell>::getValueAsDouble(const std::string& valueKey) const {
   std::istringstream inputStream( getValueAsString(valueKey) );
   double result;
   if (inputStream>>result) {
@@ -404,13 +404,13 @@ double peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getValueAsDouble(c
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeVertex( const Vertex& vertex ) {
+void peano::grid::Checkpoint<Vertex,Cell>::storeVertex( const Vertex& vertex ) {
   _vertexContainer.push_back(vertex);
 }
 
 
 template <class Vertex, class Cell>
-Vertex peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getVertex(const typename VertexContainer::size_type & i) const {
+Vertex peano::grid::Checkpoint<Vertex,Cell>::getVertex(const typename VertexContainer::size_type & i) const {
   assertion( !_vertexContainer.empty() );
   assertion( i<_vertexContainer.size() );
   return _vertexContainer[i];
@@ -418,13 +418,13 @@ Vertex peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getVertex(const ty
 
 
 template <class Vertex, class Cell>
-void peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::storeCell( const Cell& cell ) {
+void peano::grid::Checkpoint<Vertex,Cell>::storeCell( const Cell& cell ) {
   _cellContainer.push_back(cell);
 }
 
 
 template <class Vertex, class Cell>
-Cell peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getCell(const typename CellContainer::size_type & i) const {
+Cell peano::grid::Checkpoint<Vertex,Cell>::getCell(const typename CellContainer::size_type & i) const {
   assertion( !_cellContainer.empty() );
   assertion( i<_cellContainer.size() );
   return _cellContainer[i];
@@ -432,7 +432,7 @@ Cell peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::getCell(const typena
 
 
 template <class Vertex, class Cell>
-bool peano::kernel::gridinterface::Checkpoint<Vertex,Cell>::isValid() const {
+bool peano::grid::Checkpoint<Vertex,Cell>::isValid() const {
   #ifdef Parallel
   if (!hasValue(ValueKeyIsParallel) || getValueAsBool(ValueKeyIsParallel)!=true) {
     logError( "isValid(...)", "entry " << ValueKeyIsParallel << " in config file is either missing or has different value than the one written to the checkpoint" );

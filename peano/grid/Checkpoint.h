@@ -5,12 +5,12 @@
 
 
 namespace peano {
-    namespace grid {
-      template <class Vertex, class Cell>
-      class Checkpoint;
-    }
+  namespace grid {
+    template <class Vertex, class Cell>
+    class Checkpoint;
   }
 }
+
 
 #include <map>
 #include <vector>

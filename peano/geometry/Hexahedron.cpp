@@ -6,12 +6,11 @@ tarch::logging::Log peano::geometry::Hexahedron::_log( "peano::geometry::Hexahed
 
 
 peano::geometry::Hexahedron::Hexahedron(
-  bool          isInverted,
-  const tarch::la::Vector<DIMENSIONS,double>& width,
-  const tarch::la::Vector<DIMENSIONS,double>& offset
+  const tarch::la::Vector<DIMENSIONS,double>&  width,
+  const tarch::la::Vector<DIMENSIONS,double>&  offset
 ):
   _offset(offset),
-  _width(width){
+  _width(width) {
 
   logDebug(
     "Hexahedron(...)",
@@ -61,12 +60,12 @@ tarch::la::Vector<DIMENSIONS,double> peano::geometry::Hexahedron::getBoundingBox
 }
 
 
-bool peano::geometry::Hexahedron::isOutsideClosedDomainNotInverted( const tarch::la::Vector<DIMENSIONS,double>& x ) {
+bool peano::geometry::Hexahedron::isOutsideClosedDomain( const tarch::la::Vector<DIMENSIONS,double>& x ) {
   return !isInsideClosedHexahedron(x);
 }
 
 
-bool peano::geometry::Hexahedron::isCompletelyOutsideNotInverted( const tarch::la::Vector<DIMENSIONS,double>& x, const tarch::la::Vector<DIMENSIONS,double> &resolution ) {
+bool peano::geometry::Hexahedron::isCompletelyOutside( const tarch::la::Vector<DIMENSIONS,double>& x, const tarch::la::Vector<DIMENSIONS,double> &resolution ) {
   bool result = false;
   for( int i = 0; i < DIMENSIONS; i++ ){
     bool dimResult = true;
@@ -83,7 +82,7 @@ bool peano::geometry::Hexahedron::isCompletelyOutsideNotInverted( const tarch::l
 }
 
 
-bool peano::geometry::Hexahedron::isCompletelyInsideNotInverted( const tarch::la::Vector<DIMENSIONS,double>& x, const tarch::la::Vector<DIMENSIONS,double> &resolution ) {
+bool peano::geometry::Hexahedron::isCompletelyInside( const tarch::la::Vector<DIMENSIONS,double>& x, const tarch::la::Vector<DIMENSIONS,double> &resolution ) {
   logTraceInWith2Arguments( "isCompletelyInsideNotInverted(...)", x, resolution);
   bool result = isInsideOpenHexahedron(x);
 

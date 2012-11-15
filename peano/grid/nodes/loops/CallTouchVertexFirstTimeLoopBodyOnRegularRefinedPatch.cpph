@@ -3,10 +3,10 @@
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-tarch::logging::Log peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::_log( "peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch" );
+tarch::logging::Log peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::_log( "peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch" );
 
 template <class Vertex, class Cell, class State, class EventHandle>
-tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::_semaphore;
+tarch::multicore::BooleanSemaphore peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::_semaphore;
 
 
 #ifdef Parallel
@@ -17,10 +17,10 @@ tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::CallTouch
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch(
+peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch(
   State&        state,
   EventHandle&  eventHandle,
-  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
+  peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
 ):
   _level(-1),
   _state(state),
@@ -36,7 +36,7 @@ peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRef
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::setLevel(int level) {
+void peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::setLevel(int level) {
   assertion( level>=1 );
   _level = level;
   _fineGridEnumerator    = _regularGridContainer.getVertexEnumerator(level);
@@ -45,7 +45,7 @@ void peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegul
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::~CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch() {
+peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::~CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch() {
   tarch::multicore::Lock lock(_semaphore);
 
   _state.incNumberOfInnerVertices(_numberOfInnerVertices);
@@ -59,7 +59,7 @@ peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRef
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::operator() (const tarch::la::Vector<DIMENSIONS, int>&  i) {
+void peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::operator() (const tarch::la::Vector<DIMENSIONS, int>&  i) {
   logDebug( "callTouchVertexFirstTime(...)", "study vertex at " << i << " on level " << _level );
 
   tarch::la::Vector<DIMENSIONS,int> offsetOfCoarseGridEnumerator;
@@ -98,6 +98,6 @@ void peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegul
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-int peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::getLevel() const {
+int peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::getLevel() const {
   return _level;
 }

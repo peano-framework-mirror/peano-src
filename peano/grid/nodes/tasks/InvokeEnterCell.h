@@ -34,17 +34,17 @@ namespace peano {
 
 template < class Vertex, class Cell, class State, class EventHandle
 >
-class peano::spacetreegrid::nodes::tasks::InvokeEnterCell {
+class peano::grid::nodes::tasks::InvokeEnterCell {
   private:
     static tarch::logging::Log _log;
 
     State&                                                      _state;
     Cell&                                                       _fineGridCell;
     Vertex* const                                               _fineGridVertices;
-    const peano::spacetreegrid::SingleLevelEnumerator&  _fineGridVerticesEnumerator;
+    const peano::grid::SingleLevelEnumerator&  _fineGridVerticesEnumerator;
     Cell&                                                       _coarseGridCell;
     Vertex* const                                               _coarseGridVertices;
-    const peano::spacetreegrid::SingleLevelEnumerator&  _coarseGridVerticesEnumerator;
+    const peano::grid::SingleLevelEnumerator&  _coarseGridVerticesEnumerator;
     const tarch::la::Vector<DIMENSIONS,int>&                    _fineGridPositionOfCell;
 
 #if defined(SharedMemoryParallelisation)
@@ -60,15 +60,15 @@ class peano::spacetreegrid::nodes::tasks::InvokeEnterCell {
 
   public:
     InvokeEnterCell(
-      State&                                                      state,
-      Cell&                                                       fineGridCell,
-      Vertex* const                                               fineGridVertices,
-      const peano::spacetreegrid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
-      Cell&                                                       coarseGridCell,
-      Vertex* const                                               coarseGridVertices,
-      const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
-      const tarch::la::Vector<DIMENSIONS,int>&                    fineGridPositionOfCell,
-      EventHandle&                                                eventHandle
+      State&                                     state,
+      Cell&                                      fineGridCell,
+      Vertex* const                              fineGridVertices,
+      const peano::grid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
+      Cell&                                      coarseGridCell,
+      Vertex* const                              coarseGridVertices,
+      const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+      const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell,
+      EventHandle&                               eventHandle
     );
 
     ~InvokeEnterCell();
@@ -77,7 +77,7 @@ class peano::spacetreegrid::nodes::tasks::InvokeEnterCell {
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/tasks/InvokeEnterCell.cpph"
+#include "peano/grid/nodes/tasks/InvokeEnterCell.cpph"
 
 
 #endif

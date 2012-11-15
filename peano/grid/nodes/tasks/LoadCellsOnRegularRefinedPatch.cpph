@@ -1,18 +1,18 @@
 #include "peano/utils/Loop.h"
-#include "peano/kernel/stacks/Stacks.h"
-#include "peano/kernel/spacetreegrid/aspects/CellPeanoCurve.h"
+#include "peano/stacks/Stacks.h"
+#include "peano/grid/aspects/CellPeanoCurve.h"
 
 
 template <class Vertex, class Cell, class CellStack>
-tarch::logging::Log peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,CellStack>::_log( "peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch" );
+tarch::logging::Log peano::grid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,CellStack>::_log( "peano::grid::nodes::tasks::LoadCellsOnRegularRefinedPatch" );
 
 
 template <class Vertex, class Cell, class CellStack>
-peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,CellStack>::LoadCellsOnRegularRefinedPatch(
+peano::grid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,CellStack>::LoadCellsOnRegularRefinedPatch(
   peano::utils::LoopDirection                                       topLevelLoopDirection,
   const int                                                         treeDepth,
   const bool                                                        isTraversalInverted,
-  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+  peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
   CellStack&                                                        cellStack,
   bool                                                              runsInParallelToOtherTasks
 ):
@@ -26,7 +26,7 @@ peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,C
 
 
 template <class Vertex, class Cell, class CellStack>
-void peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,CellStack>::loadCells(
+void peano::grid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,CellStack>::loadCells(
   peano::utils::LoopDirection               loopDirection,
   int                                       currentLevel,
   const tarch::la::Vector<DIMENSIONS,int>&  offsetWithinPatch
@@ -60,7 +60,7 @@ void peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,C
       const int cellIndex = peano::utils::dLinearisedWithoutLookup(k + offsetWithinPatch*3,CellsPerAxis);
 
       loadCells(
-        peano::spacetreegrid::aspects::CellPeanoCurve::getLoopDirection(
+        peano::grid::aspects::CellPeanoCurve::getLoopDirection(
           _regularGridContainer.getCell(currentLevel,cellIndex),
           _isTraversalInverted
         ),
@@ -75,7 +75,7 @@ void peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,C
 
 
 template <class Vertex, class Cell, class CellStack>
-void peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,CellStack>::operator()() {
+void peano::grid::nodes::tasks::LoadCellsOnRegularRefinedPatch<Vertex,Cell,CellStack>::operator()() {
   loadCells( _topLevelLoopDirection, 1, 0 );
 
   if (!_runsInParallelToOtherTasks) {

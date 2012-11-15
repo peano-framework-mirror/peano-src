@@ -396,7 +396,6 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     #endif
     assertion2( loadLoopCounter>traverseLoopCounter, loadLoopCounter, traverseLoopCounter);
 
-    #if defined(Peano3)
     const AscendDescendLevelEnumerator fineGridAscendDescendEnumerator(fineGridEnumerator);
     if (!Base::_eventHandle.descendIsNOP) {
       Base::_eventHandle.descend(
@@ -408,7 +407,6 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
         _coarseGridCell
       );
     }
-    #endif
 
     do {
       tarch::la::Vector<DIMENSIONS,int> currentCellTraversal = _cellTraversal.getNextCellToTraverseOnLevelOne(traverseLoopCounter,state.isTraversalInverted());
@@ -429,8 +427,7 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
     assertion2( loadLoopCounter>storeLoopCounter, loadLoopCounter, storeLoopCounter);
 
-    #if defined(Peano3)
-    if (Base::_eventHandle.ascendIsNOP) {
+    if (!Base::_eventHandle.ascendIsNOP) {
       Base::_eventHandle.ascend(
         fineGridCells,
         fineGridVertices,
@@ -440,7 +437,6 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
         _coarseGridCell
       );
     }
-    #endif
 
     do {
       tarch::la::Vector<DIMENSIONS,int> currentCellTraversal = _cellTraversal.getNextCellToTraverseOnLevelOne(storeLoopCounter,state.isTraversalInverted());

@@ -501,7 +501,6 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
   #endif
 
 
-  #if defined(Peano3)
   const AscendDescendLevelEnumerator descendingAscendDescendEnumerator(descendingGridEnumerator[0]);
   if (!Base::_eventHandle.descendIsNOP) {
     Base::_eventHandle.descend(
@@ -513,7 +512,6 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       fineGridCell
     );
   }
-  #endif
 
   zfor3(k,loopDirection2) 
     const int   kScalar                  = SingleLevelEnumerator::lineariseCellIndex( k );
@@ -547,8 +545,7 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
     }
   endzfor
 
-  #if defined(Peano3)
-  if (Base::_eventHandle.ascendIsNOP) {
+  if (!Base::_eventHandle.ascendIsNOP) {
     Base::_eventHandle.ascend(
       descendingFineGridCells,
       descendingGridVertices,
@@ -558,7 +555,6 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       fineGridCell
     );
   }
-  #endif
 
   zfor3(k,loopDirection3) 
     const int kScalar = SingleLevelEnumerator::lineariseCellIndex( k );

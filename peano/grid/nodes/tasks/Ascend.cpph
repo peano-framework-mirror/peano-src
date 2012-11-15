@@ -1,9 +1,9 @@
-#include "peano/kernel/datatraversal/dForLoop.h"
-#include "peano/kernel/datatraversal/SingleLevelCellLoop.h"
+#include "peano/datatraversal/dForLoop.h"
+#include "peano/datatraversal/SingleLevelCellLoop.h"
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
+peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
   const int              treeDepth,
   State&                 state,
   EventHandle&           eventHandle,
@@ -21,15 +21,15 @@ peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascen
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVerticesLastTime(int level) {
+void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVerticesLastTime(int level) {
   if (!_eventHandle.touchVertexLastTimeIsNOP) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
     const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-      tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::SpacetreeGridCallTouchLastTimeOnRegularStationaryGrid
+      tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid
     );
     _touchVertexLastTimeLoopBody.setLevel( level );
     peano::datatraversal::dForLoop<TouchVertexLastTimeLoopBody>( NumberOfVertices, _touchVertexLastTimeLoopBody, sharedMemoryGrainSize, false );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallTouchLastTimeOnRegularStationaryGrid);
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid);
   }
 
   _gridContainer.haveCalledAllEventsOnThisLevel(level);
@@ -38,11 +38,11 @@ void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::leaveCells(int level) {
+void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::leaveCells(int level) {
   if (!_eventHandle.leaveCellIsNOP) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
     const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::SpacetreeGridCallLeaveCellOnRegularStationaryGrid
+      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::CallLeaveCellOnRegularStationaryGrid
     );
 
     _leaveCellLoopBody.setLevel( level );
@@ -51,19 +51,18 @@ void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::
       _leaveCellLoopBody,
       sharedMemoryGrainSize
     );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallLeaveCellOnRegularStationaryGrid);
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallLeaveCellOnRegularStationaryGrid);
   }
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::ascend(int fineGridLevel) {
-#ifdef Peano3
+void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::ascend(int fineGridLevel) {
   if (!_eventHandle.ascendIsNOP) {
     assertionMsg( false, "not implemented yet" );
 //    const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(fineGridLevel-1);
 //    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-//      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::SpacetreeGridCallLeaveCellOnRegularStationaryGrid
+//      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::gridCallLeaveCellOnRegularStationaryGrid
 //    );
 //
 //    _leaveCellLoopBody.setLevel( level );
@@ -72,14 +71,13 @@ void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::
 //      _leaveCellLoopBody,
 //      sharedMemoryGrainSize
 //    );
-//    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallLeaveCellOnRegularStationaryGrid);
+//    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::gridCallLeaveCellOnRegularStationaryGrid);
   }
-#endif
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator() () {
+void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator() () {
   _treeRemainsStatic = true;
 
   for (int level=_treeDepth+1; level>=1; level--) {
@@ -105,13 +103,13 @@ void peano::spacetreegrid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::
 
   if (_treeRemainsStatic) {
     dfor2(i)
-      _gridContainer.getVertex(0,iScalar).setCurrentAdjacentCellsHeight(static_cast<peano::gridinterface::CellFlags>(_treeDepth));
+      _gridContainer.getVertex(0,iScalar).setCurrentAdjacentCellsHeight(static_cast<peano::grid::CellFlags>(_treeDepth));
     enddforx
   }
   else {
     _state.updateRefinementHistoryBeforeStore(true,true);
     dfor2(i)
-      _gridContainer.getVertex(0,iScalar).setCurrentAdjacentCellsHeight(peano::gridinterface::NotStationary);
+      _gridContainer.getVertex(0,iScalar).setCurrentAdjacentCellsHeight(peano::grid::NotStationary);
     enddforx
   }
 }

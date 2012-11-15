@@ -49,13 +49,13 @@ class peano::grid::aspects::CellLocalPeanoCurve {
      * Forwards to createSequentialReadVertexSequence(), then resorts, and
      * finally returns the result.
      */
-    static peano::kernel::datatraversal::ActionSetTraversal createParallelReadVertexSequence( const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted);
+    static peano::datatraversal::ActionSetTraversal createParallelReadVertexSequence( const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted);
 
-    static peano::kernel::datatraversal::ActionSetTraversal createSequentialReadVertexSequence( const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted);
+    static peano::datatraversal::ActionSetTraversal createSequentialReadVertexSequence( const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted);
 
-    static peano::kernel::datatraversal::ActionSetTraversal createParallelWriteVertexSequence( const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted);
+    static peano::datatraversal::ActionSetTraversal createParallelWriteVertexSequence( const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted);
 
-    static peano::kernel::datatraversal::ActionSetTraversal createSequentialWriteVertexSequence( const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted);
+    static peano::datatraversal::ActionSetTraversal createSequentialWriteVertexSequence( const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted);
 
     static int getReadStackIdentifier( const Coordinates& coordinates, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const std::bitset<DIMENSIONS>& evenFlags, const bool& isTraversalInverted );
 
@@ -76,10 +76,10 @@ class peano::grid::aspects::CellLocalPeanoCurve {
      */
     #if defined(CacheActionSets)
     template <class Cell>
-    static const peano::kernel::datatraversal::ActionSetTraversal& getReadVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
+    static const peano::datatraversal::ActionSetTraversal& getReadVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
     #else
     template <class Cell>
-    static peano::kernel::datatraversal::ActionSetTraversal getReadVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
+    static peano::datatraversal::ActionSetTraversal getReadVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
     #endif
 
     /**
@@ -87,10 +87,10 @@ class peano::grid::aspects::CellLocalPeanoCurve {
      */
     #if defined(CacheActionSets)
     template <class Cell>
-    static const peano::kernel::datatraversal::ActionSetTraversal& getWriteVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
+    static const peano::datatraversal::ActionSetTraversal& getWriteVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
     #else
     template <class Cell>
-    static peano::kernel::datatraversal::ActionSetTraversal getWriteVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
+    static peano::datatraversal::ActionSetTraversal getWriteVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
     #endif
 };
 

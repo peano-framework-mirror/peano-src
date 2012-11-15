@@ -10,27 +10,27 @@
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace loops {
-          template <class Vertex>
-          class SetCounterLoopBody;
-        }
-      }
-      namespace tests {
-        class SetCounterTest;
+  namespace grid {
+    namespace nodes {
+      namespace loops {
+        template <class Vertex>
+        class SetCounterLoopBody;
       }
     }
+    namespace tests {
+      class SetCounterTest;
+    }
+  }
 }
 
 
 template <class Vertex>
-class peano::spacetreegrid::nodes::loops::SetCounterLoopBody {
+class peano::grid::nodes::loops::SetCounterLoopBody {
   private:
-    friend class peano::spacetreegrid::tests::SetCounterTest;
+    friend class peano::grid::tests::SetCounterTest;
 
     Vertex const * const                                        _coarseGridVertices;
-    const peano::spacetreegrid::SingleLevelEnumerator&  _coarseGridVerticesEnumerator;
+    const peano::grid::SingleLevelEnumerator&  _coarseGridVerticesEnumerator;
     int * const                                                 _fineGridCounter;
 
     /**
@@ -41,11 +41,11 @@ class peano::spacetreegrid::nodes::loops::SetCounterLoopBody {
      * check. The coordinate is specified using a discrete
      * @f$ \{ 0, \dots , 3 \}^d @f$ identifier.
      *
-     * @return peano::spacetreegrid::nodes::Constants
+     * @return peano::grid::nodes::Constants
      */
     static int analyseFineGridVertex(
       Vertex const * const                                        coarseVertices,
-      const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+      const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS,int>&                    coordinates
     );
 
@@ -55,7 +55,7 @@ class peano::spacetreegrid::nodes::loops::SetCounterLoopBody {
      */
     static void analyseFineGridVertex(
       Vertex const * const                                        coarseVertices,
-      const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+      const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS,int>&                    coordinates,
       tarch::la::Vector<DIMENSIONS,int>                           parentCoordinates,
       bool&                                                       oneFatherCarriesDeleteFlag,
@@ -72,7 +72,7 @@ class peano::spacetreegrid::nodes::loops::SetCounterLoopBody {
   public:
     SetCounterLoopBody(
       Vertex const * const                                        coarseGridVertices,
-      const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+      const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
       int * const                                                 fineGridCounter
     );
 
@@ -83,7 +83,7 @@ class peano::spacetreegrid::nodes::loops::SetCounterLoopBody {
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/loops/SetCounterLoopBody.cpph"
+#include "peano/grid/nodes/loops/SetCounterLoopBody.cpph"
 
 
 #endif

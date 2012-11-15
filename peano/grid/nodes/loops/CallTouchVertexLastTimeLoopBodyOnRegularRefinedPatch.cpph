@@ -3,11 +3,11 @@
 
 
 template <class Vertex, class Cell, class EventHandle>
-tarch::logging::Log peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_log( "peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch" );
+tarch::logging::Log peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_log( "peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch" );
 
 
 template <class Vertex, class Cell, class EventHandle>
-tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_semaphore;
+tarch::multicore::BooleanSemaphore peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_semaphore;
 
 
 #ifdef Parallel
@@ -18,10 +18,10 @@ tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::CallTouch
 
 
 template <class Vertex, class Cell, class EventHandle>
-peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch(
+peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch(
   const int                                                         treeDepth,
   EventHandle&                                                      eventHandle,
-  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+  peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
   bool&                                                             treeRemainsStatic
 ):
   _level(-1),
@@ -37,7 +37,7 @@ peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefi
 
 
 template <class Vertex, class Cell, class EventHandle>
-void peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::setLevel(int level) {
+void peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::setLevel(int level) {
   assertion( level>=0 );
 
   _fineGridEnumerator   = _regularGridContainer.getVertexEnumerator(level);
@@ -52,7 +52,7 @@ void peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegula
 
 
 template <class Vertex, class Cell, class EventHandle>
-peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::~CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch() {
+peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::~CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch() {
   tarch::multicore::Lock lock(_semaphore);
 
   _treeRemainsStatic      &= _localTreeRemainsStatic;
@@ -64,7 +64,7 @@ peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefi
 
 
 template <class Vertex, class Cell, class EventHandle>
-void peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::operator() (const tarch::la::Vector<DIMENSIONS, int>&  i) {
+void peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::operator() (const tarch::la::Vector<DIMENSIONS, int>&  i) {
   tarch::la::Vector<DIMENSIONS,int> offsetOfCoarseGridEnumerator;
   tarch::la::Vector<DIMENSIONS,int> positionWithinNextCoarserCell;
 
@@ -97,21 +97,21 @@ void peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegula
 
     if (!_localTreeRemainsStatic) {
       currentVertex.updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack();
-      currentVertex.setCurrentAdjacentCellsHeight(peano::gridinterface::NotStationary);
+      currentVertex.setCurrentAdjacentCellsHeight(peano::grid::NotStationary);
     }
     else {
-      currentVertex.setCurrentAdjacentCellsHeight(static_cast<peano::gridinterface::CellFlags>(_treeDepth-_level));
+      currentVertex.setCurrentAdjacentCellsHeight(static_cast<peano::grid::CellFlags>(_treeDepth-_level));
     }
   }
 }
 
 
 template <class Vertex, class Cell, class EventHandle>
-int peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::getLevel() const {
+int peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::getLevel() const {
   return _level;
 }
 
 template <class Vertex, class Cell, class EventHandle>
-bool peano::spacetreegrid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::getLocalTreeRemainsStatic() const {
+bool peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::getLocalTreeRemainsStatic() const {
   return _localTreeRemainsStatic;
 }

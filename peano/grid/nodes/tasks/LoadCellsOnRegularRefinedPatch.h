@@ -4,17 +4,17 @@
 #define _PEANO_GRID_NODES_TASKS_LOAD_CELLS_ON_REGULAR_REFINED_PATCH_H_
 
 
+#include "peano/grid/RegularGridContainer.h"
 #include "peano/utils/Globals.h"
 #include "tarch/logging/Log.h"
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace tasks {
-          template <class Vertex, class Cell, class CellStack>
-          class LoadCellsOnRegularRefinedPatch;
-        }
+  namespace grid {
+    namespace nodes {
+      namespace tasks {
+        template <class Vertex, class Cell, class CellStack>
+        class LoadCellsOnRegularRefinedPatch;
       }
     }
   }
@@ -29,14 +29,14 @@ namespace peano {
  * @author Tobias Weinzierl
  */
 template <class Vertex, class Cell, class CellStack>
-class peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch {
+class peano::grid::nodes::tasks::LoadCellsOnRegularRefinedPatch {
   private:
     static tarch::logging::Log  _log;
 
     peano::utils::LoopDirection                                       _topLevelLoopDirection;
     const int                                                         _treeDepth;
     const bool                                                        _isTraversalInverted;
-    peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
+    peano::grid::RegularGridContainer<Vertex,Cell>&                   _regularGridContainer;
     CellStack&                                                        _cellStack;
 
     const bool                                                        _runsInParallelToOtherTasks;
@@ -52,7 +52,7 @@ class peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch {
       peano::utils::LoopDirection                                       topLevelLoopDirection,
       const int                                                         treeDepth,
       const bool                                                        isTraversalInverted,
-      peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+      peano::grid::RegularGridContainer<Vertex,Cell>&                   regularGridContainer,
       CellStack&                                                        cellStack,
       bool                                                              runsInParallelToOtherTasks
    );
@@ -61,7 +61,7 @@ class peano::spacetreegrid::nodes::tasks::LoadCellsOnRegularRefinedPatch {
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/tasks/LoadCellsOnRegularRefinedPatch.cpph"
+#include "peano/grid/nodes/tasks/LoadCellsOnRegularRefinedPatch.cpph"
 
 
 #endif

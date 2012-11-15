@@ -1,16 +1,16 @@
 template < class Vertex, class Cell, class State, class EventHandle>
-tarch::logging::Log peano::spacetreegrid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::_log( "peano::spacetreegrid::nodes::tasks::InvokeEnterCell" );
+tarch::logging::Log peano::grid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::_log( "peano::grid::nodes::tasks::InvokeEnterCell" );
 
 
 template < class Vertex, class Cell, class State, class EventHandle>
-peano::spacetreegrid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::InvokeEnterCell(
+peano::grid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::InvokeEnterCell(
   State&                                                      state,
   Cell&                                                       fineGridCell,
   Vertex* const                                               fineGridVertices,
-  const peano::spacetreegrid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
+  const peano::grid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
   Cell&                                                       coarseGridCell,
   Vertex*const                                                coarseGridVertices,
-  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
   const tarch::la::Vector<DIMENSIONS,int>&                    fineGridPositionOfCell,
   EventHandle&                                                eventHandle
 ):
@@ -29,7 +29,7 @@ peano::spacetreegrid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventH
 }
 
 template < class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::operator() () {
+void peano::grid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::operator() () {
   logTraceInWith1Argument( "operator()", _fineGridCell.toString() );
 
   #ifdef Parallel
@@ -59,7 +59,7 @@ void peano::spacetreegrid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, E
 
 
 template < class Vertex, class Cell, class State, class EventHandle>
-peano::spacetreegrid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::~InvokeEnterCell() {
+peano::grid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::~InvokeEnterCell() {
   _state.incNumberOfOuterCells( _outerCells );
   _state.incNumberOfInnerCells( _innerCells );
 

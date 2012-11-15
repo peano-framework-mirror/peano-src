@@ -14,11 +14,11 @@
 
 
 namespace peano {
-    namespace datatraversal {
-      namespace autotuning {
-        class OracleForOnePhaseWithFixedGrainSize;
-      }
+  namespace datatraversal {
+    namespace autotuning {
+      class OracleForOnePhaseWithFixedGrainSize;
     }
+  }
 }
 
 

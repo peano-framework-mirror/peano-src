@@ -1,11 +1,11 @@
 template <class Vertex, class Cell>
-tarch::logging::Log  peano::spacetreegrid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch<Vertex,Cell>::_log( "peano::spacetreegrid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch" );
+tarch::logging::Log  peano::grid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch<Vertex,Cell>::_log( "peano::grid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch" );
 
 
 template <class Vertex, class Cell>
-peano::spacetreegrid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch<Vertex,Cell>::InitialiseVertexEnumeratorsOnRegularRefinedPatch(
+peano::grid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch<Vertex,Cell>::InitialiseVertexEnumeratorsOnRegularRefinedPatch(
   const SingleLevelEnumerator&                                      fineGridVerticesEnumerator,
-  peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
+  peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
 ):
   _fineGridVerticesEnumerator(fineGridVerticesEnumerator),
   _regularGridContainer(regularGridContainer) {
@@ -13,7 +13,7 @@ peano::spacetreegrid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedP
 
 
 template <class Vertex, class Cell>
-void peano::spacetreegrid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch<Vertex,Cell>::operator()() {
+void peano::grid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch<Vertex,Cell>::operator()() {
   logTraceInWith1Argument( "initialiseVertexEnumerators(...)", _fineGridVerticesEnumerator.toString() );
 
   const int TreeDepth = _fineGridVerticesEnumerator.getCellFlags();

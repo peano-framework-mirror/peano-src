@@ -9,8 +9,8 @@
 #include "tarch/multicore/MulticoreDefinitions.h"
 
 #include "peano/utils/Globals.h"
-#include "peano/kernel/datatraversal/TaskSet.h"
-#include "peano/kernel/spacetreegrid/SingleLevelEnumerator.h"
+#include "peano/datatraversal/TaskSet.h"
+#include "peano/grid/SingleLevelEnumerator.h"
 
 
 namespace peano {
@@ -34,14 +34,14 @@ namespace peano {
 
 template < class Vertex, class Cell, class State, class EventHandle
 >
-class peano::spacetreegrid::nodes::tasks::InvokeLeaveCell {
+class peano::grid::nodes::tasks::InvokeLeaveCell {
   private:
     static tarch::logging::Log _log;
 
     const State&                                                _state;
     Cell&                                                       _fineGridCell;
     Vertex* const                                               _fineGridVertices;
-    const peano::spacetreegrid::SingleLevelEnumerator&  _fineGridVerticesEnumerator;
+    const peano::grid::SingleLevelEnumerator&                   _fineGridVerticesEnumerator;
     Cell&                                                       _coarseGridCell;
     Vertex*                                                     _coarseGridVertices;
     const SingleLevelEnumerator&                                _coarseGridVerticesEnumerator;
@@ -60,10 +60,10 @@ class peano::spacetreegrid::nodes::tasks::InvokeLeaveCell {
       State&                                                      state,
       Cell&                                                       fineGridCell,
       Vertex* const                                               fineGridVertices,
-      const peano::spacetreegrid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
+      const peano::grid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
       Cell&                                                       coarseGridCell,
       Vertex* const                                               coarseGridVertices,
-      const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+      const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS,int>&                    fineGridPositionOfCell,
       EventHandle&                                                eventHandle
     );
@@ -74,7 +74,7 @@ class peano::spacetreegrid::nodes::tasks::InvokeLeaveCell {
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/tasks/InvokeLeaveCell.cpph"
+#include "peano/grid/nodes/tasks/InvokeLeaveCell.cpph"
 
 
 #endif

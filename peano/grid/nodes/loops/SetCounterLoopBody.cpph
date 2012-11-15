@@ -3,9 +3,9 @@
 
 
 template <class Vertex>
-peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::SetCounterLoopBody(
+peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::SetCounterLoopBody(
   Vertex const * const                                        coarseGridVertices,
-  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
   int * const                                                 fineGridCounter
 ):
   _coarseGridVertices(coarseGridVertices),
@@ -15,7 +15,7 @@ peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::SetCounterLoopBo
 
 
 template <class Vertex>
-int peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
+int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
   bool oneFatherCarriesDeleteFlag,
   bool oneFatherCarriesRefiningFlag,
   bool oneFatherCarriesRefinedFlag
@@ -52,9 +52,9 @@ int peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineG
 
 
 template <class Vertex>
-int peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
+int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
   Vertex const * const                                        coarseVertices,
-  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
   const tarch::la::Vector<DIMENSIONS,int>&                    coordinates
 ) {
   bool oneFatherCarriesDeleteFlag   = false;
@@ -78,9 +78,9 @@ int peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineG
 
 
 template <class Vertex>
-void peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
+void peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
   Vertex const * const                                        coarseVertices,
-  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
   const tarch::la::Vector<DIMENSIONS,int>&                    coordinates,
   tarch::la::Vector<DIMENSIONS,int>                           parentCoordinates,
   bool&                                                       oneFatherCarriesDeleteFlag,
@@ -115,7 +115,7 @@ void peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFine
 
 
 template <class Vertex>
-void peano::spacetreegrid::nodes::loops::SetCounterLoopBody<Vertex>::operator() (const tarch::la::Vector<DIMENSIONS,int>& i) const {
-  int indexInCounterArray = peano::spacetreegrid::SingleLevelEnumerator::lineariseVertexIndex(i);
+void peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::operator() (const tarch::la::Vector<DIMENSIONS,int>& i) const {
+  int indexInCounterArray = peano::grid::SingleLevelEnumerator::lineariseVertexIndex(i);
   _fineGridCounter[indexInCounterArray] = analyseFineGridVertex(_coarseGridVertices,_coarseGridVerticesEnumerator,i);
 }

@@ -15,13 +15,13 @@
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace loops {
-          template <class Vertex, class Cell, class State, class EventHandle>
-          class CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch;
-        }
+  namespace grid {
+    namespace nodes {
+      namespace loops {
+        template <class Vertex, class Cell, class State, class EventHandle>
+        class CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch;
       }
+    }
   }
 }
 
@@ -38,7 +38,7 @@ namespace peano {
  * @author Tobias Weinzierl
  */
 template <class Vertex, class Cell, class State, class EventHandle>
-class peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch {
+class peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch {
   private:
     static tarch::logging::Log _log;
 
@@ -56,7 +56,7 @@ class peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegu
     EventHandle&                                                _threadLocalEventHandle;
 #endif
 
-    peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
+    peano::grid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
 
     double _numberOfInnerVertices;
     double _numberOfBoundaryVertices;
@@ -69,7 +69,7 @@ class peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegu
     CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch(
       State&        state,
       EventHandle&  eventHandle,
-      peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
+      peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer
     );
 
     /**
@@ -97,7 +97,7 @@ class peano::spacetreegrid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegu
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/loops/CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch.cpph"
+#include "peano/grid/nodes/loops/CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch.cpph"
 
 
 #endif

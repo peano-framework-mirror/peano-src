@@ -9,13 +9,13 @@
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace tasks {
-          template <class Vertex, class Cell, class VertexStack>
-          class StoreVerticesOnRegularRefinedPatch;
-        }
+  namespace grid {
+    namespace nodes {
+      namespace tasks {
+        template <class Vertex, class Cell, class VertexStack>
+        class StoreVerticesOnRegularRefinedPatch;
       }
+    }
   }
 }
 
@@ -28,7 +28,7 @@ namespace peano {
  * @author Tobias Weinzierl
  */
 template <class Vertex, class Cell, class VertexStack>
-class peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
+class peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
   private:
     static tarch::logging::Log  _log;
 
@@ -43,7 +43,7 @@ class peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
     static int                                                        _activeStoreTasks;
 
     const bool                                                        _isTraversalInverted;
-    peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
+    peano::grid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
     VertexStack&                                                      _vertexStack;
 
     const bool                                                        _storeProcessRunsInParallelToOtherTasks;
@@ -136,7 +136,7 @@ class peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
      */
     StoreVerticesOnRegularRefinedPatch(
       const bool                                                        isTraversalInverted,
-      peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+      peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
       VertexStack&                                                      vertexStack,
       bool                                                              loadProcessRunsInParallelToOtherTasks,
       int                                                               maxLevelToFork,
@@ -147,7 +147,7 @@ class peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
   public:
     StoreVerticesOnRegularRefinedPatch(
       const bool                                                        isTraversalInverted,
-      peano::spacetreegrid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
+      peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
       VertexStack&                                                      vertexStack,
       bool                                                              storeProcessRunsInParallelToOtherTasks,
       int                                                               maxLevelToFork
@@ -180,7 +180,7 @@ class peano::spacetreegrid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/tasks/StoreVerticesOnRegularRefinedPatch.cpph"
+#include "peano/grid/nodes/tasks/StoreVerticesOnRegularRefinedPatch.cpph"
 
 
 #endif

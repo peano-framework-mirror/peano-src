@@ -1,16 +1,16 @@
 template < class Vertex, class Cell, class State, class EventHandle>
-tarch::logging::Log peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::_log( "peano::spacetreegrid::nodes::tasks::InvokeLeaveCell" );
+tarch::logging::Log peano::grid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::_log( "peano::grid::nodes::tasks::InvokeLeaveCell" );
 
 
 template < class Vertex, class Cell, class State, class EventHandle>
-peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::InvokeLeaveCell(
+peano::grid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::InvokeLeaveCell(
   State&                                                      state,
   Cell&                                                       fineGridCell,
   Vertex* const                                               fineGridVertices,
-  const peano::spacetreegrid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
+  const peano::grid::SingleLevelEnumerator&  fineGridVerticesEnumerator,
   Cell&                                                       coarseGridCell,
   Vertex* const                                               coarseGridVertices,
-  const peano::spacetreegrid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
+  const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
   const tarch::la::Vector<DIMENSIONS,int>&                    fineGridPositionOfCell,
   EventHandle&                                                eventHandle
 ):
@@ -28,7 +28,7 @@ peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventH
 
 
 template < class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::operator()() {
+void peano::grid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::operator()() {
   #ifdef Parallel
   const bool invokeEvent = _fineGridCell.isInside() && !_fineGridCell.isRemote(_state,true,true);
   #else
@@ -50,7 +50,7 @@ void peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, E
 
 
 template < class Vertex, class Cell, class State, class EventHandle>
-peano::spacetreegrid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::~InvokeLeaveCell() {
+peano::grid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandle >::~InvokeLeaveCell() {
   #if defined(SharedMemoryParallelisation)
   _eventHandle.mergeWithWorkerThread( _threadLocalEventHandle );
   #endif

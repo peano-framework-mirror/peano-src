@@ -1,5 +1,5 @@
-#include "peano/kernel/datatraversal/dForLoop.h"
-#include "peano/kernel/datatraversal/SingleLevelCellLoop.h"
+#include "peano/datatraversal/dForLoop.h"
+#include "peano/datatraversal/SingleLevelCellLoop.h"
 
 #ifdef SharedMemoryParallisation
 #include "tarch/multicore/BooleanSemaphore.h"
@@ -7,7 +7,7 @@
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::Descend(
+peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::Descend(
   const int              treeDepth,
   State&                 state,
   EventHandle&           eventHandle,
@@ -28,13 +28,13 @@ peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::Desc
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVerticesFirstTime(int level) {
+void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVerticesFirstTime(int level) {
   #if !defined(SharedMemoryParallelisation)
   assertion2(_gridContainer.isLevelInitialised(level), level, _gridContainer.toString());
   #else
   while (_descendProcessRunsInParallelToOtherTasks && !_gridContainer.isLevelInitialised(level)) {
     sendThisTaskToBackgroundWith1Argument(
-      "peano::spacetreegrid::nodes::tasks::Descend::touchVerticesFirstTime(int)",
+      "peano::grid::nodes::tasks::Descend::touchVerticesFirstTime(int)",
       level
     );
   }
@@ -44,21 +44,21 @@ void peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>:
   if (!_eventHandle.touchVertexFirstTimeIsNOP) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
     const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-      tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::SpacetreeGridCallTouchFirstTimeOnRegularStationaryGrid
+      tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid
     );
     _touchVertexFirstTimeLoopBody.setLevel(level);
     peano::datatraversal::dForLoop<TouchVertexFirstTimeLoopBody>( NumberOfVertices, _touchVertexFirstTimeLoopBody, sharedMemoryGrainSize, false );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallTouchFirstTimeOnRegularStationaryGrid);
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid);
   }
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCells(int level) {
+void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCells(int level) {
   if (!_eventHandle.enterCellIsNOP) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
     const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::SpacetreeGridCallEnterCellOnRegularStationaryGrid
+      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid
     );
     _enterCellLoopBody.setLevel(level);
     peano::datatraversal::SingleLevelCellLoop<EnterCellLoopBody> loop(
@@ -66,19 +66,18 @@ void peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>:
       _enterCellLoopBody,
       sharedMemoryGrainSize
     );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallEnterCellOnRegularStationaryGrid);
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid);
   }
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::descend(int fineGridLevel) {
-#ifdef Peano3
+void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::descend(int fineGridLevel) {
   if (!_eventHandle.descendIsNOP) {
     assertionMsg( false, "not implemented yet");
 //    const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
 //    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-//      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::SpacetreeGridCallEnterCellOnRegularStationaryGrid
+//      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::gridCallEnterCellOnRegularStationaryGrid
 //    );
 //    _enterCellLoopBody.setLevel(level);
 //    peano::datatraversal::SingleLevelCellLoop<EnterCellLoopBody> loop(
@@ -86,14 +85,13 @@ void peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>:
 //      _enterCellLoopBody,
 //      sharedMemoryGrainSize
 //    );
-//    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SpacetreeGridCallEnterCellOnRegularStationaryGrid);
+//    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::gridCallEnterCellOnRegularStationaryGrid);
   }
-#endif
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::operator() () {
+void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::operator() () {
   #if defined(SharedMemoryParallelisation)
   while (
      _precedingLoadProcessMayFork &&
@@ -101,7 +99,7 @@ void peano::spacetreegrid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>:
      !_gridContainer.isLevelInitialised(_treeDepth)
   ) {
     sendThisTaskToBackgroundWith1Argument(
-      "peano::spacetreegrid::nodes::tasks::Descend::operator()",
+      "peano::grid::nodes::tasks::Descend::operator()",
       _treeDepth
     );
   }

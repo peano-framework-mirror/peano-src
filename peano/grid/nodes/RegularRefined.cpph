@@ -78,7 +78,7 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
 
   dfor2(k)
     logDebug( "traverse(...)", " - adjacent vertex: " << fineGridVertices[ fineGridVerticesEnumerator(k) ].toString() );
-    assertion1( fineGridVerticesEnumerator.getCellFlags() > peano::kernel::gridinterface::Leaf, toString(fineGridVerticesEnumerator.getCellFlags()) );
+    assertion1( fineGridVerticesEnumerator.getCellFlags() > peano::grid::Leaf, toString(fineGridVerticesEnumerator.getCellFlags()) );
     assertionEquals5(
       fineGridVerticesEnumerator.getCellFlags(),
       fineGridVertices[ fineGridVerticesEnumerator(k) ].getAdjacentCellsHeightOfPreviousIteration(),
@@ -91,7 +91,7 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
   enddforx
 
   const peano::utils::LoopDirection              TopLevelLoopDirection = peano::grid::aspects::CellPeanoCurve::getLoopDirection(fineGridCell,state.isTraversalInverted());
-  const peano::kernel::gridinterface::CellFlags  TreeDepth             = fineGridVerticesEnumerator.getCellFlags();
+  const peano::grid::CellFlags  TreeDepth             = fineGridVerticesEnumerator.getCellFlags();
 
   peano::grid::nodes::tasks::InitialiseVertexEnumeratorsOnRegularRefinedPatch<Vertex,Cell>
     initialiseVertexEnumeratorsTask( fineGridVerticesEnumerator, _regularGridContainer );
@@ -99,15 +99,15 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
   peano::grid::nodes::tasks::InvokeEnterCell<Vertex,Cell,State,EventHandle>
     invokeEnterCellTask( state, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridCell, coarseGridVertices, coarseGridVerticesEnumerator, fineGridPositionOfCell, Base::_eventHandle );
 
-  peano::kernel::datatraversal::TaskSet(
+  peano::datatraversal::TaskSet(
     initialiseVertexEnumeratorsTask,
     invokeEnterCellTask,
-    peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelise(
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       2,
-      peano::kernel::datatraversal::autotuning::SpacetreeGridCallEnterCellAndInitialiseEnumeratorsOnRegularStationaryGrid
+      peano::datatraversal::autotuning::CallEnterCellAndInitialiseEnumeratorsOnRegularStationaryGrid
     )
   );
-  peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::kernel::datatraversal::autotuning::SpacetreeGridCallEnterCellAndInitialiseEnumeratorsOnRegularStationaryGrid );
+  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::CallEnterCellAndInitialiseEnumeratorsOnRegularStationaryGrid );
 
   #if defined(SharedMemoryParallelisation)
     assertion1(
@@ -144,62 +144,62 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
   {
     int SplitLoadVerticesTask =
     transformOracleResult(
-      peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelise(
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
         growStack,
-        peano::kernel::datatraversal::autotuning::SpacetreeGridSplitLoadVerticesTaskOnRegularStationaryGrid
+        peano::datatraversal::autotuning::SplitLoadVerticesTaskOnRegularStationaryGrid
       ),
       TreeDepth,growStack
     );
 
-    bool Parallelise = peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelise(
+    bool Parallelise = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       growStack,
-      peano::kernel::datatraversal::autotuning::SpacetreeGridParalleliseDescend
+      peano::datatraversal::autotuning::ParalleliseDescend
     ) > 0;
 
     LoadCellsTask       loadCellsTask(     TopLevelLoopDirection, TreeDepth, state.isTraversalInverted(), _regularGridContainer, Base::_cellStack, Parallelise );
     LoadVerticesTask    loadVerticesTask(  state.isTraversalInverted(), _regularGridContainer, Base::_vertexStack, Parallelise, SplitLoadVerticesTask );
     DescendTask         descendTask(       TreeDepth, state, Base::_eventHandle, _regularGridContainer, SplitLoadVerticesTask!=0, Parallelise );
 
-    peano::kernel::datatraversal::TaskSet(
+    peano::datatraversal::TaskSet(
       loadCellsTask,
       loadVerticesTask,
       descendTask,
       Parallelise
     );
 
-    peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::kernel::datatraversal::autotuning::SpacetreeGridParalleliseDescend );
-    peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::kernel::datatraversal::autotuning::SpacetreeGridSplitLoadVerticesTaskOnRegularStationaryGrid );
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::ParalleliseDescend );
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::SplitLoadVerticesTaskOnRegularStationaryGrid );
   }
 
 
   {
     int SplitStoreVerticesTask =
       transformOracleResult(
-      peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelise(
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
         growStack,
-        peano::kernel::datatraversal::autotuning::SpacetreeGridSplitStoreVerticesTaskOnRegularStationaryGrid
+        peano::datatraversal::autotuning::SplitStoreVerticesTaskOnRegularStationaryGrid
       ),
       TreeDepth, growStack
     );
 
-    bool Parallelise = peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelise(
+    bool Parallelise = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       growStack,
-      peano::kernel::datatraversal::autotuning::SpacetreeGridParalleliseAscend
+      peano::datatraversal::autotuning::ParalleliseAscend
     ) > 0;
 
     StoreCellsTask      storeCellsTask(    TopLevelLoopDirection, TreeDepth, state.isTraversalInverted(), _regularGridContainer, Base::_cellStack, Parallelise   );
     StoreVerticesTask   storeVerticesTask( state.isTraversalInverted(), _regularGridContainer, Base::_vertexStack, Parallelise, SplitStoreVerticesTask );
     AscendTask          ascendTask(        TreeDepth, state, Base::_eventHandle, _regularGridContainer );
 
-    peano::kernel::datatraversal::TaskSet(
+    peano::datatraversal::TaskSet(
       ascendTask,
       storeVerticesTask,
       storeCellsTask,
       Parallelise
     );
 
-    peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::kernel::datatraversal::autotuning::SpacetreeGridParalleliseAscend );
-    peano::kernel::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::kernel::datatraversal::autotuning::SpacetreeGridSplitStoreVerticesTaskOnRegularStationaryGrid );
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::ParalleliseAscend );
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::SplitStoreVerticesTaskOnRegularStationaryGrid );
   }
 
   _regularGridContainer.copyRootNodeDataFromRegularPatch(fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
