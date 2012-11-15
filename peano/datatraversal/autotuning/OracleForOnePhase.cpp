@@ -54,12 +54,6 @@ peano::datatraversal::autotuning::MethodTrace peano::datatraversal::autotuning::
   assertion( value>=0 );
   assertion( value<NumberOfDifferentMethodsCalling );
   switch (value) {
-    case static_cast<int>(RegularGridLoadVertices):
-      return RegularGridLoadVertices;
-    case static_cast<int>(RegularGridStoreVertices):
-      return RegularGridStoreVertices;
-    case static_cast<int>(RegularGridHandleCells):
-      return RegularGridHandleCells;
     case static_cast<int>(LoadVertices):
       return LoadVertices;
     case static_cast<int>(LoadVerticesOnRegularStationaryGrid):
@@ -102,5 +96,5 @@ peano::datatraversal::autotuning::MethodTrace peano::datatraversal::autotuning::
       return NumberOfDifferentMethodsCalling;
   }
 
-  return RegularGridLoadVertices;
+  return NumberOfDifferentMethodsCalling;
 }
