@@ -64,7 +64,7 @@ void peano::stacks::CellSTDStack<Cell>::flipInputAndOutputStack() {
 
 template <class Cell>
 template <class Vertex>
-void peano::stacks::CellSTDStack<Cell>::writeToCheckpoint( peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint ) const {
+void peano::stacks::CellSTDStack<Cell>::writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>& checkpoint ) const {
   assertionMsg( false, "not implemented yet" );
 }
 
@@ -72,6 +72,6 @@ void peano::stacks::CellSTDStack<Cell>::writeToCheckpoint( peano::gridinterface:
 
 template <class Cell>
 template <class Vertex>
-void peano::stacks::CellSTDStack<Cell>::readFromCheckpoint( const peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint ) {
+void peano::stacks::CellSTDStack<Cell>::readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>& checkpoint ) {
   assertionMsg( false, "not implemented yet" );
 }

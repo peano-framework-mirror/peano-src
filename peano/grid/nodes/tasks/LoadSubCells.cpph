@@ -3,12 +3,12 @@
 
 
 template < class Cell, class CellStack >
-tarch::logging::Log peano::spacetreegrid::nodes::tasks::LoadSubCells< Cell, CellStack >::_log( "peano::spacetreegrid::nodes::tasks::LoadSubCells" );
+tarch::logging::Log peano::grid::nodes::tasks::LoadSubCells< Cell, CellStack >::_log( "peano::grid::nodes::tasks::LoadSubCells" );
 
 
 
 template < class Cell, class CellStack >
-peano::spacetreegrid::nodes::tasks::LoadSubCells< Cell, CellStack >::LoadSubCells(
+peano::grid::nodes::tasks::LoadSubCells< Cell, CellStack >::LoadSubCells(
   Cell * const                        subCells,
   CellStack&                          cellStack,
   const peano::utils::LoopDirection&  loopDirection
@@ -26,7 +26,7 @@ peano::spacetreegrid::nodes::tasks::LoadSubCells< Cell, CellStack >::LoadSubCell
 
 
 template < class Cell, class CellStack >
-void peano::spacetreegrid::nodes::tasks::LoadSubCells< Cell, CellStack >::operator()() {
+void peano::grid::nodes::tasks::LoadSubCells< Cell, CellStack >::operator()() {
   logTraceIn( "operator()" );
   zfor3( i, _loopDirection ) 
     const int cellIndex = peano::utils::dLinearised(i,3);

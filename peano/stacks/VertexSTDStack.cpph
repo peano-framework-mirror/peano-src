@@ -102,14 +102,14 @@ void peano::stacks::VertexSTDStack<Vertex>::flipInputAndOutputStack() {
 
 template <class Vertex>
 template <class Cell>
-void peano::stacks::VertexSTDStack<Vertex>::writeToCheckpoint( peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint ) const {
+void peano::stacks::VertexSTDStack<Vertex>::writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>& checkpoint ) const {
   assertionMsg( false, "not implemented yet" );
 }
 
 
 template <class Vertex>
 template <class Cell>
-void peano::stacks::VertexSTDStack<Vertex>::readFromCheckpoint( const peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint ) {
+void peano::stacks::VertexSTDStack<Vertex>::readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>& checkpoint ) {
   assertionMsg( false, "not implemented yet" );
 }
 

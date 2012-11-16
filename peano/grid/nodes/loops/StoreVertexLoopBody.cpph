@@ -4,11 +4,11 @@
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-tarch::logging::Log peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::_log( "peano::spacetreegrid::nodes::loops::StoreVertexLoopBody" );
+tarch::logging::Log peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::_log( "peano::grid::nodes::loops::StoreVertexLoopBody" );
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::_semaphore;
+tarch::multicore::BooleanSemaphore peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::_semaphore;
 
 
 #ifdef Parallel
@@ -19,7 +19,7 @@ tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::StoreVert
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::StoreVertexLoopBody(
+peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::StoreVertexLoopBody(
   State&                                    state,
   Vertex*                                   fineGridVertices,
   const SingleLevelEnumerator&              fineGridVerticesEnumerator,
@@ -52,7 +52,7 @@ peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,Vertex
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::~StoreVertexLoopBody() {
+peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::~StoreVertexLoopBody() {
   tarch::multicore::Lock lock(_semaphore);
 
   _state.updateRefinementHistoryAfterLoad( _hasRefined, _hasErased, false );
@@ -70,7 +70,7 @@ peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,Vertex
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::exchangeVerticesDueToParallelisation(
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::exchangeVerticesDueToParallelisation(
   int positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell
 ) {
@@ -143,7 +143,7 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::updateRefinementFlagsAndStoreVertexToOutputStream(
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::updateRefinementFlagsAndStoreVertexToOutputStream(
   int positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell
 ) {
@@ -169,7 +169,7 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::destroyPersistentNode(
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::destroyPersistentNode(
   int                                       positionInArray,
   const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell
 ) {
@@ -199,7 +199,7 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::invokeStoreVertexEvent(int positionInArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell) {
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::invokeStoreVertexEvent(int positionInArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell) {
   #ifdef Parallel
   const bool InvokeEventForVertex = !_fineGridVertices[positionInArray].isOutside()  && !_fineGridVertices[positionInArray].isRemote(_state, true, true );
   #else
@@ -221,7 +221,7 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::destroyHangingNode(
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::destroyHangingNode(
   int positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell
 ) {
@@ -242,17 +242,17 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::invalidateCoarseGridTreeHeightAttributesIfRefined(
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::invalidateCoarseGridTreeHeightAttributesIfRefined(
   int                                       positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell
 ) {
   if (
     _fineGridVertices[positionInVertexArray].getRefinementControl()          == Vertex::Records::Refining ||
-    _fineGridVertices[positionInVertexArray].getCurrentAdjacentCellsHeight() == peano::gridinterface::NotStationaryDueToInvalidation
+    _fineGridVertices[positionInVertexArray].getCurrentAdjacentCellsHeight() == peano::grid::NotStationaryDueToInvalidation
   ) {
     _hasRefined = true;
     dfor2(k)
-      const bool takeThisCoarseVertexIntoAccount = peano::spacetreegrid::SingleLevelEnumerator::doesCoarseGridVertexInfluenceFineGridVertex(k,positionInLocalCell+_fineGridPositionOfCell);
+      const bool takeThisCoarseVertexIntoAccount = peano::grid::SingleLevelEnumerator::doesCoarseGridVertexInfluenceFineGridVertex(k,positionInLocalCell+_fineGridPositionOfCell);
 
       if (takeThisCoarseVertexIntoAccount) {
         _coarseGridVertices[ _coarseGridVerticesEnumerator(k)].invalidateAdjacentCellInformation();
@@ -263,22 +263,22 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::updateCoarseGridTreeHeightAttributes(int positionInVertexArray, const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell) {
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::updateCoarseGridTreeHeightAttributes(int positionInVertexArray, const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell) {
   logTraceInWith3Arguments( "updateCoarseGridTreeHeightAttributes(int)", positionInVertexArray, positionInLocalCell, _fineGridVertices[positionInVertexArray].toString() );
-  const peano::gridinterface::CellFlags originalAnalysedValue = _fineGridVertices[positionInVertexArray].getCurrentAdjacentCellsHeight();
+  const peano::grid::CellFlags originalAnalysedValue = _fineGridVertices[positionInVertexArray].getCurrentAdjacentCellsHeight();
   dfor2(k)
-    const bool takeThisCoarseVertexIntoAccount = peano::spacetreegrid::SingleLevelEnumerator::doesCoarseGridVertexInfluenceFineGridVertex(k,positionInLocalCell+_fineGridPositionOfCell);
+    const bool takeThisCoarseVertexIntoAccount = peano::grid::SingleLevelEnumerator::doesCoarseGridVertexInfluenceFineGridVertex(k,positionInLocalCell+_fineGridPositionOfCell);
 
     if (takeThisCoarseVertexIntoAccount) {
-      peano::gridinterface::CellFlags analysedValue = originalAnalysedValue;
+      peano::grid::CellFlags analysedValue = originalAnalysedValue;
 
-      if (analysedValue>= peano::gridinterface::Leaf) {
+      if (analysedValue>= peano::grid::Leaf) {
         inc(analysedValue);
         if (
-          (_coarseGridVertices[ _coarseGridVerticesEnumerator(k)].getCurrentAdjacentCellsHeight() != peano::gridinterface::Undefined ) &&
+          (_coarseGridVertices[ _coarseGridVerticesEnumerator(k)].getCurrentAdjacentCellsHeight() != peano::grid::Undefined ) &&
           (_coarseGridVertices[ _coarseGridVerticesEnumerator(k)].getCurrentAdjacentCellsHeight() != analysedValue)
         ) {
-          analysedValue = peano::gridinterface::StationaryButIrregular;
+          analysedValue = peano::grid::StationaryButIrregular;
         }
       }
 
@@ -291,7 +291,7 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::operator() (const peano::datatraversal::Action& action) {
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::operator() (const peano::datatraversal::Action& action) {
   const int positionInArray = _fineGridVerticesEnumerator(action._cartesianPosition);
 
   logTraceInWith4Arguments( "operator()", action._cartesianPosition, action._id, _counter[positionInArray], positionInArray);
@@ -301,8 +301,8 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
   _counter[positionInArray]--;
   assertion( _counter[positionInArray]>=0 );
 
-  const bool RegularStaticGrid   = CellFlagsFromEnumerator>=peano::gridinterface::Leaf;
-  const bool StaticGrid          = CellFlagsFromEnumerator>=peano::gridinterface::StationaryWithParallelBoundary;
+  const bool RegularStaticGrid   = CellFlagsFromEnumerator>=peano::grid::Leaf;
+  const bool StaticGrid          = CellFlagsFromEnumerator>=peano::grid::StationaryWithParallelBoundary;
 
   if (RegularStaticGrid) {
     assertion(  !(_counter[positionInArray]==CounterHangingNode) );
@@ -354,7 +354,7 @@ void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,V
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
-void peano::spacetreegrid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::validateVertexInArray(
+void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::validateVertexInArray(
   int                                       positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell
 ) const {

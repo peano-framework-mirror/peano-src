@@ -256,6 +256,6 @@ class peano::grid::nodes::Refined: public peano::grid::nodes::Node<Vertex,Cell,S
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/Refined.cpph"
+#include "peano/grid/nodes/Refined.cpph"
 
 #endif

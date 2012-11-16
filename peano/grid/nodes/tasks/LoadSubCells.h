@@ -11,21 +11,21 @@
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace tasks {
-          template < class Cell, class CellStack >
-          class LoadSubCells;
-        }
+  namespace grid {
+    namespace nodes {
+      namespace tasks {
+        template < class Cell, class CellStack >
+        class LoadSubCells;
       }
     }
+  }
 }
 
 
 
 
 template < class Cell, class CellStack >
-class peano::kernel::spacetreegrid::nodes::tasks::LoadSubCells {
+class peano::grid::nodes::tasks::LoadSubCells {
   private:
     static tarch::logging::Log _log;
 
@@ -51,7 +51,7 @@ class peano::kernel::spacetreegrid::nodes::tasks::LoadSubCells {
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/tasks/LoadSubCells.cpph"
+#include "peano/grid/nodes/tasks/LoadSubCells.cpph"
 
 
 #endif

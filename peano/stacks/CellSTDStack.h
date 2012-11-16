@@ -77,14 +77,14 @@ class peano::stacks::CellSTDStack {
     void flipInputAndOutputStack();
 
     template <class Vertex>
-    void writeToCheckpoint( peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint ) const;
+    void writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>& checkpoint ) const;
 
     template <class Vertex>
-    void readFromCheckpoint( const peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint );
+    void readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>& checkpoint );
 
 };
 
-#include "peano/kernel/stacks/CellSTDStack.cpph"
+#include "peano/stacks/CellSTDStack.cpph"
 
 
 #endif

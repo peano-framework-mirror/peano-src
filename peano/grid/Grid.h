@@ -197,7 +197,7 @@ class peano::grid::Grid {
 };
 
 
-#include "peano/kernel/spacetreegrid/Grid.cpph"
+#include "peano/grid/Grid.cpph"
 
 
 #endif

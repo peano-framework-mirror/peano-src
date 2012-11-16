@@ -11,10 +11,10 @@
 
 
 namespace peano {
-    namespace stacks {
-      template <class Cell>
-      class CellArrayStack;
-    }
+  namespace stacks {
+    template <class Cell>
+    class CellArrayStack;
+  }
 }
 
 
@@ -75,14 +75,14 @@ class peano::stacks::CellArrayStack {
     void flipInputAndOutputStack();
 
     template <class Vertex>
-    void writeToCheckpoint( peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint ) const;
+    void writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>& checkpoint ) const;
 
     template <class Vertex>
-    void readFromCheckpoint( const peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint );
+    void readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>& checkpoint );
 
 };
 
 
-#include "peano/kernel/stacks/CellArrayStack.cpph"
+#include "peano/stacks/CellArrayStack.cpph"
 
 #endif

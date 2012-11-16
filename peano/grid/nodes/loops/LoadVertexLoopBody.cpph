@@ -6,23 +6,23 @@
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-tarch::logging::Log peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::_log( "peano::spacetreegrid::nodes::loops::LoadVertexLoopBody" );
+tarch::logging::Log peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::_log( "peano::grid::nodes::loops::LoadVertexLoopBody" );
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-tarch::multicore::BooleanSemaphore peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::_semaphore;
+tarch::multicore::BooleanSemaphore peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::_semaphore;
 
 
 #ifdef Parallel
 #include <set>
 
 #include "peano/kernel/parallel/SendReceiveBufferPool.h"
-#include "peano/kernel/spacetreegrid/aspects/ParallelMerge.h"
+#include "peano/kernel/grid/aspects/ParallelMerge.h"
 #endif
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::LoadVertexLoopBody(
+peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::LoadVertexLoopBody(
   State&                                    state,
   Vertex*                                   fineGridVertices,
   const SingleLevelEnumerator&              fineGridVerticesEnumerator,
@@ -57,7 +57,7 @@ peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexS
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::~LoadVertexLoopBody() {
+peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::~LoadVertexLoopBody() {
   tarch::multicore::Lock lock(_semaphore);
 
   _state.incNumberOfInnerVertices(_numberOfInnerVertices);
@@ -74,7 +74,7 @@ peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexS
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::loadVertexFromInputStream(
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::loadVertexFromInputStream(
   int                                       positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell
 ) {
@@ -139,7 +139,7 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
           currentNeighbourRank
         );
 
-        peano::spacetreegrid::aspects::ParallelMerge::mergeOnDomainBoundary(
+        peano::grid::aspects::ParallelMerge::mergeOnDomainBoundary(
           _fineGridVertices[positionInVertexArray],
           receivedVertex
         );
@@ -166,7 +166,7 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::updateRefinementFlagsOfVertexAfterLoad(
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::updateRefinementFlagsOfVertexAfterLoad(
   int positionInVertexArray, bool counterIsDelete
 ) {
   logTraceInWith3Arguments( "updateRefinementFlagsOfVertexAfterLoad(...)", positionInVertexArray, counterIsDelete, _fineGridVertices[positionInVertexArray].toString() );
@@ -192,7 +192,7 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::createHangingNode(
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::createHangingNode(
   int positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell
 ) {
@@ -230,7 +230,7 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::invalidateVertexIfGeometryHasChanged( int positionInVertexArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell ) const {
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::invalidateVertexIfGeometryHasChanged( int positionInVertexArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell ) const {
   logTraceInWith1Argument( "invalidateVertexIfGeometryHasChanged(...)", _fineGridVertices[positionInVertexArray] );
   if ( _geometry.domainHasChanged(_fineGridVerticesEnumerator.getVertexPosition(positionInLocalCell),_fineGridVerticesEnumerator.getCellSize() )) {
     _fineGridVertices[positionInVertexArray].invalidateAdjacentCellInformation();
@@ -240,7 +240,7 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::updateGeometry(
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::updateGeometry(
   int positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell
 ) {
@@ -345,7 +345,7 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::invokeLoadVertexEvents(
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::invokeLoadVertexEvents(
   int positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell
 ) {
@@ -383,7 +383,7 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::createNewVertex(
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::createNewVertex(
   int                                       positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell
 ) {
@@ -418,12 +418,12 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::operator() (const peano::datatraversal::Action& action) {
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::operator() (const peano::datatraversal::Action& action) {
   const int positionInArray = _fineGridVerticesEnumerator(action._cartesianPosition);
 
-  const bool RegularStaticGrid               = CellFlagsFromEnumerator>=peano::gridinterface::Leaf;
-  const bool IrregularStaticGrid             = CellFlagsFromEnumerator>=peano::gridinterface::StationaryButIrregular;
-  const bool StaticGridWithParallelBoundary  = CellFlagsFromEnumerator>=peano::gridinterface::StationaryWithParallelBoundary;
+  const bool RegularStaticGrid               = CellFlagsFromEnumerator>=peano::grid::Leaf;
+  const bool IrregularStaticGrid             = CellFlagsFromEnumerator>=peano::grid::StationaryButIrregular;
+  const bool StaticGridWithParallelBoundary  = CellFlagsFromEnumerator>=peano::grid::StationaryWithParallelBoundary;
 
   logTraceInWith7Arguments( "operator()", action._cartesianPosition, action._id, _counter[positionInArray], positionInArray, RegularStaticGrid, IrregularStaticGrid, StaticGridWithParallelBoundary );
 
@@ -512,7 +512,7 @@ void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,Ve
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-void peano::spacetreegrid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::validateVertexInArray(
+void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::validateVertexInArray(
   int                                       positionInVertexArray,
   const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell
 ) const {

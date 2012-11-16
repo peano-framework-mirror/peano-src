@@ -9,7 +9,7 @@
 
 #include "peano/utils/Globals.h"
 
-#include "peano/gridinterface/Checkpoint.h"
+#include "peano/grid/Checkpoint.h"
 
 
 namespace peano {
@@ -146,13 +146,13 @@ class peano::stacks::VertexArrayStack {
     void growOutputStackByAtLeastNElements(int n);
 
     template <class Cell>
-    void writeToCheckpoint( peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint ) const;
+    void writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>& checkpoint ) const;
 
     template <class Cell>
-    void readFromCheckpoint( const peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint );
+    void readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>& checkpoint );
 };
 
 
-#include "peano/kernel/stacks/VertexArrayStack.cpph"
+#include "peano/stacks/VertexArrayStack.cpph"
 
 #endif

@@ -22,7 +22,7 @@ peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVerticesLastTime(int level) {
-  if (!_eventHandle.touchVertexLastTimeIsNOP) {
+//  if (!_eventHandle.touchVertexLastTimeIsNOP) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
     const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid
@@ -30,7 +30,7 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVert
     _touchVertexLastTimeLoopBody.setLevel( level );
     peano::datatraversal::dForLoop<TouchVertexLastTimeLoopBody>( NumberOfVertices, _touchVertexLastTimeLoopBody, sharedMemoryGrainSize, false );
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid);
-  }
+//  }
 
   _gridContainer.haveCalledAllEventsOnThisLevel(level);
 }
@@ -39,7 +39,7 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVert
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::leaveCells(int level) {
-  if (!_eventHandle.leaveCellIsNOP) {
+//  if (!_eventHandle.leaveCellIsNOP) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
     const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::CallLeaveCellOnRegularStationaryGrid
@@ -52,13 +52,13 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::leaveCell
       sharedMemoryGrainSize
     );
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallLeaveCellOnRegularStationaryGrid);
-  }
+//  }
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::ascend(int fineGridLevel) {
-  if (!_eventHandle.ascendIsNOP) {
+//  if (!_eventHandle.ascendIsNOP) {
     assertionMsg( false, "not implemented yet" );
 //    const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(fineGridLevel-1);
 //    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
@@ -72,7 +72,7 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::ascend(in
 //      sharedMemoryGrainSize
 //    );
 //    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::gridCallLeaveCellOnRegularStationaryGrid);
-  }
+//  }
 }
 
 

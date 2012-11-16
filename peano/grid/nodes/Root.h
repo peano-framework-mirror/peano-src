@@ -345,7 +345,7 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/Root.cpph"
+#include "peano/grid/nodes/Root.cpph"
 
 
 #endif

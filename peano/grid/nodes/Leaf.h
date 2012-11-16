@@ -104,7 +104,7 @@ class peano::grid::nodes::Leaf: public peano::grid::nodes::Node<Vertex,Cell,Stat
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/Leaf.cpph"
+#include "peano/grid/nodes/Leaf.cpph"
 
 
 #endif

@@ -130,14 +130,14 @@ class peano::stacks::VertexSTDStack {
     void growOutputStackByAtLeastNElements(int n);
 
     template <class Cell>
-    void writeToCheckpoint( peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint ) const;
+    void writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>& checkpoint ) const;
 
     template <class Cell>
-    void readFromCheckpoint( const peano::gridinterface::Checkpoint<Vertex,Cell>& checkpoint );
+    void readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>& checkpoint );
 };
 
 
-#include "peano/kernel/stacks/VertexSTDStack.cpph"
+#include "peano/stacks/VertexSTDStack.cpph"
 
 
 #endif

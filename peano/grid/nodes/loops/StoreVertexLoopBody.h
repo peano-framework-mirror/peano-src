@@ -14,13 +14,13 @@
 
 
 namespace peano {
-    namespace grid {
-      namespace nodes {
-        namespace loops {
-          template <class Vertex,class Cell,class State,class VertexStack,class EventHandle, int CellFlagsFromEnumerator>
-          class StoreVertexLoopBody;
-        }
+  namespace grid {
+    namespace nodes {
+      namespace loops {
+        template <class Vertex,class Cell,class State,class VertexStack,class EventHandle, int CellFlagsFromEnumerator>
+        class StoreVertexLoopBody;
       }
+    }
   }
 }
 
@@ -39,7 +39,7 @@ namespace peano {
  * @author Tobias Weinzierl
  */
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
-class peano::spacetreegrid::nodes::loops::StoreVertexLoopBody {
+class peano::grid::nodes::loops::StoreVertexLoopBody {
   private:
     static tarch::logging::Log _log;
 
@@ -224,7 +224,7 @@ class peano::spacetreegrid::nodes::loops::StoreVertexLoopBody {
 };
 
 
-#include "peano/kernel/spacetreegrid/nodes/loops/StoreVertexLoopBody.cpph"
+#include "peano/grid/nodes/loops/StoreVertexLoopBody.cpph"
 
 
 #endif
