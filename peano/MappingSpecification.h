@@ -38,9 +38,16 @@ struct peano::MappingSpecification {
   bool        restartable;
 
   MappingSpecification(Manipulates manipulates_, bool _multithreading_, bool _restartable_);
+
+  /**
+   * Most general specification
+   *
+   * Is used by the adapters to merge multiple specifications.
+   */
+  static MappingSpecification getMostGeneralSpecification();
 };
 
-peano::MappingSpecification operator+(const peano::MappingSpecification& lhs, const peano::MappingSpecification& rhs);
+peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, const peano::MappingSpecification& rhs);
 
 
 #endif

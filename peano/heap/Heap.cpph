@@ -1,0 +1,762 @@
+#include <limits>
+#include <memory.h> 
+
+#ifdef Parallel
+#include <mpi.h>
+#endif
+
+#include "tarch/Assertions.h"
+#include "tarch/multicore/Lock.h"
+#include "tarch/services/ServiceRepository.h"
+
+
+template <class Data>
+tarch::logging::Log peano::kernel::heap::Heap<Data>::_log("peano::kernel::heap::Heap");
+
+
+template <class Data>
+peano::kernel::heap::Heap<Data>::Heap()
+  : _heapData(), _nextIndex(0)
+  #ifdef Parallel
+    , _mpiTagForBoundaryDataExchange(tarch::parallel::Node::reserveFreeTag("heap[boundary]"))
+    , _mpiTagToExchangeJoinForkData(tarch::parallel::Node::reserveFreeTag("heap[join/fork]"))
+  #endif
+  , _asynchronousSendTasks()
+  ,_currentReceiveBuffer(0)
+  #if defined(SharedMemoryParallelisation)
+    , _dataSemaphore()
+  #endif
+  ,_readDeployBufferInReverseOrder(true)
+  ,_heapIsCurrentlySentReceived(false)
+{
+  #ifdef Parallel
+  if (SendReceiveTask::MPIData::Datatype==0) {
+    SendReceiveTask::MPIData::initDatatype();
+  }
+  if(MetaInformation::Datatype==0) {
+    MetaInformation::initDatatype();
+  }
+  #endif
+
+  tarch::services::ServiceRepository::getInstance().addService( this, "peano::kernel::heap::Heap" );
+}
+
+
+template <class Data>
+peano::kernel::heap::Heap<Data>::~Heap()
+{
+  plotStatistics();
+  deleteAllData();
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::deleteAllData() {
+  for(typename std::map<int, std::vector<Data>*>::iterator i = _heapData.begin(); i != _heapData.end(); i++) {
+    assertionMsg((*i).second != 0, _name << ": Null-pointer was stored in heap data map.");
+    delete (*i).second;
+  }
+  _heapData.clear();
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::plotStatistics() {
+  if(_name != "") {
+    logInfo("plotStatistics()", "Statistics for " << _name);
+  }
+  logInfo("plotStatistics()", "Maximum number of allocated heap objects: " << _maximumNumberOfHeapObjects << " (" << (_maximumNumberOfHeapObjects * sizeof(Data)) << " Byte)" <<
+      ", number of heap allocations: " << _numberOfAllocatedHeapObjects << " (" << (_numberOfAllocatedHeapObjects * sizeof(Data)) <<  " Byte)");
+}
+
+
+template <class Data>
+peano::kernel::heap::Heap<Data>& peano::kernel::heap::Heap<Data>::getInstance() {
+  static peano::kernel::heap::Heap<Data> instance;
+  return instance;
+}
+
+
+template <class Data>
+int peano::kernel::heap::Heap<Data>::createData() {
+  logTraceIn( "createData()" );
+  #if defined(SharedMemoryParallelisation)
+  tarch::multicore::Lock lock(_dataSemaphore);
+  #endif
+
+  int index = _nextIndex;
+  _nextIndex++;
+
+  if(_nextIndex < 0) {
+    logError("getInstance()", "Overflow of heap data index.");
+    exit(-1);
+  }
+
+  _heapData[index] = new std::vector<Data>();
+
+  assertionMsg(_heapData.find(index) != _heapData.end(), "Insertion of Heapdata not successful.");
+  assertion(index >= 0);
+
+  _numberOfAllocatedHeapObjects++;
+
+  if(_heapData.size() > _maximumNumberOfHeapObjects) {
+    _maximumNumberOfHeapObjects = (unsigned int) _heapData.size();
+  }
+
+
+  logTraceOutWith1Argument("createData()", index);
+
+  return index;
+}
+
+
+template <class Data>
+std::vector<Data>& peano::kernel::heap::Heap<Data>::getData(int index) {
+  #ifdef Asserts
+  std::string message = "Trying to get heap data for unknown index. Has the index been initialized correctly?";
+  #endif
+  assertion4(_heapData.find(index) != _heapData.end(), _name, message, index, _heapData.size());
+  assertionMsg(_heapData[index] != 0, _name << ": Null-pointer was stored in heap data map");
+  return *(_heapData[index]);
+}
+
+
+template <class Data>
+bool peano::kernel::heap::Heap<Data>::isValidIndex(int index) {
+    return _heapData.find(index) != _heapData.end();
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::deleteData(int index) {
+  logTraceInWith2Arguments("deleteData(int)", _name, index);
+
+  #if defined(SharedMemoryParallelisation)
+  tarch::multicore::Lock lock(_dataSemaphore);
+  #endif
+  #ifdef Asserts
+  std::string message = "Trying to get heap data for unknown index. Has the index been initialized correctly?";
+  #endif
+  assertion4(_heapData.find(index) != _heapData.end(), _name, message, index, _heapData.size());
+  assertionMsg(_heapData[index] != 0, _name << ": Null-pointer was stored in heap data map");
+
+  delete _heapData[index];
+  _heapData.erase(index);
+
+  //Rollback index counter, if last index has been deleted
+  if(index == _nextIndex-1) {
+    _nextIndex--;
+  }
+
+  logTraceOut("deleteData(int)");
+}
+
+
+template <class Data>
+int peano::kernel::heap::Heap<Data>::getNumberOfAllocatedEntries() {
+  return _heapData.size();
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::restart() {
+  deleteAllData();
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::shutdown() {
+  deleteAllData();
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::setName(std::string name) {
+  _name = name;
+}
+
+
+#if !defined(Asserts)
+template <class Data>
+void peano::kernel::heap::Heap<Data>::sendData(int index, int toRank, bool isSentDueToForkOrJoin) {
+  sendData(index, toRank, 0, 0, isSentDueToForkOrJoin);
+}
+#endif
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::sendData(
+  int                                           index,
+  int                                           toRank,
+  const tarch::la::Vector<DIMENSIONS, double>&  position,
+  int                                           level,
+  bool                                          isSentDueToForkOrJoin
+) {
+  logTraceInWith6Arguments( "sendData(...)", _name, index, toRank, position, level, isSentDueToForkOrJoin );
+
+  #ifdef Parallel
+  std::vector<Data>& data = getData(index);
+
+  SendReceiveTask sendTask;
+
+  sendTask._data = new typename SendReceiveTask::MPIData[getData(index).size()];
+  sendTask._rank = toRank;
+
+  for (int i=0; i<static_cast<int>( getData(index).size() ); i++) {
+    #if defined(ParallelExchangePackedRecords)
+    sendTask._data[i] = getData(index)[i].convert();
+    #else
+    sendTask._data[i] = getData(index)[i];
+    #endif
+  }
+
+  #ifdef Asserts
+  //Set debug information
+  sendTask._metaInformation.setPosition(position);
+  sendTask._metaInformation.setLevel(level);
+  #endif
+
+  // Send size of vector
+  sendTask._metaInformation.setLength(static_cast<int>( data.size() ));
+  sendTask._metaInformation.send(toRank, isSentDueToForkOrJoin ? _mpiTagToExchangeJoinForkData : _mpiTagForBoundaryDataExchange, true);
+
+  assertion(isSentDueToForkOrJoin || _heapIsCurrentlySentReceived);
+
+  int result = MPI_Isend(
+    sendTask._data, sendTask._metaInformation.getLength(), SendReceiveTask::MPIData::Datatype, toRank,
+    isSentDueToForkOrJoin ? _mpiTagToExchangeJoinForkData : _mpiTagForBoundaryDataExchange,
+    tarch::parallel::Node::getInstance().getCommunicator(), &sendTask._request
+  );
+
+  if ( result != MPI_SUCCESS ) {
+    logError(
+      "sendData(...)", "failed to send heap data to node "
+      << toRank << ": " << tarch::parallel::MPIReturnValueToString(result)
+    );
+  }
+
+  if (isSentDueToForkOrJoin) {
+    _synchronousSendTasks.push_back(sendTask);
+  }
+  else {
+    _asynchronousSendTasks.push_back(sendTask);
+  }
+
+  logTraceOutWith1Argument( "sendData(...)", data.size() );
+  #endif
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::releaseSentMessages(std::vector<SendReceiveTask>& tasks) {
+  #ifdef Parallel
+  logTraceInWith1Argument( "releaseSentMessages()", tasks.size() );
+
+  for(typename std::vector<SendReceiveTask>::iterator i = tasks.begin(); i != tasks.end(); ++i) {
+    MPI_Status status;
+
+    const clock_t  timeOutWarning          = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+    const clock_t  timeOutShutdown         = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
+    bool           triggeredTimeoutWarning = false;
+    int            finishedWait            = false;
+
+    while (!finishedWait) {
+      MPI_Test(&(i->_request), &finishedWait, &status);
+
+      // deadlock aspect
+      if (
+         tarch::parallel::Node::getInstance().isTimeOutWarningEnabled() &&
+         (clock()>timeOutWarning) &&
+         (!triggeredTimeoutWarning)
+      ) {
+         tarch::parallel::Node::getInstance().writeTimeOutWarning(
+           "peano::kernel::heap::Heap",
+           "releaseSentMessages()", i->_rank,-1,i->_metaInformation.getLength()
+         );
+         triggeredTimeoutWarning = true;
+      }
+      if (
+         tarch::parallel::Node::getInstance().isTimeOutDeadlockEnabled() &&
+         (clock()>timeOutShutdown)
+      ) {
+         std::ostringstream msg;
+         msg << "tag either " << _mpiTagForBoundaryDataExchange
+             << " or " << _mpiTagToExchangeJoinForkData;
+         tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
+           "peano::kernel::heap::Heap",
+           "releaseSentMessages()", i->_rank,
+           -1,
+           i->_metaInformation.getLength(), msg.str()
+         );
+      }
+      tarch::parallel::Node::getInstance().receiveDanglingMessages();
+    }
+
+    delete[] (i->_data);
+  }
+  logTraceOut( "releaseSentMessages()" );
+  #endif
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::releaseSentMessages() {
+  #ifdef Parallel
+  logTraceInWith2Arguments( "releaseSentMessages()", _asynchronousSendTasks.size(), _synchronousSendTasks.size() );
+
+  releaseSentMessages( _asynchronousSendTasks );
+  releaseSentMessages( _synchronousSendTasks );
+
+  _synchronousSendTasks.clear();
+
+  logTraceOut( "releaseSentMessages()" );
+  #endif
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages() {
+  logTraceInWith3Arguments( "waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages()", _name, getSizeOfReceiveBuffer(), getSizeOfSendBuffer() );
+
+  #ifdef Parallel
+  const clock_t  timeOutWarning          = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+  const clock_t  timeOutShutdown         = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
+  bool           triggeredTimeoutWarning = false;
+  while (getSizeOfReceiveBuffer()<getSizeOfSendBuffer()) {
+    if (
+       tarch::parallel::Node::getInstance().isTimeOutWarningEnabled() &&
+       (clock()>timeOutWarning) &&
+       (!triggeredTimeoutWarning)
+    ) {
+       tarch::parallel::Node::getInstance().writeTimeOutWarning(
+         "peano::kernel::heap::Heap::releaseMessages",
+         "waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages()", -1,
+         _mpiTagForBoundaryDataExchange, -1
+       );
+       triggeredTimeoutWarning = true;
+    }
+    if (
+       tarch::parallel::Node::getInstance().isTimeOutDeadlockEnabled() &&
+       (clock()>timeOutShutdown)
+    ) {
+       tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
+         "peano::kernel::heap::Heap::releaseMessages",
+         "waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages()", -1,
+         _mpiTagForBoundaryDataExchange, -1
+       );
+    }
+
+    tarch::parallel::Node::getInstance().receiveDanglingMessages();
+  }
+  #endif
+
+  logTraceOutWith3Arguments( "waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages()", _name, getSizeOfReceiveBuffer(), getSizeOfSendBuffer() );
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::releaseReceivedMessagesRequests() {
+  #ifdef Parallel
+  // I originally used a plain for loop over the receive buffer, but that does not
+  // work, as a receiveDanglingMessages within this for loop might change the
+  //  underlying  data container.
+  bool allMessageCommunicationsAreFinished = false;
+
+  const clock_t  timeOutWarning          = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+  const clock_t  timeOutShutdown         = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
+  bool           triggeredTimeoutWarning = false;
+  int            finishedWait            = false;
+
+  while (!allMessageCommunicationsAreFinished) {
+    allMessageCommunicationsAreFinished = true;
+    for(typename std::vector<SendReceiveTask>::iterator i = _receiveDeployTasks[_currentReceiveBuffer].begin(); i != _receiveDeployTasks[_currentReceiveBuffer].end(); ++i) {
+      MPI_Status status;
+      MPI_Test(&(i->_request), &finishedWait, &status);
+      allMessageCommunicationsAreFinished &= (finishedWait!=0);
+    }
+
+    // deadlock aspect
+    if (
+       tarch::parallel::Node::getInstance().isTimeOutWarningEnabled() &&
+       (clock()>timeOutWarning) &&
+       (!triggeredTimeoutWarning)
+    ) {
+       tarch::parallel::Node::getInstance().writeTimeOutWarning(
+         "peano::kernel::heap::Heap",
+         "releaseReceivedMessagesRequests()", -1,
+         _mpiTagForBoundaryDataExchange, -1
+       );
+       triggeredTimeoutWarning = true;
+    }
+    if (
+       tarch::parallel::Node::getInstance().isTimeOutDeadlockEnabled() &&
+       (clock()>timeOutShutdown)
+    ) {
+       tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
+         "peano::kernel::heap::Heap",
+         "releaseReceivedMessagesRequests()", -1,
+         _mpiTagForBoundaryDataExchange, -1
+       );
+    }
+
+    tarch::parallel::Node::getInstance().receiveDanglingMessages();
+  }
+  #endif
+}
+
+
+#if !defined(Asserts)
+template <class Data>
+std::vector<Data> peano::kernel::heap::Heap<Data>::receiveData(int fromRank, bool isExchangedSynchronously) {
+  return receiveData(fromRank, 0, 0, isExchangedSynchronously);
+}
+#endif
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::removeMessageFromBuffer(int number, std::vector<SendReceiveTask>& tasks) {
+  assertion( number>=0 );
+  assertion( number<static_cast<int>(tasks.size()) );
+
+  typename std::vector<SendReceiveTask>::iterator it = tasks.begin();
+  it+=number;
+
+  delete[] it->_data;
+  tasks.erase(it);
+}
+
+
+template <class Data>
+int peano::kernel::heap::Heap<Data>::findMessageFromRankInDeployBuffer(int ofRank) const {
+  const int currentDeployBuffer = 1-_currentReceiveBuffer;
+  if (_readDeployBufferInReverseOrder) {
+    for (int i=getSizeOfDeployBuffer()-1; i>=0; i--) {
+      if (_receiveDeployTasks[currentDeployBuffer][i]._rank==ofRank) {
+        return i;
+      }
+    }
+  }
+  else {
+    for (int i=0; i<getSizeOfDeployBuffer(); i++) {
+      if (_receiveDeployTasks[currentDeployBuffer][i]._rank==ofRank) {
+        return i;
+      }
+    }
+  }
+  assertionMsg( false, "no fitting message found in deploy buffer" );
+  return -1;
+}
+
+
+template <class Data>
+int peano::kernel::heap::Heap<Data>::findMessageFromRankInSynchronousBuffer(int ofRank) {
+  #ifdef Parallel
+  for (int i=0; i<static_cast<int>(_synchronousReceiveTasks.size()); i++) {
+    if (_synchronousReceiveTasks[i]._rank==ofRank ) {
+      MPI_Status status;
+      int        finishedWait = false;
+      MPI_Test(&(_synchronousReceiveTasks[i]._request), &finishedWait, &status);
+
+      if (finishedWait) {
+        return i;
+      }
+      else {
+        return -1;
+      }
+    }
+  }
+  #endif
+  return -1;
+}
+
+
+template <class Data>
+std::vector< Data > peano::kernel::heap::Heap<Data>::receiveSynchronousData(
+  int                                           fromRank,
+  const tarch::la::Vector<DIMENSIONS, double>&  position,
+  int                                           level,
+  bool                                          isExchangedSynchronously
+) {
+  logTraceInWith1Argument( "receiveSynchronousData(...)", fromRank );
+
+  std::vector< Data >  result;
+  #ifdef Parallel
+  const clock_t  timeOutWarning          = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+  const clock_t  timeOutShutdown         = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
+  bool           triggeredTimeoutWarning = false;
+  int            resultTask              = -1;
+
+  while (resultTask == -1) {
+    resultTask = findMessageFromRankInSynchronousBuffer(fromRank);
+
+    // deadlock aspect
+    if (
+       tarch::parallel::Node::getInstance().isTimeOutWarningEnabled() &&
+       (clock()>timeOutWarning) &&
+       (!triggeredTimeoutWarning)
+    ) {
+       tarch::parallel::Node::getInstance().writeTimeOutWarning(
+         "peano::kernel::heap::Heap",
+         "receiveSynchronousData()", fromRank,
+         _mpiTagToExchangeJoinForkData, -1
+       );
+       triggeredTimeoutWarning = true;
+    }
+    if (
+       tarch::parallel::Node::getInstance().isTimeOutDeadlockEnabled() &&
+       (clock()>timeOutShutdown)
+    ) {
+       tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
+         "peano::kernel::heap::Heap",
+         "receiveSynchronousData()", fromRank,
+         _mpiTagToExchangeJoinForkData, -1
+       );
+    }
+    tarch::parallel::Node::getInstance().receiveDanglingMessages();
+  }
+
+  result = extractMessageFromTaskQueue(resultTask, _synchronousReceiveTasks, position, level);
+  removeMessageFromBuffer( resultTask, _synchronousReceiveTasks );
+  #endif
+
+  logTraceOutWith1Argument( "receiveSynchronousData(...)", result.size() );
+  return result;
+}
+
+
+template <class Data>
+std::vector< Data > peano::kernel::heap::Heap<Data>::extractMessageFromTaskQueue(
+  int                                           messageNumber,
+  std::vector<SendReceiveTask>&                 tasks,
+  const tarch::la::Vector<DIMENSIONS, double>&  position,
+  int                                           level
+) {
+  std::vector< Data > result;
+
+  #ifdef Parallel
+
+  const int numberOfElementsOfThisEntry = tasks[messageNumber]._metaInformation.getLength();
+
+  assertionEquals4(
+    tasks[messageNumber]._metaInformation.getLevel(),
+    level,
+    tasks[messageNumber]._metaInformation.toString(),
+    level,  position,
+    tarch::parallel::Node::getInstance().getRank()
+  );
+  for (int d=0; d<DIMENSIONS; d++) {
+    assertionNumericalEquals5(
+      tasks[messageNumber]._metaInformation.getPosition(d),
+      position(d),
+      tasks[messageNumber]._metaInformation.toString(),
+      level,  position,  d,
+      tarch::parallel::Node::getInstance().getRank()
+    );
+  }
+
+  assertion(tasks[messageNumber]._data!=0);
+  for (int i=0; i<numberOfElementsOfThisEntry; i++) {
+    #if defined(ParallelExchangePackedRecords)
+    result.push_back(tasks[messageNumber]._data[i].convert());
+    #else
+    result.push_back(tasks[messageNumber]._data[i]);
+    #endif
+  }
+
+  #endif
+
+  return result;
+}
+
+
+template <class Data>
+std::vector< Data > peano::kernel::heap::Heap<Data>::receiveAsynchronousData(
+  int                                           fromRank,
+  const tarch::la::Vector<DIMENSIONS, double>&  position,
+  int                                           level,
+  bool                                          isExchangedSynchronously
+) {
+  logTraceInWith7Arguments( "receiveAsynchronousData(...)", fromRank, position, level, isExchangedSynchronously, _currentReceiveBuffer, _receiveDeployTasks[0].size(), _receiveDeployTasks[1].size() );
+
+  std::vector< Data > result;
+
+  #ifdef Parallel
+  assertion1(_heapIsCurrentlySentReceived, tarch::parallel::Node::getInstance().getRank());
+  assertion3( getSizeOfDeployBuffer()>0, tarch::parallel::Node::getInstance().getRank(), toString(), "if the deploy buffer is empty, you have perhaps forgotten to call releaseMessages() on the heap in the traversal before" );
+
+  const int currentDeployBuffer         = 1-_currentReceiveBuffer;
+  const int elementFromDeployBuffer     = findMessageFromRankInDeployBuffer(fromRank);
+
+  result = extractMessageFromTaskQueue(elementFromDeployBuffer,_receiveDeployTasks[currentDeployBuffer],position,level);
+  removeMessageFromBuffer( elementFromDeployBuffer, _receiveDeployTasks[currentDeployBuffer] );
+  #endif
+
+  logTraceOutWith1Argument( "receiveAsynchronousData(...)", result.size() );
+  return result;
+}
+
+
+template <class Data>
+std::vector< Data > peano::kernel::heap::Heap<Data>::receiveData(
+  int                                           fromRank,
+  const tarch::la::Vector<DIMENSIONS, double>&  position,
+  int                                           level,
+  bool                                          isExchangedSynchronously
+) {
+  if (isExchangedSynchronously) {
+    return receiveSynchronousData(fromRank,position,level,isExchangedSynchronously);
+  }
+  else {
+    return receiveAsynchronousData(fromRank,position,level,isExchangedSynchronously);
+  }
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::receiveDanglingMessages(int tag, std::vector<SendReceiveTask>& taskQueue) {
+  #ifdef Parallel
+  int        flag   = 0;
+  MPI_Status status;
+  int        result = MPI_Iprobe(
+    MPI_ANY_SOURCE,
+    tag,
+    tarch::parallel::Node::getInstance().getCommunicator(), &flag, &status
+  );
+  if (result!=MPI_SUCCESS) {
+    logError(
+      "receiveDanglingMessages()",
+      "probing for messages failed: " << tarch::parallel::MPIReturnValueToString(result)
+    );
+  }
+  if (flag) {
+    logTraceInWith1Argument( "receiveDanglingMessages(...)", tag );
+
+    SendReceiveTask receiveTask;
+
+    receiveTask._metaInformation.receive(status.MPI_SOURCE, tag, true);
+
+    receiveTask._data = new typename SendReceiveTask::MPIData[ receiveTask._metaInformation.getLength() ];
+    receiveTask._rank = status.MPI_SOURCE;
+
+    result = MPI_Irecv(receiveTask._data, receiveTask._metaInformation.getLength(), SendReceiveTask::MPIData::Datatype, status.MPI_SOURCE, tag, tarch::parallel::Node::getInstance().getCommunicator(), &receiveTask._request);
+    if ( result != MPI_SUCCESS ) {
+      logError(
+        "receiveDanglingMessages()",
+        "failed to receive heap data from node "
+        << status.MPI_SOURCE << ": " << tarch::parallel::MPIReturnValueToString(result)
+      );
+    }
+
+    taskQueue.push_back( receiveTask );
+
+    logDebug(
+      "receiveDanglingMessages(...)",
+      "started to receive " << taskQueue.size() << "th message from rank " << receiveTask._rank << " with " << receiveTask._metaInformation.getLength() << " entries and data pointing to " << receiveTask._data
+    );
+
+    logTraceOutWith3Arguments( "receiveDanglingMessages(...)", _currentReceiveBuffer, _receiveDeployTasks[0].size(), _receiveDeployTasks[1].size() );
+  }
+  #endif
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::receiveDanglingMessages() {
+  #ifdef Parallel
+  receiveDanglingMessages(_mpiTagForBoundaryDataExchange, _receiveDeployTasks[_currentReceiveBuffer]);
+  receiveDanglingMessages(_mpiTagToExchangeJoinForkData , _synchronousReceiveTasks );
+  #endif
+}
+
+
+template <class Data>
+int peano::kernel::heap::Heap<Data>::getSizeOfReceiveBuffer() const {
+  return static_cast<int>(_receiveDeployTasks[_currentReceiveBuffer].size());
+}
+
+
+template <class Data>
+int peano::kernel::heap::Heap<Data>::getSizeOfDeployBuffer() const {
+  return static_cast<int>(_receiveDeployTasks[1-_currentReceiveBuffer].size());
+}
+
+
+template <class Data>
+int peano::kernel::heap::Heap<Data>::getSizeOfSendBuffer() const {
+  return static_cast<int>(_asynchronousSendTasks.size());
+}
+
+
+template <class Data>
+std::string peano::kernel::heap::Heap<Data>::toString() const {
+  std::ostringstream msg;
+
+  msg << "(name=" << _name
+      << ",heap-map-size=" << _heapData.size()
+      << ",no-allocated-heap-objects=" << _numberOfAllocatedHeapObjects;
+
+  #ifdef Parallel
+  msg << ",mpi-tag-boundary-exchange=" << _mpiTagForBoundaryDataExchange
+      << ",mpi-tag-join/fork-data=" << _mpiTagToExchangeJoinForkData
+      << ",read-deploy-buffer-in-reverse-order=" << _readDeployBufferInReverseOrder
+      << ",current-receive-buffer=" << _currentReceiveBuffer
+      << ",unfinished-send-tasks=" << _asynchronousSendTasks.size()
+      << ",receive-deploy-buffer-size-0=" << _receiveDeployTasks[0].size()
+      << ",receive-deploy-buffer-size-1=" << _receiveDeployTasks[1].size();
+  #endif
+
+  msg << ")";
+
+  return msg.str();
+}
+
+
+#ifdef Asserts
+template <class Data>
+peano::kernel::heap::Heap<Data>::SendReceiveTask::SendReceiveTask():
+  _rank(-1),
+  _data(0) {
+}
+#endif
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::startToSendOrReceiveHeapData(bool isTraversalInverted) {
+  logTraceInWith5Arguments( "startToSendOrReceiveHeapData()", _name, _asynchronousSendTasks.size(), _currentReceiveBuffer, _receiveDeployTasks[0].size(), _receiveDeployTasks[1].size() );
+
+  #ifdef Parallel
+  releaseSentMessages();
+  waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages();
+  _asynchronousSendTasks.clear();
+  releaseReceivedMessagesRequests();
+
+  // either deploy buffer is empty or receive buffer is empty
+  assertion3(
+    _receiveDeployTasks[_currentReceiveBuffer].empty() || _receiveDeployTasks[1-_currentReceiveBuffer].empty(),
+    _receiveDeployTasks[0].size(),
+    _receiveDeployTasks[1].size(),
+    _currentReceiveBuffer
+  );
+
+  _readDeployBufferInReverseOrder                         = _wasTraversalInvertedThroughoutLastSendReceiveTraversal != isTraversalInverted;
+  _wasTraversalInvertedThroughoutLastSendReceiveTraversal = isTraversalInverted;
+  _heapIsCurrentlySentReceived                            = true;
+
+  if (getSizeOfDeployBuffer()==0) {
+	  _currentReceiveBuffer                               = 1-_currentReceiveBuffer;
+	  _receiveDeployTasks[_currentReceiveBuffer].clear();
+  }
+#endif
+  logTraceOutWith5Arguments( "startToSendOrReceiveHeapData()", _readDeployBufferInReverseOrder, _asynchronousSendTasks.size(), _currentReceiveBuffer, _receiveDeployTasks[0].size(), _receiveDeployTasks[1].size() );
+
+}
+
+
+template <class Data>
+void peano::kernel::heap::Heap<Data>::finishedToSendOrReceiveHeapData() {
+  logTraceInWith5Arguments( "finishedToSendOrReceiveHeapData()", _name, _asynchronousSendTasks.size(), _currentReceiveBuffer, _receiveDeployTasks[0].size(), _receiveDeployTasks[1].size() );
+
+  _heapIsCurrentlySentReceived = false;
+
+  logTraceOutWith5Arguments( "finishedToSendOrReceiveHeapData()", _readDeployBufferInReverseOrder, _asynchronousSendTasks.size(), _currentReceiveBuffer, _receiveDeployTasks[0].size(), _receiveDeployTasks[1].size() );
+}

@@ -18,7 +18,7 @@ peano::datatraversal::autotuning::Oracle& peano::datatraversal::autotuning::Orac
 
 
 peano::datatraversal::autotuning::Oracle::Oracle():
-  _watchSinceLastSwitchCall("peano::datatraversal::autotuning::Oracle", "Oracle()", true),
+  _watchSinceLastSwitchCall("peano::datatraversal::autotuning::Oracle", "Oracle()", false),
   _oracles(),
   _watches(),
   _currentOracle(0),
