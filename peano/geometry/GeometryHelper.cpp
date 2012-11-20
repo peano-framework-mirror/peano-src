@@ -81,6 +81,6 @@ peano::geometry::GeometryHelper::CellAction peano::geometry::GeometryHelper::get
     return CreateOuterCell;
   }
 
-  logTraceOutWith1Argument( "getCellCommand(...)", "LeaveVertexUnaltered" );
+  logTraceOutWith1Argument( "getCellCommand(...)", "LeaveCellUnaltered" );
   return LeaveCellUnaltered;
 }

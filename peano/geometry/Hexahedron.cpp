@@ -12,6 +12,9 @@ peano::geometry::Hexahedron::Hexahedron(
   _offset(offset),
   _width(width) {
 
+  for (int d=0; d<DIMENSIONS; d++) {
+    assertion2( _width(d)>0.0, _width, _offset);
+  }
   logDebug(
     "Hexahedron(...)",
     "created hexahedron with width " << _width
@@ -29,23 +32,27 @@ bool peano::geometry::Hexahedron::domainHasChanged( const tarch::la::Vector<DIME
 
 
 bool peano::geometry::Hexahedron::isInsideOpenHexahedron( const tarch::la::Vector<DIMENSIONS,double>& x ) const {
+  logTraceInWith3Arguments("isInsideOpenHexahedron(...)", x, _offset, _width);
   bool result = true;
   for (int d=0; d<DIMENSIONS; d++) {
     assertion( _width(d) >= 0.0 );
     result &= tarch::la::greater(x(d),_offset(d));
     result &= tarch::la::smaller(x(d),_offset(d)+_width(d));
   }
+  logTraceOutWith1Argument("isInsideOpenHexahedron(...)", result);
   return result;
 }
 
 
 bool peano::geometry::Hexahedron::isInsideClosedHexahedron( const tarch::la::Vector<DIMENSIONS,double>& x ) const {
+  logTraceInWith1Argument("isInsideClosedHexahedron(...)", x);
   bool result = true;
   for (int d=0; d<DIMENSIONS; d++) {
     assertion( _width(d) >= 0.0 );
     result &= !tarch::la::smaller(x(d),_offset(d));
     result &= !tarch::la::greater(x(d),_offset(d)+_width(d));
   }
+  logTraceOutWith1Argument("isInsideClosedHexahedron(...)", result);
   return result;
 }
 
@@ -83,7 +90,7 @@ bool peano::geometry::Hexahedron::isCompletelyOutside( const tarch::la::Vector<D
 
 
 bool peano::geometry::Hexahedron::isCompletelyInside( const tarch::la::Vector<DIMENSIONS,double>& x, const tarch::la::Vector<DIMENSIONS,double> &resolution ) {
-  logTraceInWith2Arguments( "isCompletelyInsideNotInverted(...)", x, resolution);
+  logTraceInWith2Arguments( "isCompletelyInside(...)", x, resolution);
   bool result = isInsideOpenHexahedron(x);
 
   dfor2(i)
@@ -97,7 +104,7 @@ bool peano::geometry::Hexahedron::isCompletelyInside( const tarch::la::Vector<DI
     result &= isInsideClosedHexahedron(currentPoint1);
    enddforx
 
-  logTraceOutWith1Argument("isCompletelyInsideNotInverted(...)", result);
+  logTraceOutWith1Argument("isCompletelyInside(...)", result);
   return result;
 }
 
