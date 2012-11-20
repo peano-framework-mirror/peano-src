@@ -45,6 +45,36 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
     Vertex  _coarseGridVertices[FOUR_POWER_D];
     Cell    _coarseGridCell;
 
+    #ifdef Parallel
+    /**
+     * These vertices are the @f$ 2^d @f$ vertices adjacent to the central
+     * element. Originally, I planned to merge the received data immediately
+     * into the local records when the central cell is received. However, this
+     * does not work always: If the worker descends within an outer cell
+     * multiple levels before it steps into the central cell, it also calls
+     * touchFirstTime() on all the vertices adjacent to that outer part of the
+     * tree. This is totally irrelevant for most solvers, but solvers that
+     * transport information from one level to the other (such as Bart's PIC
+     * code) it is horrible. These codes rely on the fact that all data is
+     * merged into the local root's data before it descends to be able to
+     * transport information down.
+     *
+     * So I do a rather cheap trick: I receive the data from the master
+     * immediately and store it within _verticesFromMaster and
+     * _centralCellFromMaster. From this buffer, I copy the date if needed.
+     *
+     * This whole discussion is irrelevant for the send back process. Here,
+     * we always send back when the traversal completely has terminated.
+     * This way, we always ensure that all multiscale operation on the
+     * worker successfully have been called.
+     *
+     * @see receiveCellAndVerticesFromMaster()
+     */
+    Vertex  _masterVertices[FOUR_POWER_D];
+    bool    _haveMergedMasterVertex[FOUR_POWER_D];
+    Cell    _masterCell;
+    #endif
+
     tarch::la::Vector<DIMENSIONS,double>  _sizeOfEnclosingCoarseCell;
     tarch::la::Vector<DIMENSIONS,double>  _offsetOfEnclosingCoarseCell;
     int                                   _levelOfEnclosingCell;
@@ -153,21 +183,27 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
      * that is right now joining with its master.
      *
      * @see Node::updateCellsParallelStateAfterLoad()
+     * @see _verticesFromMaster
      */
     void receiveCellAndVerticesFromMaster(
+      const State&                                 state
+    );
+
+    void mergeReceivedCellAndVerticesFromMasterIntoLocalDataStructure(
       const State&                                 state,
-      Cell&                                        centralFineGridCell,
-      const SingleLevelEnumerator&                 centralFineGridVerticesEnumerator,
-      Vertex*                                      fineGridVertices
+      Cell&                                        fineGridCell,
+      Vertex*                                      fineGridVertices,
+      const tarch::la::Vector<DIMENSIONS,int>&     currentLevelOneCell
     );
 
     /**
      * @see Node::updateCellsParallelStateBeforeStore()
+     * @see _verticesFromMaster
      */
     void sendCellAndVerticesToMaster(
       const State&                                 state,
-      Cell&                                        centralFineGridCell,
-      const SingleLevelEnumerator&                 centralFineGridVerticesEnumerator,
+      Cell&                                        fineGridCell,
+      const SingleLevelEnumerator&                 fineGridVerticesEnumerator,
       Vertex*                                      fineGridVertices
     );
     #endif
@@ -222,7 +258,7 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
       peano::geometry::Geometry&                   geometry,
       LeafNode&                                    leafNode,
       RefinedNode&                                 refinedNode,
-      peano::grid::TraversalOrderOnTopLevel&  cellTraversal
+      peano::grid::TraversalOrderOnTopLevel&       cellTraversal
     );
 
     /**
