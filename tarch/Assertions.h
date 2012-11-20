@@ -71,6 +71,17 @@
       assertionTriggersExit; \
     }
 
+
+    #define assertion1WithExplanation(expr,param,explanation) if (!(expr)) { \
+      setAssertionOutputFormat; \
+      std::cerr << "assertion in file " << __FILE__ << ", line " << __LINE__ << " failed: " << #expr <<  std::endl; \
+      std::cerr << "parameter " << #param << ": " << param << std::endl; \
+      std::cerr << "Explanation:" << param << std::endl; \
+      std::cerr << explanation << std::endl; \
+      assertionTriggersExit; \
+    }
+
+
     /**
      * @see ASSERTION_EXIT_CODE
      *
@@ -618,6 +629,33 @@
     /**
      * @see ASSERTION_EXIT_CODE
      *
+     * Argument lhs and rhs have to be equal besides the machine precision.
+     * Otherwise assertion will fail. The machine precision is evaluated via
+     * equals().
+     *
+     * If the assertion fails, the additional parameters
+     * are plotted to the command line. The parameters thus have to provide
+     * \code operator<< \endcode
+     */
+    #define assertionNumericalEquals10(lhs,rhs,a,b,c,d,e,f,g,h,i,j) if (!tarch::la::equals( (lhs),(rhs) )) { \
+      setAssertionOutputFormat; \
+      std::cerr << "assertion in file " << __FILE__ << ", line " << __LINE__ << " failed: " << #lhs << "==" #rhs << std::endl << #lhs << "=" << lhs << "\t == \t" << #rhs << "=" << rhs << std::endl; \
+      std::cerr << "1st argument " << #a << ": " << a << std::endl; \
+      std::cerr << "2nd argument " << #b << ": " << b << std::endl; \
+      std::cerr << "3rd argument " << #c << ": " << c << std::endl; \
+      std::cerr << "4th argument " << #d << ": " << d << std::endl; \
+      std::cerr << "5th argument " << #e << ": " << e << std::endl; \
+      std::cerr << "6th argument " << #f << ": " << f << std::endl; \
+      std::cerr << "7th argument " << #g << ": " << g << std::endl; \
+      std::cerr << "8th argument " << #h << ": " << h << std::endl; \
+      std::cerr << "9th argument " << #i << ": " << i << std::endl; \
+      std::cerr << "10th argument " << #j << ": " << j << std::endl; \
+      assertionTriggersExit; \
+    }
+
+    /**
+     * @see ASSERTION_EXIT_CODE
+     *
      * Argument lhs and rhs have to be of type Vector. Their entries have to be
      * equal besides the machine precision.
      * Otherwise assertion will fail. The machine precision is evaluated via
@@ -629,6 +667,10 @@
     #define assertionVectorNumericalEquals3(lhs,rhs,param0,param1,param2) for (int d=0; d<DIMENSIONS; d++) { assertionNumericalEquals4(lhs(d),rhs(d),d,param0,param1,param2); }
     #define assertionVectorNumericalEquals4(lhs,rhs,param0,param1,param2,param3) for (int d=0; d<DIMENSIONS; d++) { assertionNumericalEquals5(lhs(d),rhs(d),d,param0,param1,param2,param3); }
     #define assertionVectorNumericalEquals5(lhs,rhs,param0,param1,param2,param3,param4) for (int d=0; d<DIMENSIONS; d++) { assertionNumericalEquals6(lhs(d),rhs(d),d,param0,param1,param2,param3,param4); }
+    #define assertionVectorNumericalEquals6(lhs,rhs,param0,param1,param2,param3,param4,param5) for (int d=0; d<DIMENSIONS; d++) { assertionNumericalEquals7(lhs(d),rhs(d),d,param0,param1,param2,param3,param4,param5); }
+    #define assertionVectorNumericalEquals7(lhs,rhs,param0,param1,param2,param3,param4,param5,param6) for (int d=0; d<DIMENSIONS; d++) { assertionNumericalEquals8(lhs(d),rhs(d),d,param0,param1,param2,param3,param4,param5,param6); }
+    #define assertionVectorNumericalEquals8(lhs,rhs,param0,param1,param2,param3,param4,param5,param6,param7) for (int d=0; d<DIMENSIONS; d++) { assertionNumericalEquals9(lhs(d),rhs(d),d,param0,param1,param2,param3,param4,param5,param6,param7); }
+    #define assertionVectorNumericalEquals9(lhs,rhs,param0,param1,param2,param3,param4,param5,param6,param7,param8) for (int d=0; d<DIMENSIONS; d++) { assertionNumericalEquals10(lhs(d),rhs(d),d,param0,param1,param2,param3,param4,param5,param6,param7,param8); }
 
     /**
      * @see ASSERTION_EXIT_CODE
@@ -662,6 +704,7 @@
     #define assertion7(expr,param0,param1,param2,param3,param4,param5,param6)
     #define assertion8(expr,param0,param1,param2,param3,param4,param5,param6,param7)
     #define assertion9(expr,param0,param1,param2,param3,param4,param5,param6,param7,param8)
+    #define assertion1WithExplanation(expr,param,explanation)
     #define assertionEquals(lhs,rhs)
     #define assertionEqualsMsg(lhs,rhs,msg)
     #define assertionEquals1(lhs,rhs,a)
@@ -682,12 +725,17 @@
     #define assertionNumericalEquals7(lhs,rhs,a,b,c,d,e,f,g)
     #define assertionNumericalEquals8(lhs,rhs,a,b,c,d,e,f,g,h)
     #define assertionNumericalEquals9(lhs,rhs,a,b,c,d,e,f,g,h,i)
+    #define assertionNumericalEquals10(lhs,rhs,a,b,c,d,e,f,g,h,i,j)
     #define assertionVectorNumericalEquals(lhs,rhs)
     #define assertionVectorNumericalEquals1(lhs,rhs,param0)
     #define assertionVectorNumericalEquals2(lhs,rhs,param0,param1)
-    #define assertionVectorNumericalEquals3(lhs,rhs,param0,param1)
-    #define assertionVectorNumericalEquals4(lhs,rhs,param0,param1)
-    #define assertionVectorNumericalEquals5(lhs,rhs,param0,param1)
+    #define assertionVectorNumericalEquals3(lhs,rhs,param0,param1,param2)
+    #define assertionVectorNumericalEquals4(lhs,rhs,param0,param1,param2,param3)
+    #define assertionVectorNumericalEquals5(lhs,rhs,param0,param1,param2,param3,param4)
+    #define assertionVectorNumericalEquals6(lhs,rhs,param0,param1,param2,param3,param4,param5)
+    #define assertionVectorNumericalEquals7(lhs,rhs,param0,param1,param2,param3,param4,param5,param6)
+    #define assertionVectorNumericalEquals8(lhs,rhs,param0,param1,param2,param3,param4,param5,param6,param7)
+    #define assertionVectorNumericalEquals9(lhs,rhs,param0,param1,param2,param3,param4,param5,param6,param7,param8)
     #define assertionMsg(expr,message)
     #define assertionFail(message)
   #endif
