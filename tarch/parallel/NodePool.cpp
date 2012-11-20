@@ -326,7 +326,11 @@ void tarch::parallel::NodePool::receiveDanglingMessages() {
 
 
 int tarch::parallel::NodePool::getMasterRank() const {
-  assertion1( !Node::getInstance().isGlobalMaster(), Node::getInstance().getRank() );
+  assertion1WithExplanation(
+    !Node::getInstance().isGlobalMaster(),
+    Node::getInstance().getRank(),
+    "You may not call getMasterRank() on the global master (typically rank 0). \nUse isGlobalMaster() to check before whether operation may be called."
+  );
   return _masterNode;
 }
 

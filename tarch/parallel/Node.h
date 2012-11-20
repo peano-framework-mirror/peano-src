@@ -243,25 +243,6 @@ class tarch::parallel::Node {
       int                 numberOfExpectedMessages
     );
 
-    /**
-     * Old signature calls new function and gives warning that old signature is used.
-     */
-    void triggerDeadlockTimeOut(
-      const std::string&  className,
-      const std::string&  methodName,
-      int                 communicationPartnerRank,
-      const std::string&  comment = ""
-    );
-
-    /**
-     * Old signature calls new function and gives warning that old signature is used.
-     */
-    void writeTimeOutWarning(
-      const std::string&  className,
-      const std::string&  methodName,
-      int                 communicationPartnerRank
-    );
-
     void plotMessageQueues();
 
     /**
