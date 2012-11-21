@@ -80,20 +80,28 @@ template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator() () {
   _treeRemainsStatic = true;
 
-  for (int level=_treeDepth+1; level>=1; level--) {
-    if (level==1) {
-      touchVerticesLastTime( level );
-      ascend(level);
-    }
-    else if (level==_treeDepth+1) {
-      leaveCells(level-1);
-    }
-    else {
-      touchVerticesLastTime( level );
-      ascend(level);
-      leaveCells(level-1);
+  if (_eventHandle.ascendSpecification.manipulates == peano::MappingSpecification::WHOLE_TREE) {
+    for (int level=_treeDepth+1; level>=1; level--) {
+      if (level==1) {
+        touchVerticesLastTime( level );
+        ascend(level);
+      }
+      else if (level==_treeDepth+1) {
+        leaveCells(level-1);
+      }
+      else {
+        touchVerticesLastTime( level );
+        ascend(level);
+        leaveCells(level-1);
+      }
     }
   }
+  else if (_eventHandle.ascendSpecification.manipulates == peano::MappingSpecification::ONLY_LEAVES) {
+    touchVerticesLastTime( _treeDepth );
+    leaveCells(_treeDepth);
+    ascend(_treeDepth);
+  }
+
 
   // If vertices are refined/erased in level 2 of the regular subtree, the local copy
   // of _treeRemainsStatic ist not copied back to _treeRemainsStatic. Thus, we need to

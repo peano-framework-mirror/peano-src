@@ -35,7 +35,11 @@ void peano::grid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandl
   const bool invokeEvent = _fineGridCell.isInside();
   #endif
 
-  if (invokeEvent) {
+  const bool InvokeEventAccordingToSpecification =
+    (_threadLocalEventHandle.leaveCellSpecification.manipulates == peano::MappingSpecification::WHOLE_TREE) ||
+    (_threadLocalEventHandle.leaveCellSpecification.manipulates == peano::MappingSpecification::ONLY_LEAVES && !_fineGridCell.isRefined() );
+
+  if (invokeEvent && InvokeEventAccordingToSpecification) {
     _threadLocalEventHandle.leaveCell(
       _fineGridCell,
       _fineGridVertices,

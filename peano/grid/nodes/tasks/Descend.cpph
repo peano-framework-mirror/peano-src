@@ -93,31 +93,40 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::descend(
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::operator() () {
   #if defined(SharedMemoryParallelisation)
-  while (
-     _precedingLoadProcessMayFork &&
-     !_descendProcessRunsInParallelToOtherTasks &&
-     !_gridContainer.isLevelInitialised(_treeDepth)
-  ) {
-    sendThisTaskToBackgroundWith1Argument(
-      "peano::grid::nodes::tasks::Descend::operator()",
-      _treeDepth
-    );
+  if (_eventHandle.descendSpecification.manipulates != peano::MappingSpecification::NOP) {
+    while (
+       _precedingLoadProcessMayFork &&
+       !_descendProcessRunsInParallelToOtherTasks &&
+       !_gridContainer.isLevelInitialised(_treeDepth)
+    ) {
+      sendThisTaskToBackgroundWith1Argument(
+        "peano::grid::nodes::tasks::Descend::operator()",
+        _treeDepth
+      );
+    }
+    tarch::multicore::BooleanSemaphore::continueWithTask();
   }
-  tarch::multicore::BooleanSemaphore::continueWithTask();
   #endif
 
-  for (int level=0; level<=_treeDepth; level++) {
-    if (level==_treeDepth) {
-      enterCells( level );
+  if (_eventHandle.descendSpecification.manipulates == peano::MappingSpecification::WHOLE_TREE) {
+    for (int level=0; level<=_treeDepth; level++) {
+      if (level==_treeDepth) {
+        enterCells( level );
+      }
+      else if (level==0) {
+        touchVerticesFirstTime( level+1 );
+        descend(level+1);
+      }
+      else {
+        enterCells( level );
+        touchVerticesFirstTime( level+1 );
+        descend(level+1);
+      }
     }
-    else if (level==0) {
-      touchVerticesFirstTime( level+1 );
-      descend(level+1);
-    }
-    else {
-      enterCells( level );
-      touchVerticesFirstTime( level+1 );
-      descend(level+1);
-    }
+  }
+  else if (_eventHandle.descendSpecification.manipulates == peano::MappingSpecification::ONLY_LEAVES) {
+    touchVerticesFirstTime( _treeDepth );
+    descend(_treeDepth);
+    enterCells(_treeDepth);
   }
 }

@@ -43,6 +43,12 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
      * a standard refined event is used.
      */
     Vertex  _coarseGridVertices[FOUR_POWER_D];
+
+    /**
+     * This is the root node of the spacetree, i.e. it is not an inner cell but
+     * basically the bounding box of the simulation domain plus its surrounding
+     * cells.
+     */
     Cell    _coarseGridCell;
 
     #ifdef Parallel

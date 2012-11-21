@@ -136,6 +136,18 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     receivedWorkerCell.receive(currentWorker,peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
     for (int i=0; i<TWO_POWER_D; i++) {
       receivedWorkerVertices[i].receive(currentWorker,peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+
+      #ifdef Debug
+      assertionVectorNumericalEquals5(
+        receivedWorkerVertices[i].getX(),
+        fineGridVertices[ fineGridVerticesEnumerator(i) ].getX(),
+        receivedWorkerVertices[i].toString(),
+        fineGridVertices[ fineGridVerticesEnumerator(i) ].toString(),
+        i,
+        fineGridVerticesEnumerator.toString(),
+        tarch::parallel::Node::getInstance().getRank()
+      );
+      #endif
     }
 
     _eventHandle.mergeWithMaster(

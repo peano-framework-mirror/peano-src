@@ -206,7 +206,11 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
   const bool InvokeEventForVertex = !_fineGridVertices[positionInArray].isOutside();
   #endif
 
-  if (InvokeEventForVertex) {
+  const bool InvokeEventAccordingToSpecification =
+    (_threadLocalEventHandle.touchVertexLastTimeSpecification.manipulates == peano::MappingSpecification::WHOLE_TREE) ||
+    (_threadLocalEventHandle.touchVertexLastTimeSpecification.manipulates == peano::MappingSpecification::ONLY_LEAVES && _fineGridVertices[positionInArray].getRefinementControl() != Vertex::Records::Refined);
+
+  if (InvokeEventForVertex && InvokeEventAccordingToSpecification) {
     _threadLocalEventHandle.touchVertexLastTime(
       _fineGridVertices[positionInArray],
       _fineGridVerticesEnumerator.getVertexPosition(positionInLocalCell),
