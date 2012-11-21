@@ -4,6 +4,9 @@
 #define _PEANO_MAPPING_SPECIFICATION_H_
 
 
+#include <string>
+
+
 namespace peano {
   struct MappingSpecification;
 }
@@ -45,6 +48,8 @@ struct peano::MappingSpecification {
    * Is used by the adapters to merge multiple specifications.
    */
   static MappingSpecification getMostGeneralSpecification();
+
+  std::string toString() const;
 };
 
 peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, const peano::MappingSpecification& rhs);

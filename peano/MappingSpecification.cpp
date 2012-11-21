@@ -2,11 +2,36 @@
 #include "tarch/Assertions.h"
 
 
+#include <sstream>
+
+
 peano::MappingSpecification::MappingSpecification(peano::MappingSpecification::Manipulates manipulates_, bool multithreading_, bool restartable_):
   manipulates(manipulates_),
   multithreading(multithreading_),
   restartable(restartable_) {
   assertion(!restartable || multithreading);
+}
+
+
+std::string peano::MappingSpecification::toString() const {
+  std::ostringstream msg;
+
+  msg << "(manipulates=";
+  switch (manipulates) {
+    case NOP:
+      msg << "nop";
+      break;
+    case ONLY_LEAVES:
+      msg << "only leaves";
+      break;
+    case WHOLE_TREE:
+      msg << "whole tree";
+      break;
+  }
+  msg << ",multithreading=" << multithreading
+      << ",restartable=" << restartable
+      << ")";
+  return msg.str();
 }
 
 
