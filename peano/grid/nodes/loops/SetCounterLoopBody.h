@@ -7,6 +7,7 @@
 #include "peano/utils/Globals.h"
 #include "peano/geometry/Geometry.h"
 #include "peano/grid/SingleLevelEnumerator.h"
+#include "tarch/logging/Log.h"
 
 
 namespace peano {
@@ -29,9 +30,10 @@ class peano::grid::nodes::loops::SetCounterLoopBody {
   private:
     friend class peano::grid::tests::SetCounterTest;
 
-    Vertex const * const                                        _coarseGridVertices;
+    static tarch::logging::Log                 _log;
+    Vertex const * const                       _coarseGridVertices;
     const peano::grid::SingleLevelEnumerator&  _coarseGridVerticesEnumerator;
-    int * const                                                 _fineGridCounter;
+    int * const                                _fineGridCounter;
 
     /**
      * Is vertex a hanging node or is it a new vertex?
@@ -44,36 +46,42 @@ class peano::grid::nodes::loops::SetCounterLoopBody {
      * @return peano::grid::nodes::Constants
      */
     static int analyseFineGridVertex(
-      Vertex const * const                                        coarseVertices,
+      Vertex const * const                       coarseVertices,
       const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
-      const tarch::la::Vector<DIMENSIONS,int>&                    coordinates
+      const tarch::la::Vector<DIMENSIONS,int>&   coordinates
     );
 
 
     /**
-     * Internal helper used by the other analyseFineGridVertex() operation.
+     * Internal helper used by the other analyseFineGridVertex() operation. It
+     * determines the value of the three boolean flags, i.e. this is the main
+     * analysis routine. It is recursive, and dimension is the recursion
+     * parameter.
      */
     static void analyseFineGridVertex(
-      Vertex const * const                                        coarseVertices,
+      Vertex const * const                       coarseVertices,
       const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
-      const tarch::la::Vector<DIMENSIONS,int>&                    coordinates,
-      tarch::la::Vector<DIMENSIONS,int>                           parentCoordinates,
-      bool&                                                       oneFatherCarriesDeleteFlag,
-      bool&                                                       oneFatherCarriesRefiningFlag,
-      bool&                                                       oneFatherCarriesRefinedFlag,
-      int                                                         dimension
+      const tarch::la::Vector<DIMENSIONS,int>&   coordinates,
+      tarch::la::Vector<DIMENSIONS,int>          parentCoordinates,
+      bool&                                      oneFatherCarriesDeleteFlag,
+      bool&                                      oneFatherCarriesRefiningFlag,
+      bool&                                      oneFatherCarriesRefinedFlag,
+      int                                        dimension
     );
 
+    /**
+     * Translate the three flags into one counter.
+     */
     static int analyseFineGridVertex(
-      bool oneFatherCarriesDeleteFlag,
-      bool oneFatherCarriesRefiningFlag,
-      bool oneFatherCarriesRefinedFlag
+      bool   oneFatherCarriesDeleteFlag,
+      bool   oneFatherCarriesRefiningFlag,
+      bool   oneFatherCarriesRefinedFlag
     );
   public:
     SetCounterLoopBody(
-      Vertex const * const                                        coarseGridVertices,
+      Vertex const * const                       coarseGridVertices,
       const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
-      int * const                                                 fineGridCounter
+      int * const                                fineGridCounter
     );
 
     /**

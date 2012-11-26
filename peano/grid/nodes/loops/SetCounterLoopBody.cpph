@@ -3,10 +3,13 @@
 
 
 template <class Vertex>
+tarch::logging::Log  peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::_log( "peano::grid::nodes::loops::SetCounterLoopBody" );
+
+template <class Vertex>
 peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::SetCounterLoopBody(
-  Vertex const * const                                        coarseGridVertices,
+  Vertex const * const                       coarseGridVertices,
   const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
-  int * const                                                 fineGridCounter
+  int * const                                fineGridCounter
 ):
   _coarseGridVertices(coarseGridVertices),
   _coarseGridVerticesEnumerator(coarseGridVerticesEnumerator),
@@ -20,26 +23,33 @@ int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex
   bool oneFatherCarriesRefiningFlag,
   bool oneFatherCarriesRefinedFlag
 ) {
+  logTraceInWith3Arguments( "analyseFineGridVertex(...)", oneFatherCarriesDeleteFlag, oneFatherCarriesRefiningFlag, oneFatherCarriesRefinedFlag);
+
   // Optimization performed, for furhter details please refer to
   // https://opt-patterns.wiki.tum.de/Conditions+merging
 
   if(oneFatherCarriesRefinedFlag){
+    logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterPersistentNode" );
     return CounterPersistentNode;
   }
   else {
     if(!oneFatherCarriesRefiningFlag) {
       if(!oneFatherCarriesDeleteFlag) {
+        logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterHangingNode" );
         return CounterHangingNode;
       }
       else {
+        logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterPersistentNodeDelete" );
         return CounterPersistentNodeDelete;
       }
     }
     else {
       if(!oneFatherCarriesDeleteFlag) {
+        logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterNewNode"  );
         return CounterNewNode;
       }
       else {
+        logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterPersistentNode"  );
         return CounterPersistentNode;
       }
     }
@@ -47,16 +57,18 @@ int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex
 
   assertionMsg(false, "all cases handled in the if construct from above");
 
+  logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterPersistentNode" );
   return CounterPersistentNode;
 }
 
 
 template <class Vertex>
 int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
-  Vertex const * const                                        coarseVertices,
+  Vertex const * const                       coarseVertices,
   const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
-  const tarch::la::Vector<DIMENSIONS,int>&                    coordinates
+  const tarch::la::Vector<DIMENSIONS,int>&   coordinates
 ) {
+  logTraceInWith2Arguments( "analyseFineGridVertex(...)", coarseGridVerticesEnumerator.toString(), coordinates );
   bool oneFatherCarriesDeleteFlag   = false;
   bool oneFatherCarriesRefiningFlag = false;
   bool oneFatherCarriesRefinedFlag  = false;
@@ -71,7 +83,9 @@ int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex
     oneFatherCarriesRefinedFlag,
     DIMENSIONS-1
   );
-  return analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag);
+  int result = analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag);
+  logTraceOutWith1Argument( "analyseFineGridVertex(...)", result );
+  return result;
 }
 
 
@@ -79,14 +93,14 @@ int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex
 
 template <class Vertex>
 void peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
-  Vertex const * const                                        coarseVertices,
+  Vertex const * const                       coarseVertices,
   const peano::grid::SingleLevelEnumerator&  coarseGridVerticesEnumerator,
-  const tarch::la::Vector<DIMENSIONS,int>&                    coordinates,
-  tarch::la::Vector<DIMENSIONS,int>                           parentCoordinates,
-  bool&                                                       oneFatherCarriesDeleteFlag,
-  bool&                                                       oneFatherCarriesRefiningFlag,
-  bool&                                                       oneFatherCarriesRefinedFlag,
-  int                                                         dimension
+  const tarch::la::Vector<DIMENSIONS,int>&   coordinates,
+  tarch::la::Vector<DIMENSIONS,int>          parentCoordinates,
+  bool&                                      oneFatherCarriesDeleteFlag,
+  bool&                                      oneFatherCarriesRefiningFlag,
+  bool&                                      oneFatherCarriesRefinedFlag,
+  int                                        dimension
 ) {
   assertion(dimension<DIMENSIONS);
 
@@ -117,5 +131,8 @@ void peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVerte
 template <class Vertex>
 void peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::operator() (const tarch::la::Vector<DIMENSIONS,int>& i) const {
   int indexInCounterArray = peano::grid::SingleLevelEnumerator::lineariseVertexIndex(i);
+
+  logTraceInWith2Arguments( "operator()", i, indexInCounterArray );
   _fineGridCounter[indexInCounterArray] = analyseFineGridVertex(_coarseGridVertices,_coarseGridVerticesEnumerator,i);
+  logTraceOutWith1Argument( "operator()",_fineGridCounter[indexInCounterArray] );
 }
