@@ -358,8 +358,8 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
   #endif
 
   const bool InvokeEventAccordingToSpecification =
-    (_threadLocalEventHandle.touchVertexFirstTimeSpecification.manipulates == peano::MappingSpecification::WHOLE_TREE) ||
-    (_threadLocalEventHandle.touchVertexFirstTimeSpecification.manipulates == peano::MappingSpecification::ONLY_LEAVES && _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Refined);
+    (_threadLocalEventHandle.touchVertexFirstTimeSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
+    (_threadLocalEventHandle.touchVertexFirstTimeSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Refined);
 
   if (InvokeEventForVertex && InvokeEventAccordingToSpecification) {
     _threadLocalEventHandle.touchVertexFirstTime(
