@@ -5,6 +5,9 @@
 #include "tarch/Assertions.h"
 
 
+tarch::logging::Log  peano::grid::AscendDescendLevelEnumerator::_log( "peano::grid::AscendDescendLevelEnumerator" );
+
+
 peano::grid::AscendDescendLevelEnumerator::AscendDescendLevelEnumerator(const SingleLevelEnumerator&  cloneFineGridEnumerator):
   _fineGridCellSize(cloneFineGridEnumerator._fineGridCellSize),
   _domainOffset(cloneFineGridEnumerator._domainOffset),
@@ -25,12 +28,18 @@ int peano::grid::AscendDescendLevelEnumerator::operator() (int localVertexNumber
 
 
 int peano::grid::AscendDescendLevelEnumerator::operator() (const LocalVertexIntegerIndex&  localVertexNumber ) const {
-  return SingleLevelEnumerator::lineariseVertexIndex(localVertexNumber);
+  logTraceInWith1Argument( "operator()(...)", localVertexNumber );
+  int result = SingleLevelEnumerator::lineariseVertexIndex(localVertexNumber);
+  logTraceOutWith1Argument( "operator()(...)", result );
+  return result;
 }
 
 
 int peano::grid::AscendDescendLevelEnumerator::operator() (const LocalVertexBitsetIndex&   localVertexNumber ) const {
-  return (*this)( static_cast<int>( localVertexNumber.to_ulong()) );
+  logTraceInWith1Argument( "operator()(...)", localVertexNumber );
+  int result = (*this)( static_cast<int>( localVertexNumber.to_ulong()) );
+  logTraceOutWith1Argument( "operator()(...)", result );
+  return result;
 }
 
 

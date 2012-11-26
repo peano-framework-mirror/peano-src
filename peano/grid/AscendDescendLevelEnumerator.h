@@ -26,8 +26,9 @@ namespace peano {
  */
 class peano::grid::AscendDescendLevelEnumerator: public peano::grid::VertexEnumerator {
   private:
-    Vector                   _fineGridCellSize;
-    Vector                   _domainOffset;
+    static tarch::logging::Log  _log;
+    Vector                      _fineGridCellSize;
+    Vector                      _domainOffset;
 
     int    _level;
 
