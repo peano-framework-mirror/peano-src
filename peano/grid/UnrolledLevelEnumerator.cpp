@@ -6,6 +6,7 @@ tarch::logging::Log  peano::grid::UnrolledLevelEnumerator::_log( "peano::grid::U
 
 
 int peano::grid::UnrolledLevelEnumerator::lineariseCellIndex( const LocalVertexIntegerIndex& cellPosition ) const {
+  logTraceInWith1Argument( "lineariseCellIndex(...)", cellPosition );
   int base   = 1;
   int result = 0;
   for (int d=0; d<DIMENSIONS; d++) {
@@ -15,11 +16,13 @@ int peano::grid::UnrolledLevelEnumerator::lineariseCellIndex( const LocalVertexI
 	  base   *= _CellsPerAxis;
   }
   assertion( result>= 0 );
+  logTraceOutWith1Argument( "lineariseCellIndex(...)", result );
   return result;
 }
 
 
 int peano::grid::UnrolledLevelEnumerator::lineariseVertexIndex( const LocalVertexIntegerIndex& vertexPosition ) const {
+  logTraceInWith1Argument( "lineariseVertexIndex(...)", vertexPosition );
   int base   = 1;
   int result = 0;
   for (int d=0; d<DIMENSIONS; d++) {
@@ -29,6 +32,7 @@ int peano::grid::UnrolledLevelEnumerator::lineariseVertexIndex( const LocalVerte
     base   *= _VerticesPerAxis;
   }
   assertion( result>= 0 );
+  logTraceOutWith1Argument( "lineariseVertexIndex(...)", result );
   return result;
 }
 
@@ -92,6 +96,7 @@ void peano::grid::UnrolledLevelEnumerator::setOffset(const LocalVertexIntegerInd
 
 
 int peano::grid::UnrolledLevelEnumerator::operator() (int localVertexNumber) const {
+  logTraceInWith1Argument( "operator()(int)", localVertexNumber );
   peano::grid::UnrolledLevelEnumerator::LocalVertexIntegerIndex localOffset;
   int base   = TWO_POWER_D_DIVIDED_BY_TWO;
   for (int d=DIMENSIONS-1; d>=0; d--) {
@@ -102,7 +107,9 @@ int peano::grid::UnrolledLevelEnumerator::operator() (int localVertexNumber) con
     base              /= 2;
   }
   localOffset += _discreteOffset;
-  return lineariseVertexIndex( localOffset );
+  int result = lineariseVertexIndex( localOffset );
+  logTraceOutWith1Argument( "operator()(int)", result );
+  return result;
 }
 
 

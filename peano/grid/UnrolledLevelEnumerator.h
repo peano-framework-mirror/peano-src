@@ -12,6 +12,12 @@
 namespace peano {
   namespace grid {
     class UnrolledLevelEnumerator;
+
+    /**
+     * Forward declaration. Class is friend as its constructor requires access
+     * to this enumerator.
+     */
+    class UnrolledAscendDescendLevelEnumerator;
   }
 }
 
@@ -24,6 +30,8 @@ namespace peano {
 class peano::grid::UnrolledLevelEnumerator: public peano::grid::VertexEnumerator {
   private:
     static tarch::logging::Log  _log;
+
+    friend class UnrolledAscendDescendLevelEnumerator;
 
     LocalVertexIntegerIndex  _discreteOffset;
     Vector                   _fineGridCellSize;
