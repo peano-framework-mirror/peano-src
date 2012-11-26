@@ -153,7 +153,7 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
 
     bool Parallelise = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       growStack,
-      peano::datatraversal::autotuning::ParalleliseDescend
+      peano::datatraversal::autotuning::PipelineDescendTask
     ) > 0;
 
     LoadCellsTask       loadCellsTask(     TopLevelLoopDirection, TreeDepth, state.isTraversalInverted(), _regularGridContainer, Base::_cellStack, Parallelise );
@@ -167,7 +167,7 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
       Parallelise
     );
 
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::ParalleliseDescend );
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::PipelineDescendTask );
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::SplitLoadVerticesTaskOnRegularStationaryGrid );
   }
 
@@ -184,7 +184,7 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
 
     bool Parallelise = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       growStack,
-      peano::datatraversal::autotuning::ParalleliseAscend
+      peano::datatraversal::autotuning::PipelineAscendTask
     ) > 0;
 
     StoreCellsTask      storeCellsTask(    TopLevelLoopDirection, TreeDepth, state.isTraversalInverted(), _regularGridContainer, Base::_cellStack, Parallelise   );
@@ -198,7 +198,7 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
       Parallelise
     );
 
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::ParalleliseAscend );
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::PipelineAscendTask );
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated( peano::datatraversal::autotuning::SplitStoreVerticesTaskOnRegularStationaryGrid );
   }
 
@@ -208,9 +208,6 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
   const int verticesStoredToOuputStack = Base::_vertexStack.sizeOfOutputStack() - sizeOfOutputStackBeforeDescend;
 
   fineGridCell.setInputOutputStackAccessStatistics(verticesReadFromInputStack,verticesStoredToOuputStack);
-
-  // @todo evtl wieder rein, falls andere das brauchen. Der STD Stack braucht es nicht
-//  Base::_vertexStack.releaseAllViews();
 
   assertionEquals2( fineGridCell.getNumberOfStoresToOutputStack(), verticesReadFromInputStack, verticesStoredToOuputStack, fineGridCell.toString() );
   assertionEquals2( fineGridCell.getNumberOfLoadsFromInputStack(), verticesStoredToOuputStack, verticesReadFromInputStack, fineGridCell.toString() );
