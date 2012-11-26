@@ -1,5 +1,6 @@
 #include "peano/MappingSpecification.h"
 #include "tarch/Assertions.h"
+#include "tarch/logging/Log.h"
 
 
 #include <sstream>
@@ -36,6 +37,8 @@ std::string peano::MappingSpecification::toString() const {
 
 
 peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, const peano::MappingSpecification& rhs) {
+  static tarch::logging::Log _log( "peano::MappingSpecification" );
+  logTraceInWith2Arguments("operator&()", lhs.toString(), rhs.toString() );
 
   peano::MappingSpecification::Manipulates manipulates =
     (rhs.manipulates==peano::MappingSpecification::WHOLE_TREE  || lhs.manipulates==peano::MappingSpecification::WHOLE_TREE)  ? peano::MappingSpecification::WHOLE_TREE  :
@@ -45,7 +48,9 @@ peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, co
   bool multithreading = lhs.multithreading && rhs.multithreading;
   bool restartable    = lhs.restartable    && rhs.restartable;
 
-  return peano::MappingSpecification(manipulates,multithreading,restartable);
+  peano::MappingSpecification result(manipulates,multithreading,restartable);
+  logTraceOutWith1Argument("operator&()",result.toString());
+  return result;
 }
 
 

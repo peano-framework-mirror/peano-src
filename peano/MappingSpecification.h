@@ -52,6 +52,12 @@ struct peano::MappingSpecification {
   std::string toString() const;
 };
 
+/**
+ * Combine two specifications. The resulting specification has weaker or equal
+ * constraints. If one specification work for example only on the leaves and
+ * supports multicore parallelism and the other one works on the whole tree
+ * serially, then the result specification works serially on the whole tree.
+ */
 peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, const peano::MappingSpecification& rhs);
 
 
