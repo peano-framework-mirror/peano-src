@@ -142,8 +142,7 @@ peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::dForLoopInstance( co
 
 template <class LoopBody>
 void peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::operator() (const dForRange& range) {
-	logTraceInWith1Argument( "dForLoopInstance::operator()", range.toString() );
-	logDebug( "dForLoopInstance::operator()", "copy of loop body created for range " << range.toString() );
+	logTraceInWith2Arguments( "dForLoopInstance::operator()", range.toString(), range.isSequentialBoundaryRange() );
 
 	if (range.isSequentialBoundaryRange()) {
     dfor(i,range.getRange()) {
