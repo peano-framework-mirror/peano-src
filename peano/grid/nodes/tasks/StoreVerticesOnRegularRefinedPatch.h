@@ -39,6 +39,8 @@ class peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
 
     /**
      * Counts the number of active store processes. Is protected by _semaphore.
+     *
+     * @see Destructor for a lifecycle description.
      */
     static int                                                        _activeStoreTasks;
 
@@ -173,6 +175,19 @@ class peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
      * task on the master thread then is destroyed. In this case, the blueprint
      * might still hold the whole stack view, i.e. has not written any record
      * to the view at all.
+     *
+     * !!! Asynchronous task model
+     *
+     * To keep track of the active threads, the class uses a static thread
+     * counter _activeStoreTasks. It is incremented by the constructor but not
+     * by the copy constructor, i.e. it really counts the tasks not the thread
+     * objects. Originally, I planned to free this counter in the destructor
+     * (we then could increment it in each constructor and need no additional
+     * decrement in the destructor), but that does not work with all TBB
+     * versions, as some of them keep dummy copies of the thread object.
+     *
+     * So, only real 'new' tasks increment the global task counter. This
+     * counter in return is decremented by the operator().
      */
     ~StoreVerticesOnRegularRefinedPatch();
 

@@ -19,11 +19,11 @@ int peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
 
 template <class Vertex, class Cell, class VertexStack>
 peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::StoreVerticesOnRegularRefinedPatch(
-  const bool                                                        isTraversalInverted,
-  peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
-  VertexStack&                                                      vertexStack,
-  bool                                                              storeProcessRunsInParallelToOtherTasks,
-  int                                                               maxLevelToFork
+  const bool                                         isTraversalInverted,
+  peano::grid::RegularGridContainer<Vertex,Cell>&    regularGridContainer,
+  VertexStack&                                       vertexStack,
+  bool                                               storeProcessRunsInParallelToOtherTasks,
+  int                                                maxLevelToFork
 ):
   _isTraversalInverted(isTraversalInverted),
   _regularGridContainer(regularGridContainer),
@@ -53,11 +53,7 @@ peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,Vertex
   _maxLevelToFork( copy._maxLevelToFork ),
   _stackView( copy._stackView ),
   _coarsestLevelOfThisTask( copy._coarsestLevelOfThisTask ),
-  _coarsestCellsOffset( copy._coarsestCellsOffset )
-{
-  tarch::multicore::Lock lock( _semaphore );
-  _activeStoreTasks++;
-
+  _coarsestCellsOffset( copy._coarsestCellsOffset ) {
   #ifdef Asserts
   _haveWrittenToOutputStack = copy._haveWrittenToOutputStack;
   #endif
@@ -128,9 +124,6 @@ peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,Vertex
     _coarsestLevelOfThisTask,
     _coarsestCellsOffset
   );
-
-  tarch::multicore::Lock lock( _semaphore );
-  _activeStoreTasks--;
 }
 
 
@@ -234,13 +227,6 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
       if ( CaseStorePersistentVertex ) {
         _regularGridContainer.getVertex(currentLevel,positionInArray).updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack();
 
-//        assertion4(
-//          _regularGridContainer.getVertex(currentLevel,positionInArray).getCurrentAdjacentCellsHeight()< peano::grid::Undefined,
-//          currentLevel,
-//          _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
-//          positionInArray,
-//          _regularGridContainer.getVertex(currentLevel,positionInArray).toString()
-//        );
         assertion4(
           _regularGridContainer.getVertex(currentLevel,positionInArray).getAdjacentCellsHeightOfPreviousIteration()< peano::grid::Undefined &&
           _regularGridContainer.getVertex(currentLevel,positionInArray).getAdjacentCellsHeightOfPreviousIteration()>= peano::grid::Leaf,
@@ -569,6 +555,7 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
     tarch::multicore::Lock leaveOperatorlock( _semaphore );
     assertion3(_activeStoreTasks>=1,_activeStoreTasks,_coarsestLevelOfThisTask,_coarsestCellsOffset);
     bool allTasksHaveTerminated = _activeStoreTasks == 1;
+    logDebug( "operator()()", "wait until all store processes have terminated. active-tasks=" << _activeStoreTasks );
     leaveOperatorlock.free();
     while (!allTasksHaveTerminated) {
       tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack( "peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch::operator()" );
@@ -582,6 +569,10 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
 
     _regularGridContainer.haveStoredAllPatchsVertices(treeDepth);
   }
+
+  tarch::multicore::Lock lock( _semaphore );
+  _activeStoreTasks--;
+  assertion( _activeStoreTasks>=0 );
 
   logTraceOutWith2Arguments( "operator()()", _coarsestLevelOfThisTask, _coarsestCellsOffset );
 }
