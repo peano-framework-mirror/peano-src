@@ -1,10 +1,10 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _PEANO_GEOMETRY_HEXAHEDRON_H_
 #define _PEANO_GEOMETRY_HEXAHEDRON_H_
 
 #include "peano/geometry/Geometry.h"
+#include "tarch/logging/Log.h"
 
 namespace peano {
   namespace geometry {
