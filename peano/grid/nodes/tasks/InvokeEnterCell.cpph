@@ -1,3 +1,6 @@
+#include "peano/MappingSpecification.h"
+
+
 template < class Vertex, class Cell, class State, class EventHandle>
 tarch::logging::Log peano::grid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandle >::_log( "peano::grid::nodes::tasks::InvokeEnterCell" );
 
@@ -38,9 +41,14 @@ void peano::grid::nodes::tasks::InvokeEnterCell< Vertex, Cell, State, EventHandl
   const bool invokeEvent = _fineGridCell.isInside();
   #endif
 
+  // According to the specification, only refined cells where all adjacent
+  // vertices are refined are to be excluded. This check is rather expensive,
+  // so I do that simple one.
+//  const bool InvokeEventAccordingToSpecification =
+//    (_threadLocalEventHandle.enterCellSpecification.manipulates == peano::MappingSpecification::WHOLE_TREE) ||
+//    (_threadLocalEventHandle.enterCellSpecification.manipulates == peano::MappingSpecification::ONLY_LEAVES && !_fineGridCell.isRefined());
   const bool InvokeEventAccordingToSpecification =
-    (_threadLocalEventHandle.enterCellSpecification.manipulates == peano::MappingSpecification::WHOLE_TREE) ||
-    (_threadLocalEventHandle.enterCellSpecification.manipulates == peano::MappingSpecification::ONLY_LEAVES && !_fineGridCell.isRefined());
+    _threadLocalEventHandle.enterCellSpecification().manipulates != peano::MappingSpecification::NOP;
 
   if (invokeEvent && InvokeEventAccordingToSpecification) {
     _threadLocalEventHandle.enterCell(
