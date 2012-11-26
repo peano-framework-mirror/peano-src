@@ -216,6 +216,7 @@ class peano::grid::RegularGridContainer {
     Cell& getCell( int level, int cellIndex );
     const Cell& getCell( int level, int cellIndex ) const;
     void setCell( int level, int cellIndex, const Cell& cell );
+    Cell* getCell( int level );
 
     int& getCounter( int level, int vertexIndex );
 

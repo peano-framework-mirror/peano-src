@@ -356,6 +356,14 @@ const Cell& peano::grid::RegularGridContainer<Vertex,Cell>::getCell( int level, 
 
 
 template < class Vertex, class Cell >
+Cell* peano::grid::RegularGridContainer<Vertex,Cell>::getCell( int level ) {
+  validateThatRegularSubtreeIsAvailable( level );
+  return _data[level]->cell;
+}
+
+
+
+template < class Vertex, class Cell >
 int& peano::grid::RegularGridContainer<Vertex,Cell>::getCounter( int level, int vertexIndex ) {
   logTraceInWith2Arguments( "getCounter(int,int)", level, vertexIndex );
 
