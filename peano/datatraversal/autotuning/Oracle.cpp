@@ -118,8 +118,11 @@ void peano::datatraversal::autotuning::Oracle::deleteOracles() {
     }
   }
 
-  assertion( _oracles.empty() );
-  assertion( _watches.empty() );
+  _oracles.clear();
+  _watches.clear();
+
+  assertion1( _oracles.empty(), _oracles.size() );
+  assertion1( _watches.empty(), _watches.size() );
 }
 
 
@@ -147,7 +150,7 @@ void peano::datatraversal::autotuning::Oracle::switchToOracle(int id) {
 
 
 int peano::datatraversal::autotuning::Oracle::parallelise(int problemSize, MethodTrace askingMethod ) {
-  logTraceInWith2Arguments( "parallelise(int,int)", problemSize, askingMethod );
+  logTraceInWith3Arguments( "parallelise(int,int)", problemSize, askingMethod, toString(askingMethod) );
 
   int result;
 

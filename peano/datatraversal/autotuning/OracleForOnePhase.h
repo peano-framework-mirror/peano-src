@@ -14,26 +14,28 @@ namespace peano {
       class OracleForOnePhase;
 
       enum MethodTrace {
-        LoadVertices                                     = 3,
-        LoadVerticesOnRegularStationaryGrid              = 4, // not unrolled
-        LoadVerticesOnIrregularStationaryGrid            = 5,
-        LoadVerticesOnStationaryGridWithParallelBoundary = 6,
-        StoreVertices                                    = 7,
-        StoreVerticesOnRegularStationaryGrid             = 8, // not unrolled
-        StoreVerticesOnIrregularStationaryGrid           = 9,
-        SetCounter                                       = 10,
-        CallEnterCellAndLoadSubCellsWithinTraverse       = 11,
-        CallLeaveCellAndStoreSubCellsWithinTraverse      = 12,
-        CallEnterCellAndInitialiseEnumeratorsOnRegularStationaryGrid = 13,
-        CallTouchFirstTimeOnRegularStationaryGrid        = 14,
-        CallTouchLastTimeOnRegularStationaryGrid         = 15,
-        CallEnterCellOnRegularStationaryGrid             = 16,
-        CallLeaveCellOnRegularStationaryGrid             = 17,
-        ParalleliseAscend                                = 18,
-        ParalleliseDescend                               = 19,
-        SplitLoadVerticesTaskOnRegularStationaryGrid     = 20,
-        SplitStoreVerticesTaskOnRegularStationaryGrid    = 21,
-        NumberOfDifferentMethodsCalling                               = 22
+        LoadVertices                                     = 0,
+        LoadVerticesOnRegularStationaryGrid              = 1, // not unrolled
+        LoadVerticesOnIrregularStationaryGrid            = 2,
+        LoadVerticesOnStationaryGridWithParallelBoundary = 3,
+        StoreVertices                                    = 4,
+        StoreVerticesOnRegularStationaryGrid             = 5, // not unrolled
+        StoreVerticesOnIrregularStationaryGrid           = 6,
+        SetCounter                                       = 7,
+        CallEnterCellAndLoadSubCellsWithinTraverse       = 8,
+        CallLeaveCellAndStoreSubCellsWithinTraverse      = 9,
+        CallEnterCellAndInitialiseEnumeratorsOnRegularStationaryGrid = 10,
+        CallTouchFirstTimeOnRegularStationaryGrid        = 11,
+        CallTouchLastTimeOnRegularStationaryGrid         = 12,
+        CallEnterCellOnRegularStationaryGrid             = 13,
+        CallLeaveCellOnRegularStationaryGrid             = 14,
+        PipelineAscendTask                               = 15,
+        PipelineDescendTask                              = 16,
+        SplitLoadVerticesTaskOnRegularStationaryGrid     = 17,
+        SplitStoreVerticesTaskOnRegularStationaryGrid    = 18,
+        AscendOnRegularStationaryGrid                    = 19,
+        DescendOnRegularStationaryGrid                   = 20,
+        NumberOfDifferentMethodsCalling                  = 21
       };
 
       std::string toString( const MethodTrace& methodTrace );

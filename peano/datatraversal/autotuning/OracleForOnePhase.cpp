@@ -34,14 +34,18 @@ std::string peano::datatraversal::autotuning::toString( const MethodTrace& metho
       return "call-enter-cell-on-regular-stationary-grid";
     case CallLeaveCellOnRegularStationaryGrid:
       return "call-leave-cell-on-regular-stationary-grid";
-    case ParalleliseAscend:
-      return "parallelise-ascend";
-    case ParalleliseDescend:
-      return "parallelise-descend";
+    case PipelineAscendTask:
+      return "pipeline-ascend-task";
+    case PipelineDescendTask:
+      return "pipeline-descend-task";
     case SplitLoadVerticesTaskOnRegularStationaryGrid:
       return "split-load-vertices-task-on-regular-stationary-grid";
     case SplitStoreVerticesTaskOnRegularStationaryGrid:
       return "split-store-vertices-task-on-regular-stationary-grid";
+    case AscendOnRegularStationaryGrid:
+      return "ascend-on-regular-stationary-grid";
+    case DescendOnRegularStationaryGrid:
+      return "descend-on-regular-stationary-grid";
     case NumberOfDifferentMethodsCalling:
       return "<error>";
   }
@@ -84,14 +88,18 @@ peano::datatraversal::autotuning::MethodTrace peano::datatraversal::autotuning::
       return CallEnterCellOnRegularStationaryGrid;
     case static_cast<int>(CallLeaveCellOnRegularStationaryGrid):
       return CallLeaveCellOnRegularStationaryGrid;
-    case static_cast<int>(ParalleliseAscend):
-      return ParalleliseAscend;
-    case static_cast<int>(ParalleliseDescend):
-      return ParalleliseDescend;
+    case static_cast<int>(PipelineAscendTask):
+      return PipelineAscendTask;
+    case static_cast<int>(PipelineDescendTask):
+      return PipelineDescendTask;
     case static_cast<int>(SplitLoadVerticesTaskOnRegularStationaryGrid):
       return SplitLoadVerticesTaskOnRegularStationaryGrid;
     case static_cast<int>(SplitStoreVerticesTaskOnRegularStationaryGrid):
       return SplitStoreVerticesTaskOnRegularStationaryGrid;
+    case static_cast<int>(AscendOnRegularStationaryGrid):
+      return AscendOnRegularStationaryGrid;
+    case static_cast<int>(DescendOnRegularStationaryGrid):
+      return DescendOnRegularStationaryGrid;
     case static_cast<int>(NumberOfDifferentMethodsCalling):
       return NumberOfDifferentMethodsCalling;
   }

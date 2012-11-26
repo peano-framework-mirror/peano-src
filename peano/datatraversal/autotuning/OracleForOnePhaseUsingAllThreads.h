@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef _PEANO_DATA_TRAVERSAL_AUTOTUNING_ORACLE_FOR_ONE_PHASE_WITH_FIXED_GRAIN_SIZE_H_
-#define _PEANO_DATA_TRAVERSAL_AUTOTUNING_ORACLE_FOR_ONE_PHASE_WITH_FIXED_GRAIN_SIZE_H_
+#ifndef _PEANO_DATA_TRAVERSAL_AUTOTUNING_ORACLE_FOR_ONE_PHASE_USING_ALL_THREADS_H_
+#define _PEANO_DATA_TRAVERSAL_AUTOTUNING_ORACLE_FOR_ONE_PHASE_USING_ALL_THREADS_H_
 
 
 #include "tarch/logging/Log.h"
@@ -16,7 +16,7 @@
 namespace peano {
   namespace datatraversal {
     namespace autotuning {
-      class OracleForOnePhaseWithFixedGrainSize;
+      class OracleForOnePhaseUsingAllThreads;
     }
   }
 }
@@ -25,16 +25,20 @@ namespace peano {
 /**
  * @author Tobias Weinzierl
  */
-class peano::datatraversal::autotuning::OracleForOnePhaseWithFixedGrainSize: public peano::datatraversal::autotuning::OracleForOnePhase {
+class peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads: public peano::datatraversal::autotuning::OracleForOnePhase {
   private:
     static tarch::logging::Log  _log;
 
-    int                         _fixedGrainSize;
+    int                         _numberOfThreads;
     tarch::timing::Measurement  _executionTime;
+    const MethodTrace           _methodTrace;
   public:
-    OracleForOnePhaseWithFixedGrainSize(int grainSize);
+    /**
+     * Use a fixed number of threads.
+     */
+    OracleForOnePhaseUsingAllThreads(int numberOfThreads, const MethodTrace& methodTrace = NumberOfDifferentMethodsCalling);
 
-    virtual ~OracleForOnePhaseWithFixedGrainSize();
+    virtual ~OracleForOnePhaseUsingAllThreads();
 
     virtual std::pair<int,bool> parallelise(int problemSize);
     virtual void parallelSectionHasTerminated(double elapsedCalendarTime);
