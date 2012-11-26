@@ -1,5 +1,6 @@
 #include "peano/datatraversal/dForLoop.h"
 #include "peano/datatraversal/SingleLevelCellLoop.h"
+#include "peano/MappingSpecification.h"
 
 #ifdef SharedMemoryParallisation
 #include "tarch/multicore/BooleanSemaphore.h"
@@ -21,6 +22,7 @@ peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::Descend(
   _gridContainer( gridContainer ),
   _touchVertexFirstTimeLoopBody(_state, _eventHandle, _gridContainer),
   _enterCellLoopBody(_state, _eventHandle, _gridContainer),
+  _descendLoopBody(_eventHandle, _gridContainer ),
   _precedingLoadProcessMayFork(precedingLoadProcessMayFork),
   _descendProcessRunsInParallelToOtherTasks(descendProcessRunsInParallelToOtherTasks) {
   assertion( treeDepth>=1 );
@@ -29,19 +31,23 @@ peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::Descend(
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVerticesFirstTime(int level) {
-  #if !defined(SharedMemoryParallelisation)
-  assertion2(_gridContainer.isLevelInitialised(level), level, _gridContainer.toString());
-  #else
-  while (_descendProcessRunsInParallelToOtherTasks && !_gridContainer.isLevelInitialised(level)) {
-    sendThisTaskToBackgroundWith1Argument(
-      "peano::grid::nodes::tasks::Descend::touchVerticesFirstTime(int)",
-      level
-    );
-  }
-  tarch::multicore::BooleanSemaphore::continueWithTask();
-  #endif
+  const bool runOperation =
+    (_eventHandle.touchVertexFirstTimeSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
+    (_eventHandle.touchVertexFirstTimeSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && level == _treeDepth);
 
-//  if (!_eventHandle.touchVertexFirstTimeIsNOP) {
+  if (runOperation) {
+    #if !defined(SharedMemoryParallelisation)
+    assertion2(_gridContainer.isLevelInitialised(level), level, _gridContainer.toString());
+    #else
+    while (_descendProcessRunsInParallelToOtherTasks && !_gridContainer.isLevelInitialised(level)) {
+      sendThisTaskToBackgroundWith1Argument(
+        "peano::grid::nodes::tasks::Descend::touchVerticesFirstTime(int)",
+        level
+      );
+    }
+    tarch::multicore::BooleanSemaphore::continueWithTask();
+    #endif
+
     const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
     const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid
@@ -49,13 +55,17 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVer
     _touchVertexFirstTimeLoopBody.setLevel(level);
     peano::datatraversal::dForLoop<TouchVertexFirstTimeLoopBody>( NumberOfVertices, _touchVertexFirstTimeLoopBody, sharedMemoryGrainSize, false );
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid);
-//  }
+  }
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCells(int level) {
-//  if (!_eventHandle.enterCellIsNOP) {
+  const bool runOperation =
+    (_eventHandle.enterCellSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
+    (_eventHandle.enterCellSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && level == _treeDepth);
+
+  if (runOperation) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
     const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid
@@ -67,66 +77,62 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCel
       sharedMemoryGrainSize
     );
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid);
-//  }
+  }
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::descend(int fineGridLevel) {
-//  if (!_eventHandle.descendIsNOP) {
-    assertionMsg( false, "not implemented yet");
-//    const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
-//    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-//      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::gridCallEnterCellOnRegularStationaryGrid
-//    );
-//    _enterCellLoopBody.setLevel(level);
-//    peano::datatraversal::SingleLevelCellLoop<EnterCellLoopBody> loop(
-//      NumberOfCells,
-//      _enterCellLoopBody,
-//      sharedMemoryGrainSize
-//    );
-//    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::gridCallEnterCellOnRegularStationaryGrid);
-//  }
+  const bool runOperation =
+    (_eventHandle.descendSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
+    (_eventHandle.descendSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && fineGridLevel == _treeDepth);
+
+  if (runOperation) {
+    const tarch::la::Vector<DIMENSIONS,int> NumberOfCoarseGridCells = _gridContainer.getNumberOfCells(fineGridLevel-1);
+    const int                               sharedMemoryGrainSize   = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+      tarch::la::volume(NumberOfCoarseGridCells),peano::datatraversal::autotuning::DescendOnRegularStationaryGrid
+    );
+
+    _descendLoopBody.setCoarseGridLevel(fineGridLevel-1);
+    peano::datatraversal::SingleLevelCellLoop<DescendLoopBody> loop(
+        NumberOfCoarseGridCells,
+        _descendLoopBody,
+      sharedMemoryGrainSize
+    );
+
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::DescendOnRegularStationaryGrid);
+  }
 }
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::operator() () {
   #if defined(SharedMemoryParallelisation)
-  if (_eventHandle.descendSpecification.manipulates != peano::MappingSpecification::NOP) {
-    while (
-       _precedingLoadProcessMayFork &&
-       !_descendProcessRunsInParallelToOtherTasks &&
-       !_gridContainer.isLevelInitialised(_treeDepth)
-    ) {
-      sendThisTaskToBackgroundWith1Argument(
-        "peano::grid::nodes::tasks::Descend::operator()",
-        _treeDepth
-      );
-    }
-    tarch::multicore::BooleanSemaphore::continueWithTask();
+  while (
+     _precedingLoadProcessMayFork &&
+     !_descendProcessRunsInParallelToOtherTasks &&
+     !_gridContainer.isLevelInitialised(_treeDepth)
+  ) {
+    sendThisTaskToBackgroundWith1Argument(
+      "peano::grid::nodes::tasks::Descend::operator()",
+      _treeDepth
+    );
   }
+  tarch::multicore::BooleanSemaphore::continueWithTask();
   #endif
 
-  if (_eventHandle.descendSpecification.manipulates == peano::MappingSpecification::WHOLE_TREE) {
-    for (int level=0; level<=_treeDepth; level++) {
-      if (level==_treeDepth) {
-        enterCells( level );
-      }
-      else if (level==0) {
-        touchVerticesFirstTime( level+1 );
-        descend(level+1);
-      }
-      else {
-        enterCells( level );
-        touchVerticesFirstTime( level+1 );
-        descend(level+1);
-      }
+  for (int level=0; level<=_treeDepth; level++) {
+    if (level==_treeDepth) {
+      enterCells( level );
     }
-  }
-  else if (_eventHandle.descendSpecification.manipulates == peano::MappingSpecification::ONLY_LEAVES) {
-    touchVerticesFirstTime( _treeDepth );
-    descend(_treeDepth);
-    enterCells(_treeDepth);
+    else if (level==0) {
+      touchVerticesFirstTime( level+1 );
+      descend(level+1);
+    }
+    else {
+      enterCells( level );
+      touchVerticesFirstTime( level+1 );
+      descend(level+1);
+    }
   }
 }

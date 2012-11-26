@@ -13,6 +13,7 @@
 
 #include "peano/grid/nodes/loops/CallEnterCellLoopBodyOnRegularRefinedPatch.h"
 #include "peano/grid/nodes/loops/CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch.h"
+#include "peano/grid/nodes/loops/CallDescendLoopBodyOnRegularRefinedPatch.h"
 
 
 namespace peano {
@@ -44,6 +45,7 @@ class peano::grid::nodes::tasks::Descend {
     typedef peano::grid::RegularGridContainer<Vertex,Cell>                                                                    RegularGridContainer;
     typedef peano::grid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>              EnterCellLoopBody;
     typedef peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>   TouchVertexFirstTimeLoopBody;
+    typedef peano::grid::nodes::loops::CallDescendLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>                      DescendLoopBody;
 
     const int              _treeDepth;
     State&                 _state;
@@ -52,6 +54,7 @@ class peano::grid::nodes::tasks::Descend {
 
     TouchVertexFirstTimeLoopBody  _touchVertexFirstTimeLoopBody;
     EnterCellLoopBody             _enterCellLoopBody;
+    DescendLoopBody               _descendLoopBody;
 
     /**
      * Are other tasks running in parallel?

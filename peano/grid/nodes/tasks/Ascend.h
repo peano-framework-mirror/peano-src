@@ -13,6 +13,7 @@
 
 #include "peano/grid/nodes/loops/CallLeaveCellLoopBodyOnRegularRefinedPatch.h"
 #include "peano/grid/nodes/loops/CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch.h"
+#include "peano/grid/nodes/loops/CallAscendLoopBodyOnRegularRefinedPatch.h"
 
 
 namespace peano {
@@ -38,6 +39,7 @@ class peano::grid::nodes::tasks::Ascend {
     typedef peano::grid::RegularGridContainer<Vertex,Cell>                                                             RegularGridContainer;
     typedef peano::grid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>             LeaveCellLoopBody;
     typedef peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>   TouchVertexLastTimeLoopBody;
+    typedef peano::grid::nodes::loops::CallAscendLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>                AscendLoopBody;
 
     const int              _treeDepth;
     State&                 _state;
@@ -47,6 +49,7 @@ class peano::grid::nodes::tasks::Ascend {
 
     TouchVertexLastTimeLoopBody  _touchVertexLastTimeLoopBody;
     LeaveCellLoopBody            _leaveCellLoopBody;
+    AscendLoopBody               _ascendLoopBody;
 
     void touchVerticesLastTime(int level);
     void ascend(int fineGridLevel);
