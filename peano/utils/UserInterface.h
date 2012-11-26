@@ -68,8 +68,7 @@ class peano::utils::UserInterface {
     std::size_t getMemoryUsage() const;
 
     static const std::string _PeanoHeader;
-    static const std::string _PeanoVersion;
-    static const std::string _PeanoAuthors;
+    static const std::string _PeanoCopyrightURL;
 
     /**
      * Defines the width of a column.

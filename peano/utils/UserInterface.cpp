@@ -12,7 +12,7 @@
 #endif
 
 #ifdef SharedOMP
-#include "tarch/multicore/openMP/Core.h"
+#include "tarch/multicore/omp/Core.h"
 #endif
 
 #ifdef SharedCobra
@@ -39,9 +39,8 @@
 tarch::logging::Log peano::utils::UserInterface::_log("peano::utils::UserInterface");
 
 
-const std::string peano::utils::UserInterface::_PeanoHeader("Application based upon the PDE framework Peano - Release P2");
-const std::string peano::utils::UserInterface::_PeanoVersion("$Revision: 1.88 $");
-const std::string peano::utils::UserInterface::_PeanoAuthors("(C) 2005 - 2012   www5.in.tum.de/peano");
+const std::string peano::utils::UserInterface::_PeanoHeader("Application based upon the PDE framework Peano - Release P3");
+const std::string peano::utils::UserInterface::_PeanoCopyrightURL("(C) 2005 - 2012   www.peano-framework.org");
 
 const int peano::utils::UserInterface::_WidthOfSolverIterationColumn(22);
 const int peano::utils::UserInterface::_WidthOfGridIterationColumn(12);
@@ -214,8 +213,7 @@ void peano::utils::UserInterface::writeHeader() {
 
   _log.info("writeHeader()", buildString.str() );
   _log.info("writeHeader()", optimisationString.str() );
-  _log.info("writeHeader()", _PeanoVersion );
-  _log.info("writeHeader()", _PeanoAuthors );
+  _log.info("writeHeader()", _PeanoCopyrightURL );
   std::ostringstream msg;
   if (numberOfProcesses>0) {
     msg << "processes: " << numberOfProcesses;
