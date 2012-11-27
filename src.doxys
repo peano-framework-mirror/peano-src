@@ -19,9 +19,12 @@
  To recreate the webpage, call
  \code
  rm -rf /home/wwwsccs/html/peano3
- ~/bin/doxys doxys.configuration
- chmod -R a+r /home/wwwsccs/html/peano3
+ ~/bin/doxys src/doxys.configuration
+ chgrp -R wwwsccs /home/wwwsccs/html/peano3
+ chmod -R a+rx /home/wwwsccs/html/peano3
+ chmod -R g+w /home/wwwsccs/html/peano3
  \endcode
+ from the directory holding src.
  
  */
  
