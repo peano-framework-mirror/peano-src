@@ -1,11 +1,28 @@
 /**
  
- @dir "Peano sources"
+ @dir "Peano Sources"
  
- This directory holds the main Peano sources, i.e. something like the kernel/heart of the code.
+ This directory holds the auto-generated documentation of the main Peano 
+ sources, i.e. the kernel/heart of a Peano application. Peano's main page 
+ can be found at www.peano-framework.org.
+ 
+ 
+ !!! Recreate the Peano zip
+ 
  To create a copy of the code, call
- 
  \code
   tar -cvf peano.tar . --exclude=.svn
   gzip peano.tar
-  \endcode
+ \endcode
+ within our sources directory.
+
+ To recreate the webpage, call
+ \code
+ rm -rf /home/wwwsccs/html/peano3
+ ~/bin/doxys doxys.configuration
+ chmod -R a+r /home/wwwsccs/html/peano3
+ \endcode
+ 
+ */
+ 
+ 
