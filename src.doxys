@@ -1,0 +1,11 @@
+/**
+ 
+ @dir "Peano sources"
+ 
+ This directory holds the main Peano sources, i.e. something like the kernel/heart of the code.
+ To create a copy of the code, call
+ 
+ \code
+  tar -cvf src.tar . --exclude=.svn
+  gzip src.tar
+  \endcode
