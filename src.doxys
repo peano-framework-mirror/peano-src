@@ -33,6 +33,49 @@
  \endcode
  from the directory holding src.
  
+ !!! Recommended compiler options
+ 
+ If you write new Peano code, we recommend to compile your code with
+ \code
+ -DDebug -DAsserts -pedantic -pedantic-errors -Wall -Werror -Wconversions
+ \endcode
+ 
+ With Windows (MinGW) and the GNU compilers, we recommend at least to use
+ \code
+ -fmessage-length=0
+ \endcode
+ 
+ With Linux and the Intel compilers, we recommend at least to use
+ \code
+ -fast -fno-rtti -no-ipo -ip -opt-streaming-stores always -xSSE4.2
+ \endcode
+ 
+ With Windows and the Microsoft or Intel compilers, we recommend to use
+ \code
+ /O3 /QxSSE4.2 /Qip /EHs /MD /Zi /DDim2 /DSharedTBB /DnoDebug /DnoAsserts /nologo 
+ \endcode
+ Please note that $-o$ in Linux becomes $/Fo$ in Windows. The simplest way to 
+ get Peano compile in Windows with the Intel compiler is to invoke make in Linux, 
+ open the files.mk file, and to call
+ \code
+ icl /O3 /QxSSE4.2 /Qip /EHs /MD /Zi /DDim2 /DSharedTBB /DnoDebug /DnoAsserts /nologo /Imyinclude SOURCES
+ \endcode
+ with SOURCES replaced by files.mk's content. Please replace the backslashes before.
+ Also, you might have to defined /D__WIN32__ as the Intel/Microsoft compiler seems not 
+ to defined this symbol. 
+ 
+ If you translate Peano with Intel's TBB and the GNU compilers, we recommend to use
+ \code
+ -Wno-long-long and -Wno-conversions
+ \code
+ or to skip the corresponding warning flags.
+ 
+ If you translate Peano with MPI, we recommend to add
+ \code
+ -DMPICH_IGNORE_CXX_SEEK
+ \endcode
+ to your settings.
+
  */
  
  
