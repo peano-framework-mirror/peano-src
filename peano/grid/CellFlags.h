@@ -30,7 +30,11 @@ namespace peano {
          */
         NotStationaryDueToInvalidation  = -4
       };
-    }
+
+      peano::grid::CellFlags min( const peano::grid::CellFlags& lhs, const peano::grid::CellFlags& rhs);
+
+      void inc( peano::grid::CellFlags& value);
+  }
 }
 
 
@@ -38,9 +42,5 @@ namespace peano {
  * Gives you a readable representation of the cell flags.
  */
 std::string toString( const peano::grid::CellFlags& cellFlags );
-
-peano::grid::CellFlags min( const peano::grid::CellFlags& lhs, const peano::grid::CellFlags& rhs);
-
-void inc( peano::grid::CellFlags& value);
 
 #endif

@@ -28,13 +28,13 @@ std::string toString( const peano::grid::CellFlags& cellFlags ) {
 }
 
 
-peano::grid::CellFlags min( const peano::grid::CellFlags& lhs, const peano::grid::CellFlags& rhs) {
+peano::grid::CellFlags peano::grid::min( const peano::grid::CellFlags& lhs, const peano::grid::CellFlags& rhs) {
   peano::grid::CellFlags result =
     static_cast<int>(lhs) < static_cast<int>(rhs) ? lhs : rhs;
   return result;
 }
 
 
-void inc( peano::grid::CellFlags& value) {
+void peano::grid::inc( peano::grid::CellFlags& value) {
   value = static_cast<peano::grid::CellFlags>( static_cast<int>(value)+1 );
 }
