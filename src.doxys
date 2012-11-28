@@ -1,10 +1,15 @@
 /**
  
- @dir "Peano Sources"
+ @mainpage "Peano Sources"
+
+
+ <h1>Peano Source Code Documentation</h1>
  
+ <img src="http://www.peano-framework.org/logo.png" />
+  
  This directory holds the auto-generated documentation of the main Peano 
- sources, i.e. the kernel/heart of a Peano application. Peano's main page 
- can be found at www.peano-framework.org.
+ sources, i.e. the kernel/heart of a Peano application. Peano's original home 
+ is <a href="http://www.peano-framework.org" target="_blank">www.peano-framework.org</a>.
  
  
  !!! Recreate the Peano zip
@@ -15,6 +20,8 @@
   gzip peano.tar
  \endcode
  within our sources directory.
+
+ !!! Recreate the webpage
 
  To recreate the webpage, call
  \code
