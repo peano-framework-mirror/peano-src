@@ -90,4 +90,9 @@
 //#define VectorisationAlignment 32 // AVX
 #endif
 
+
+#ifndef noManualInlining
+#define UseManualInlining
+#endif
+
 #endif

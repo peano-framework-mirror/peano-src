@@ -28,8 +28,12 @@
 #include "peano/utils/Globals.h"
 
 #include <sstream>
-//#include <sys/resource.h>
+
+// @todo Hope this is the only place where we need it.
+#if defined(CompilerHasProcStat)
 #include <unistd.h>
+#endif
+
 #include <bitset>
 #include <cstdlib>
 #include <cstring>
