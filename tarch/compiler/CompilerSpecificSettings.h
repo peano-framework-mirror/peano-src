@@ -8,9 +8,9 @@
     #include "tarch/compiler/WindowsIntel.h"
   #elif defined(__GNUC__) && defined(__WIN32__)
     #include "tarch/compiler/WindowsGCC.h"
-  #elif defined(__INTEL_COMPILER) && defined(__LINUX__)
+  #elif defined(__INTEL_COMPILER) && defined(__linux)
     #include "tarch/compiler/LinuxIntel.h"
-  #elif defined(__GNUC__) && defined(__LINUX__)
+  #elif defined(__GNUC__) && defined(__linux)
     #include "tarch/compiler/LinuxGCC.h"
   #elif defined(__APPLE__)
     #error CompilerSpecificSettings.h for Apple missing
