@@ -54,15 +54,13 @@
  \code
  /O3 /QxSSE4.2 /Qip /EHs /MD /Zi /DDim2 /DSharedTBB /DnoDebug /DnoAsserts /nologo 
  \endcode
- Please note that $-o$ in Linux becomes $/Fo$ in Windows. The simplest way to 
- get Peano compile in Windows with the Intel compiler is to invoke make in Linux, 
- open the files.mk file, and to call
- \code
- icl /O3 /QxSSE4.2 /Qip /EHs /MD /Zi /DDim2 /DSharedTBB /DnoDebug /DnoAsserts /nologo /Imyinclude SOURCES
- \endcode
- with SOURCES replaced by files.mk's content. Please replace the backslashes before.
- Also, you might have to defined /D__WIN32__ as the Intel/Microsoft compiler seems not 
- to defined this symbol. 
+ and the icl compiler and the xilink linker. The simplest way to 
+ get Peano compile in Windows with the Intel compiler is probably to invoke make in Linux, 
+ open the compiler-minutes.txt file, and to replace the entries there with icl/xilink calls. 
+ You have to defined /D__WIN32__ as the Intel/Microsoft compiler seems not 
+ to defined this symbol. Finally, there seem to be issues with Windows macros called
+ min and max. To resolve them, ensure that you are using /DNOMINMAX. Backslashes have 
+ to be removed too. Please note that $-o$ in Linux becomes $/Fo$ in Windows. 
  
  If you translate Peano with Intel's TBB and the GNU compilers, we recommend to use
  \code
