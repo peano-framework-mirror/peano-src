@@ -258,8 +258,12 @@ int tarch::parallel::Node::getGlobalMasterRank() {
 
 
 bool tarch::parallel::Node::isGlobalMaster() const {
+  #ifdef Parallel
   assertion(_initIsCalled);
   return getRank() == getGlobalMasterRank();
+  #else
+  return false;
+  #endif
 }
 
 
