@@ -203,7 +203,11 @@ class tarch::parallel::Node {
     int getNumberOfNodes() const;
 
     /**
-     * @return Is this node the global master process, i.e. does its rank equal getMasterProcessRank()?
+     * Is this node the global master process, i.e. does its rank equal get
+     * MasterProcessRank()? This operation returns always true if the code
+     * is not compiled with -DParallel.
+     *
+     * @return Is this node the global master process?
      */
     bool isGlobalMaster() const;
 
