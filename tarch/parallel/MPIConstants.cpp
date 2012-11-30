@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+
 std::string tarch::parallel::StringTools::convert(const tarch::la::Vector<MPI_MAX_NAME_STRING_ADDED_ONE,short int>& value ) {
   std::ostringstream result;
 

@@ -1,6 +1,5 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _TARCH_PARALLEL_MPI_CONSTANTS_H_
 #define _TARCH_PARALLEL_MPI_CONSTANTS_H_
 
@@ -15,6 +14,17 @@
 #define MPI_MAX_NAME_STRING_ADDED_ONE  (MPI_MAX_NAME_STRING+1)
 
 #include "tarch/la/Vector.h"
+
+#ifdef Parallel
+#include <mpi.h>
+#else
+typedef int    MPI_Datatype;
+typedef int    MPI_Comm;
+typedef int    MPI_Status;
+typedef int    MPI_Request;
+#endif
+
+
 
 
 namespace tarch {

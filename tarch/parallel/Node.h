@@ -1,11 +1,10 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#if !defined( _TARCH_PARALLEL_NODE_H_) && defined(Parallel)
+#ifndef _TARCH_PARALLEL_NODE_H_
 #define _TARCH_PARALLEL_NODE_H_
 
-#ifdef Parallel
-#include <mpi.h>
-#endif
+
+#include "tarch/parallel/MPIConstants.h"
 #include "tarch/logging/Log.h"
 
 

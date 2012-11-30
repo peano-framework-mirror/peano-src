@@ -1,32 +1,34 @@
-#if defined(Parallel)
 #include "tarch/parallel/FCFSNodePoolStrategy.h"
 
 
-tarch::logging::Log tarch::parallel::strategy::FCFSNodePoolStrategy::_log( "tarch::parallel::strategy::FCFSNodePoolStrategy" );
+tarch::logging::Log tarch::parallel::FCFSNodePoolStrategy::_log( "tarch::parallel::FCFSNodePoolStrategy" );
 
 
-tarch::parallel::strategy::FCFSNodePoolStrategy::FCFSNodePoolStrategy():
+tarch::parallel::FCFSNodePoolStrategy::FCFSNodePoolStrategy():
   NodePoolStrategy(),
   _tag(-1),
   _nodes() {
 }
 
 
-tarch::parallel::strategy::FCFSNodePoolStrategy::~FCFSNodePoolStrategy() {
+tarch::parallel::FCFSNodePoolStrategy::~FCFSNodePoolStrategy() {
 }
 
 
-void tarch::parallel::strategy::FCFSNodePoolStrategy::fillWorkerRequestQueue(RequestQueue& queue) {
+void tarch::parallel::FCFSNodePoolStrategy::fillWorkerRequestQueue(RequestQueue& queue) {
+  #ifdef Parallel
   assertion( _tag >= 0 );
   while ( tarch::parallel::messages::WorkerRequestMessage::isMessageInQueue(_tag, true) ) {
     tarch::parallel::messages::WorkerRequestMessage message;
     message.receive(MPI_ANY_SOURCE,_tag, true);
     queue.push_back( message );
   }
+  #endif
 }
 
 
-void tarch::parallel::strategy::FCFSNodePoolStrategy::logQueue( const RequestQueue& queue ) const {
+void tarch::parallel::FCFSNodePoolStrategy::logQueue( const RequestQueue& queue ) const {
+  #ifdef Parallel
   if (queue.empty()) {
 	_log.debug( "logQueue()", "queue is empty" );
   }
@@ -34,15 +36,16 @@ void tarch::parallel::strategy::FCFSNodePoolStrategy::logQueue( const RequestQue
     std::ostringstream msg;
     msg << "queue: ";
 
-	for (RequestQueue::const_iterator p = queue.begin(); p != queue.end(); p++ ) {
-	   msg << p->getSenderRank() << ",";
-	}
-	_log.debug( "logQueue()", msg.str() );
+	  for (RequestQueue::const_iterator p = queue.begin(); p != queue.end(); p++ ) {
+	    msg << p->getSenderRank() << ",";
+	  }
+	  _log.debug( "logQueue()", msg.str() );
   }
+  #endif
 }
 
 
-tarch::parallel::messages::WorkerRequestMessage tarch::parallel::strategy::FCFSNodePoolStrategy::extractElementFromRequestQueue(RequestQueue& queue) {
+tarch::parallel::messages::WorkerRequestMessage tarch::parallel::FCFSNodePoolStrategy::extractElementFromRequestQueue(RequestQueue& queue) {
   assertion( !queue.empty() );
   tarch::parallel::messages::WorkerRequestMessage result = queue.front();
   queue.pop_front();
@@ -50,7 +53,8 @@ tarch::parallel::messages::WorkerRequestMessage tarch::parallel::strategy::FCFSN
 }
 
 
-void tarch::parallel::strategy::FCFSNodePoolStrategy::addNode(const tarch::parallel::messages::RegisterAtNodePoolMessage& node) {
+void tarch::parallel::FCFSNodePoolStrategy::addNode(const tarch::parallel::messages::RegisterAtNodePoolMessage& node) {
+  #ifdef Parallel
   assertion( !isRegisteredNode(node.getSenderRank()) );
 
   logTraceInWith1Argument( "addNode(...)", node.getSenderRank() );
@@ -61,10 +65,11 @@ void tarch::parallel::strategy::FCFSNodePoolStrategy::addNode(const tarch::paral
   _nodes.push_back( newEntry ) ;
   _nodes.sort();
   logTraceOutWith1Argument( "addNode(...)", newEntry.toString() );
+  #endif
 }
 
 
-void tarch::parallel::strategy::FCFSNodePoolStrategy::removeNode( int rank ) {
+void tarch::parallel::FCFSNodePoolStrategy::removeNode( int rank ) {
   assertion( isRegisteredNode(rank) );
 
   for (
@@ -84,13 +89,13 @@ void tarch::parallel::strategy::FCFSNodePoolStrategy::removeNode( int rank ) {
 }
 
 
-bool tarch::parallel::strategy::FCFSNodePoolStrategy::hasIdleNode() const {
+bool tarch::parallel::FCFSNodePoolStrategy::hasIdleNode() const {
   return !_nodes.empty() &&
          _nodes.front().isIdle();
 }
 
 
-int tarch::parallel::strategy::FCFSNodePoolStrategy::removeNextIdleNode() {
+int tarch::parallel::FCFSNodePoolStrategy::removeNextIdleNode() {
   assertion( hasIdleNode() );
   int result = _nodes.front().getRank();
   _nodes.pop_front();
@@ -98,7 +103,7 @@ int tarch::parallel::strategy::FCFSNodePoolStrategy::removeNextIdleNode() {
 }
 
 
-int tarch::parallel::strategy::FCFSNodePoolStrategy::getNumberOfIdleNodes() const {
+int tarch::parallel::FCFSNodePoolStrategy::getNumberOfIdleNodes() const {
   int result = 0;
   NodeContainer::const_iterator p = _nodes.begin();
   while (p != _nodes.end()&& p->isIdle() ) {
@@ -109,7 +114,7 @@ int tarch::parallel::strategy::FCFSNodePoolStrategy::getNumberOfIdleNodes() cons
 }
 
 
-void tarch::parallel::strategy::FCFSNodePoolStrategy::setNodeIdle( int rank ) {
+void tarch::parallel::FCFSNodePoolStrategy::setNodeIdle( int rank ) {
   for (
     NodeContainer::iterator p = _nodes.begin();
     p != _nodes.end();
@@ -124,7 +129,7 @@ void tarch::parallel::strategy::FCFSNodePoolStrategy::setNodeIdle( int rank ) {
 }
 
 
-bool tarch::parallel::strategy::FCFSNodePoolStrategy::isRegisteredNode(int rank) const {
+bool tarch::parallel::FCFSNodePoolStrategy::isRegisteredNode(int rank) const {
   for (
     NodeContainer::const_iterator p = _nodes.begin();
     p != _nodes.end();
@@ -138,7 +143,7 @@ bool tarch::parallel::strategy::FCFSNodePoolStrategy::isRegisteredNode(int rank)
 }
 
 
-bool tarch::parallel::strategy::FCFSNodePoolStrategy::isIdleNode(int rank) const {
+bool tarch::parallel::FCFSNodePoolStrategy::isIdleNode(int rank) const {
   assertion1( isRegisteredNode(rank), rank );
   for (
     NodeContainer::const_iterator p = _nodes.begin();
@@ -153,17 +158,17 @@ bool tarch::parallel::strategy::FCFSNodePoolStrategy::isIdleNode(int rank) const
 }
 
 
-void tarch::parallel::strategy::FCFSNodePoolStrategy::clearRegisteredNodes() {
+void tarch::parallel::FCFSNodePoolStrategy::clearRegisteredNodes() {
   _nodes.clear();
 }
 
 
-int tarch::parallel::strategy::FCFSNodePoolStrategy::getNumberOfRegisteredNodes() const {
+int tarch::parallel::FCFSNodePoolStrategy::getNumberOfRegisteredNodes() const {
   return static_cast<int>( _nodes.size() );
 }
 
 
-std::string tarch::parallel::strategy::FCFSNodePoolStrategy::toString() const {
+std::string tarch::parallel::FCFSNodePoolStrategy::toString() const {
   std::ostringstream result;
   for (
     NodeContainer::const_iterator p = _nodes.begin();
@@ -176,7 +181,7 @@ std::string tarch::parallel::strategy::FCFSNodePoolStrategy::toString() const {
 }
 
 
-int tarch::parallel::strategy::FCFSNodePoolStrategy::reserveNode(int forMaster) {
+int tarch::parallel::FCFSNodePoolStrategy::reserveNode(int forMaster) {
   assertion(hasIdleNode());
 
   NodePoolListEntry result = _nodes.front();
@@ -192,8 +197,6 @@ int tarch::parallel::strategy::FCFSNodePoolStrategy::reserveNode(int forMaster) 
 }
 
 
-void tarch::parallel::strategy::FCFSNodePoolStrategy::setNodePoolTag(int tag) {
+void tarch::parallel::FCFSNodePoolStrategy::setNodePoolTag(int tag) {
   _tag = tag;
 }
-
-#endif

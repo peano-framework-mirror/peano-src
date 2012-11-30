@@ -1,5 +1,3 @@
-#ifdef Parallel
-
 #include "tarch/parallel/Node.h"
 #include "tarch/Assertions.h"
 #include "tarch/services/ServiceRepository.h"
@@ -8,6 +6,7 @@
 #include <cstdlib>
 
 #include "tarch/compiler/CompilerSpecificSettings.h"
+
 
 /**
  * For the machine name. If it doesn't work, switch it off in the file
@@ -46,14 +45,17 @@ bool tarch::parallel::Node::isInitialised() const {
 
 
 void tarch::parallel::Node::ensureThatMessageQueuesAreEmpty( int fromRank, int tag ) {
+  #ifdef Parallel
   MPI_Status   status;
   int          flag;
   MPI_Iprobe(fromRank, tag, _communicator, &flag, &status);
   assertion3( flag==0, fromRank, tag, getRank() );
+  #endif
 }
 
 
 void tarch::parallel::Node::plotMessageQueues() {
+  #ifdef Parallel
   MPI_Status   status;
   int          flag;
 
@@ -69,41 +71,9 @@ void tarch::parallel::Node::plotMessageQueues() {
       " with tag " << status.MPI_TAG
     );
   }
+  #endif
 }
 
-void tarch::parallel::Node::triggerDeadlockTimeOut(
-  const std::string&  className,
-  const std::string&  methodName,
-  int                 communicationPartnerRank,
-  const std::string&  comment
-) {
-  _log.warning("triggerDeadlockTimeOut",
-      "old function signature triggered - compatibility mode used. A function outputting the tag and the number of expected messages would be available");
-  triggerDeadlockTimeOut(
-      className,
-      methodName,
-      communicationPartnerRank,
-      0,
-      0,
-      comment
-      );
-}
-
-void tarch::parallel::Node::writeTimeOutWarning(
-  const std::string&  className,
-  const std::string&  methodName,
-  int                 communicationPartnerRank
-) {
-  _log.warning("triggerDeadlockTimeOut",
-      "old function signature triggered - compatibility mode used. A function outputting the tag and the number of expected messages would be available");
-  writeTimeOutWarning(
-      className,
-      methodName,
-      communicationPartnerRank,
-      0,
-      0
-      );
-}
 
 void tarch::parallel::Node::triggerDeadlockTimeOut(
   const std::string&  className,
@@ -174,6 +144,7 @@ bool tarch::parallel::Node::isTimeOutWarningEnabled() const {
 std::string tarch::parallel::MPIReturnValueToString( int result ) {
   std::ostringstream out;
 
+  #ifdef Parallel
   int   resultlen;
   char* string = new char[MPI_MAX_ERROR_STRING];  // (char *)malloc(MPI_MAX_ERROR_STRING * sizeof(char));
   MPI_Error_string(result, string, &resultlen);
@@ -207,22 +178,30 @@ std::string tarch::parallel::MPIReturnValueToString( int result ) {
   }
 
   delete[] string;
+  #else
+  out << "compiled without -DParallel";
+  #endif
+
   return out.str();
 }
 
 
 std::string tarch::parallel::MPIStatusToString( const MPI_Status& status ) {
   std::ostringstream out;
+  #ifdef Parallel
   out << "status flag:"
       << " MPI_ERROR=" << status.MPI_ERROR
       << " (" << MPIReturnValueToString(status.MPI_ERROR)
       << ") ,MPI_SOURCE=" << status.MPI_SOURCE
       << ",MPI_TAG=" << status.MPI_TAG;
-
+  #else
+  out << "compiled without -DParallel";
+  #endif
   return out.str();
 }
 
 
+#ifdef Parallel
 tarch::parallel::Node::Node():
   _rank(-1),
   _numberOfProcessors(-1),
@@ -230,13 +209,30 @@ tarch::parallel::Node::Node():
   _timeOutWarning(0),
   _deadlockTimeOut(0) {
 }
+#else
+tarch::parallel::Node::Node():
+  _rank(-1),
+  _numberOfProcessors(-1),
+  _communicator(-1),
+  _timeOutWarning(0),
+  _deadlockTimeOut(0) {
+}
+#endif
 
 
+#ifdef Parallel
 tarch::parallel::Node::Node(const parallel::Node& node):
   _rank(-1),
   _numberOfProcessors(-1),
   _communicator( MPI_COMM_WORLD) {
 }
+#else
+tarch::parallel::Node::Node(const parallel::Node& node):
+  _rank(-1),
+  _numberOfProcessors(-1),
+  _communicator(-1) {
+}
+#endif
 
 
 tarch::parallel::Node::~Node() {
@@ -245,10 +241,14 @@ tarch::parallel::Node::~Node() {
 
 void tarch::parallel::Node::shutdown() {
   assertion( _rank!=-1 );
+
+  #ifdef Parallel
   MPI_Barrier( _communicator );
   MPI_Finalize();
-  _rank         = -1;
   _communicator = MPI_COMM_WORLD;
+  #endif
+
+  _rank         = -1;
 }
 
 
@@ -286,6 +286,7 @@ void tarch::parallel::Node::logStatus() const {
 
 
 bool tarch::parallel::Node::init(int* argc, char*** argv) {
+  #ifdef Parallel
   int result = MPI_SUCCESS;
 
   result = MPI_Init( argc, argv );
@@ -305,6 +306,8 @@ bool tarch::parallel::Node::init(int* argc, char*** argv) {
     std::cerr << "init(int*,char***)\t initialisation failed: " + MPIReturnValueToString(result) + " (no logging available yet)";
     return false;
   }
+
+  #endif
 
   _initIsCalled = true;
   return true;
@@ -355,5 +358,3 @@ void tarch::parallel::Node::setCommunicator( MPI_Comm communicator ) {
 void tarch::parallel::Node::receiveDanglingMessages() {
   tarch::services::ServiceRepository::getInstance().receiveDanglingMessages();
 }
-
-#endif

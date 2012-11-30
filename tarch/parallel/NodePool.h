@@ -1,6 +1,6 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#if !defined(_TARCH_PARALLEL_NODEPOOL_H_) && defined(Parallel)
+#ifndef _TARCH_PARALLEL_NODEPOOL_H_
 #define _TARCH_PARALLEL_NODEPOOL_H_
 
 #ifdef Parallel
@@ -9,6 +9,7 @@
 #include <vector>
 #include <sstream>
 
+#include "tarch/parallel/MPIConstants.h"
 #include "tarch/parallel/NodePoolStrategy.h"
 #include "tarch/services/Service.h"
 #include "tarch/logging/Log.h"

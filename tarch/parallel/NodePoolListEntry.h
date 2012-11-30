@@ -1,6 +1,6 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#if !defined( _TARCH_PARALLEL_NODE_POOL_LIST_ENTRY_H_) && defined(Parallel)
+#ifndef _TARCH_PARALLEL_NODE_POOL_LIST_ENTRY_H_
 #define _TARCH_PARALLEL_NODE_POOL_LIST_ENTRY_H_
 
 #ifdef Parallel
@@ -10,11 +10,10 @@
 
 namespace tarch {
   namespace parallel {
-    namespace defaultstrategies {
-      class NodePoolListEntry;
-    }
+    class NodePoolListEntry;
   }
 }
+
 
 /**
  * Node Pool List Entry Storing Status of Node
@@ -32,7 +31,7 @@ namespace tarch {
  * @author Tobias Weinzierl
  * @version $Revision: 1.4 $
  */
-class tarch::parallel::defaultstrategies::NodePoolListEntry {
+class tarch::parallel::NodePoolListEntry {
   public:
     /**
      * Represents the state of the worker, i.e. whether it is idle or busy.
@@ -116,6 +115,6 @@ class tarch::parallel::defaultstrategies::NodePoolListEntry {
     std::string toString() const;
 };
 
-std::ostream& operator<<( std::ostream& out, const tarch::parallel::strategy::NodePoolListEntry& entry );
+std::ostream& operator<<( std::ostream& out, const tarch::parallel::NodePoolListEntry& entry );
 
 #endif
