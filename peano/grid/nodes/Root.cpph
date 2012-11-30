@@ -3,8 +3,8 @@
 #include "peano/utils/Loop.h"
 #include "peano/grid/nodes/Constants.h"
 #include "peano/grid/AscendDescendLevelEnumerator.h"
-
 #include "peano/grid/SingleElementVertexEnumerator.h"
+#include "peano/parallel/Partitioner.h"
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
@@ -198,10 +198,10 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     !tarch::parallel::Node::getInstance().isGlobalMaster() &&
     !state.isJoiningWithMaster()
   ) {
-    _masterCell.receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+    _masterCell.receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
     logDebug( "receiveCellAndVerticesFromMaster(...)", "received cell " << _masterCell.toString() << " from master" );
     dfor2(i)
-      _masterVertices[iScalar].receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+      _masterVertices[iScalar].receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
       logDebug(
         "receiveCellAndVerticesFromMaster(...)",
         "received vertex " << _masterVertices[iScalar].toString() << " from master and stored it in _masterVertex " << iScalar
@@ -220,14 +220,14 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     Base::_eventHandle.receiveDataFromMaster(
       _masterCell,
       _masterVertices,
-      peano::kernel::regulargrid::SingleElementVertexEnumerator(
+      peano::grid::SingleElementVertexEnumerator(
         _sizeOfEnclosingCoarseCell / 3.0,
         _offsetOfEnclosingCoarseCell + _sizeOfEnclosingCoarseCell / 3.0,
         _levelOfEnclosingCell+1
       )
     );
 
-    tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
+    tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
   }
 
   logTraceOut( "receiveCellAndVerticesFromMaster(...)" );
@@ -262,7 +262,7 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       }
       if (isAdjacentToCentralElement) {
         const tarch::la::Vector<DIMENSIONS,int> currentVertexInReceivedVertexArray = currentVertexInLevelOnePatch - tarch::la::Vector<DIMENSIONS,int>(1);
-        const int  currentVertexsIndexInMasterVertexArray = peano::kernel::regulargrid::SingleElementVertexEnumerator::lineariseVertexIndex(currentVertexInReceivedVertexArray);
+        const int  currentVertexsIndexInMasterVertexArray = peano::grid::SingleElementVertexEnumerator::lineariseVertexIndex(currentVertexInReceivedVertexArray);
         if (!_haveMergedMasterVertex[ currentVertexsIndexInMasterVertexArray ]) {
           _haveMergedMasterVertex[ currentVertexsIndexInMasterVertexArray ] = true;
 
@@ -313,10 +313,10 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     Base::_eventHandle.prepareSendToMaster(centralFineGridCell,fineGridVertices,centralFineGridVerticesEnumerator);
 
     logDebug( "sendCellAndVerticesToMaster(...)", "send cell " << centralFineGridCell.toString() << " to master" );
-    centralFineGridCell.send(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+    centralFineGridCell.send(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
     dfor2(k)
       logDebug( "sendCellAndVerticesToMaster(...)", "send vertex " << fineGridVertices[ centralFineGridVerticesEnumerator(k) ].toString() << " to master" );
-      fineGridVertices[ centralFineGridVerticesEnumerator(k) ].send(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+      fineGridVertices[ centralFineGridVerticesEnumerator(k) ].send(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
     enddforx
   }
 
@@ -339,7 +339,7 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
   ) {
     std::bitset<THREE_POWER_D> localInnerCells;
     localInnerCells.set(THREE_POWER_D/2,true);
-    peano::kernel::parallel::SpacetreeGridPartitioner partitioner( localInnerCells );
+    peano::parallel::Partitioner partitioner( localInnerCells );
     partitioner.reserveNodes();
 
     if ( partitioner.hasSuccessfullyReservedAdditionalWorkers() )  {
@@ -411,7 +411,7 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       logDebug( "traverse(State)", "load cell " << currentCell.toString() << " at " << currentCellTraversal );
       #ifdef Parallel
       if (state.isNewWorkerDueToForkOfExistingDomain()) {
-        const Cell newCell = peano::kernel::parallel::JoinDataBufferPool::getInstance().getCellFromStream<Cell>(tarch::parallel::NodePool::getInstance().getMasterRank());
+        const Cell newCell = peano::parallel::JoinDataBufferPool::getInstance().getCellFromStream<Cell>(tarch::parallel::NodePool::getInstance().getMasterRank());
         logDebug(
           "traverse(State)",
           "cell access flags at " << currentCellTraversal << " might be invalid, so take replacement from fork/join buffer and replace "

@@ -28,8 +28,8 @@ peano::parallel::SendReceiceBufferAbstractImplementation<Vertex>::SendReceiceBuf
   _sizeOfReceiveBuffer(0),
   _currentReceiveBufferPage(0),
   _sendDataWaitTime(0) {
-  assertion( bufferSize > 0 );
-  assertion( _bufferPageSize > 0 );
+  assertion1WithExplanation( _bufferPageSize > 0, _bufferPageSize, "Have you set the data exchange buffer size due to setBufferSize() for both the SendReceiveBufferPool and the JoinDataBufferPool?" );
+
   _sendBuffer = new typename Vertex::MPIDatatypeContainer[bufferSize];
 
   #ifdef Debug

@@ -16,8 +16,8 @@ tarch::multicore::BooleanSemaphore peano::grid::nodes::loops::LoadVertexLoopBody
 #ifdef Parallel
 #include <set>
 
-#include "peano/kernel/parallel/SendReceiveBufferPool.h"
-#include "peano/kernel/grid/aspects/ParallelMerge.h"
+#include "peano/parallel/SendReceiveBufferPool.h"
+#include "peano/grid/aspects/ParallelMerge.h"
 #endif
 
 

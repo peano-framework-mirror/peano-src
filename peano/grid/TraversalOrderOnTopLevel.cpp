@@ -2,8 +2,8 @@
 
 #ifdef Parallel
 #include "tarch/parallel/NodePool.h"
-#include "peano/kernel/parallel/SendReceiveBufferPool.h"
-#include "peano/kernel/parallel/JoinDataBufferPool.h"
+#include "peano/parallel/SendReceiveBufferPool.h"
+#include "peano/parallel/JoinDataBufferPool.h"
 #endif
 
 
@@ -126,7 +126,7 @@ void peano::grid::TraversalOrderOnTopLevel::waitUntilCellIsAvailable(int cellInd
   if (IsUnavailable) {
     assertion( !tarch::parallel::Node::getInstance().isGlobalMaster() );
     const int                                         MasterRank( tarch::parallel::NodePool::getInstance().getMasterRank() );
-    const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> receivedFlag( peano::kernel::parallel::JoinDataBufferPool::getInstance().getCellMarkerFromStream(MasterRank) );
+    const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> receivedFlag( peano::parallel::JoinDataBufferPool::getInstance().getCellMarkerFromStream(MasterRank) );
     tarch::la::Vector<DIMENSIONS,int>  nextCellToBeReceived = getCellIdentifiedByReceivedBitset(receivedFlag);
     logDebug( "waitUntilCellIsAvailable(...)", "received " << receivedFlag << " from master " << MasterRank << " identifying cell " << nextCellToBeReceived );
 

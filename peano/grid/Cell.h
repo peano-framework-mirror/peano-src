@@ -148,10 +148,11 @@ class peano::grid::Cell {
      * have to handle it locally, even if it will be streamed to another
      * process next.
      */
+    template <class State>
     bool isRemote(
-      const peano::kernel::gridinterface::State&  state,
-      bool                                        considerForkingNodesToBeRemote,
-      bool                                        considerJoiningNodesToBeRemote
+      const State&  state,
+      bool          considerForkingNodesToBeRemote,
+      bool          considerJoiningNodesToBeRemote
     ) const;
     bool isAssignedToRemoteRank() const;
 

@@ -329,10 +329,11 @@ bool peano::grid::Cell<CellData>::isAssignedToRemoteRank() const {
 
 
 template <class CellData>
+template <class State>
 bool peano::grid::Cell<CellData>::isRemote(
-  const peano::kernel::gridinterface::State&  state,
-  bool                                        considerForkingNodesToBeRemote,
-  bool                                        considerJoiningNodesToBeRemote
+  const State&  state,
+  bool          considerForkingNodesToBeRemote,
+  bool          considerJoiningNodesToBeRemote
 ) const {
   return _cellData.getResponsibleRank()!=tarch::parallel::Node::getInstance().getRank()
      && !state.isForkTriggeredForRank(_cellData.getResponsibleRank())

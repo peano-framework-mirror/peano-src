@@ -3,7 +3,7 @@
 #ifdef Parallel
 #include "tarch/parallel/Node.h"
 
-#include "peano/kernel/parallel/loadbalancing/Oracle.h"
+#include "peano/parallel/loadbalancing/Oracle.h"
 
 #include "tarch/parallel/NodePool.h"
 
@@ -346,11 +346,11 @@ void peano::grid::State<StateData>::send(int destination, int tag) {
 
   #if defined(ParallelExchangePackedRecords)
   MPIDatatypeContainer copy = _stateData.convert();
-  copy.setHasWorkerWithWorker( peano::kernel::parallel::loadbalancing::Oracle::getInstance().hasWorkers() );
+  copy.setHasWorkerWithWorker( peano::parallel::loadbalancing::Oracle::getInstance().hasWorkers() );
   copy.send(destination,tag,true);
   #else
   StateData copy = _stateData;
-  copy.setHasWorkerWithWorker( peano::kernel::parallel::loadbalancing::Oracle::getInstance().hasWorkers() );
+  copy.setHasWorkerWithWorker( peano::parallel::loadbalancing::Oracle::getInstance().hasWorkers() );
   copy.send(destination,tag,true);
   #endif
 }
@@ -541,7 +541,7 @@ bool peano::grid::State<StateData>::mayJoinDueToLoadBalancing(int workerRank) co
          _stateData.getLoadRebalancingState() == StateData::JoinTriggered;
 
   const bool RankCouldJoin =
-      !peano::kernel::parallel::loadbalancing::Oracle::getInstance().hasWorkerAWorker(workerRank);
+      !peano::parallel::loadbalancing::Oracle::getInstance().hasWorkerAWorker(workerRank);
 
   return StateWouldAllowJoin && RankCouldJoin;
 }

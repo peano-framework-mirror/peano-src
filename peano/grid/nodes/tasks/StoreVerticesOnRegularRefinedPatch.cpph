@@ -235,6 +235,17 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
           positionInArray,
           _regularGridContainer.getVertex(currentLevel,positionInArray).toString()
         );
+        // weiss nicht, ob die stimmt
+        assertion7(
+          _regularGridContainer.getVertex(currentLevel,positionInArray).getCurrentAdjacentCellsHeight()< peano::grid::Undefined,
+          currentLevel,
+          _regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+          positionInArray,
+          _regularGridContainer.getVertex(currentLevel,positionInArray).toString(),
+          _regularGridContainer.areAllEventsOnThisLevelCalled(currentLevel),
+          CaseStorePersistentVertex,
+          CaseWriteToTempStacks
+        );
 
         if (_stackView.isOpen()) {
           _stackView.push(_regularGridContainer.getVertex(currentLevel,positionInArray).getRecords() );

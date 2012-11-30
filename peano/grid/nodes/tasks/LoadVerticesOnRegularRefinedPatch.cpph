@@ -300,7 +300,7 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
         currentLevel,positionInArray,_coarsestLevelOfThisTask
       );
       #endif
-      assertionEquals6(
+      assertionEquals8(
         _regularGridContainer.getVertex(currentLevel,positionInArray).getAdjacentCellsHeightOfPreviousIteration(),
         _regularGridContainer.getVertexEnumerator(0).getCellFlags()-currentLevel,
         toString(_regularGridContainer.getVertex(currentLevel,positionInArray).getAdjacentCellsHeightOfPreviousIteration()),
@@ -308,7 +308,9 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
         cellsPositionWithinUnrolledTreeLevel,
         currentLevel,
         positionInArray,
-        _stackView.size()
+        _stackView.size(),
+        CaseLoadPersistentVertex,
+        CaseTakeFromTempStacks
       );
       if (_regularGridContainer.getVertexEnumerator(0).getCellFlags()-currentLevel==0) {
         assertion5(

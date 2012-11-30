@@ -18,10 +18,8 @@
 
 #include "peano/utils/PeanoOptimisations.h"
 
-#ifdef Parallel
-#include "peano/kernel/parallel/SpacetreeGridPartitioner.h"
-#include "peano/kernel/parallel/messages/ForkMessage.h"
-#endif
+#include "peano/parallel/messages/ForkMessage.h"
+#include "peano/parallel/Partitioner.h"
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>

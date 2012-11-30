@@ -1,7 +1,7 @@
 #ifdef Parallel
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
-#include "peano/kernel/parallel/AdjacencyList.h"
+#include "peano/parallel/AdjacencyList.h"
 #include "tarch/la/WrappedVector.h"
 #endif
 
@@ -329,19 +329,20 @@ tarch::la::Vector<DIMENSIONS,double> peano::grid::Vertex<VertexData>::getX() con
 
 #ifdef Parallel
 template <class VertexData>
+template <class State>
 bool peano::grid::Vertex<VertexData>::isRemote(
-  const peano::grid::State&  state,
-  bool                                        considerForkingNodesToBeRemote,
-  bool                                        considerJoiningNodesToBeRemote
+  const State&  state,
+  bool          considerForkingNodesToBeRemote,
+  bool          considerJoiningNodesToBeRemote
 ) const {
-  return peano::kernel::parallel::AdjacencyListAspect<peano::grid::Vertex<VertexData> >::isRemote(*this,state,considerForkingNodesToBeRemote,considerJoiningNodesToBeRemote);
+  return peano::parallel::AdjacencyListAspect<peano::grid::Vertex<VertexData> >::isRemote(*this,state,considerForkingNodesToBeRemote,considerJoiningNodesToBeRemote);
 }
 
 
 template <class VertexData>
 std::set<int> peano::grid::Vertex<VertexData>::getAdjacentRemoteRanks() const {
   assertion( isAdjacentToRemoteRank() );
-  return peano::kernel::parallel::AdjacencyListAspect<peano::grid::Vertex<VertexData> >::getAdjacentRemoteRanks(*this);
+  return peano::parallel::AdjacencyListAspect<peano::grid::Vertex<VertexData> >::getAdjacentRemoteRanks(*this);
 }
 
 

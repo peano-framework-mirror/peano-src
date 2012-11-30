@@ -71,7 +71,7 @@ class peano::grid::Vertex {
      */
     static void initDatatype();
 
-    friend class peano::kernel::parallel::AdjacencyListAspect<Vertex<VertexData> >;
+    friend class peano::parallel::AdjacencyListAspect<Vertex<VertexData> >;
     #endif
 
     #if defined(ParallelExchangePackedRecords)
@@ -329,10 +329,11 @@ class peano::grid::Vertex {
      * flag. Unfortunately this does not work out, as the forks might occur
      * later, i.e. the remote() state might change in time.
      */
+    template <class State>
     bool isRemote(
-      const peano::kernel::gridinterface::State&  state,
-      bool                                        considerForkingNodesToBeRemote,
-      bool                                        considerJoiningNodesToBeRemote
+      const State&  state,
+      bool          considerForkingNodesToBeRemote,
+      bool          considerJoiningNodesToBeRemote
     ) const;
 
     /**
@@ -409,8 +410,8 @@ class peano::grid::Vertex {
     void replaceAdjancyEntriesOfRemoteRankWithLocalRank(int rank);
 
     static tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> readAdjacencyLists(
-      const peano::kernel::gridinterface::VertexEnumerator&  enumerator,
-      const Vertex* const                                    vertices
+      const peano::grid::VertexEnumerator&  enumerator,
+      const Vertex* const                   vertices
     );
     #endif
 };

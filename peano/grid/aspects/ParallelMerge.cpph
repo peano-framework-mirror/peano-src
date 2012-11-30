@@ -76,7 +76,7 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
 
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2,  localVertex.toString(), workerVertex.toString() );
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeight()                    <= -2,  localVertex.toString(), workerVertex.toString() );
-  assertion3( workerVertex.isHangingNode() || workerVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2, localVertex.toString(), workerVertex.toString(), toString(static_cast<peano::kernel::gridinterface::CellFlags>(workerVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration())) );
+  assertion3( workerVertex.isHangingNode() || workerVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2, localVertex.toString(), workerVertex.toString(), toString(static_cast<peano::grid::CellFlags>(workerVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration())) );
   assertion2( workerVertex.isHangingNode() || workerVertex._vertexData.getAdjacentCellsHeight()                    <= -2, localVertex.toString(), workerVertex.toString() );
   assertionEquals2( workerVertex.isHangingNode(), localVertex.isHangingNode(), localVertex.toString(), workerVertex.toString() );
 
@@ -137,7 +137,7 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
 
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2,  localVertex.toString(), masterVertex.toString() );
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeight()                    <= -2,  localVertex.toString(), masterVertex.toString() );
-  assertion3( masterVertex.isHangingNode() || masterVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2, localVertex.toString(), masterVertex.toString(), toString(static_cast<peano::kernel::gridinterface::CellFlags>(masterVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration())) );
+  assertion3( masterVertex.isHangingNode() || masterVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2, localVertex.toString(), masterVertex.toString(), toString(static_cast<peano::grid::CellFlags>(masterVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration())) );
   assertion2( masterVertex.isHangingNode() || masterVertex._vertexData.getAdjacentCellsHeight()                    <= -2, localVertex.toString(), masterVertex.toString() );
   assertionEquals2( masterVertex.isHangingNode(), localVertex.isHangingNode(), localVertex.toString(), masterVertex.toString() );
 

@@ -14,7 +14,7 @@ tarch::multicore::BooleanSemaphore peano::grid::nodes::loops::StoreVertexLoopBod
 #ifdef Parallel
 #include <set>
 
-#include "peano/kernel/parallel/SendReceiveBufferPool.h"
+#include "peano/parallel/SendReceiveBufferPool.h"
 #endif
 
 

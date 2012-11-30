@@ -1,5 +1,5 @@
 #ifdef Parallel
-#include "peano/kernel/parallel/messages/LoadBalancingMessage.h"
+#include "peano/parallel/messages/LoadBalancingMessage.h"
 #endif
 
 
@@ -69,9 +69,9 @@ void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::res
 
   _root.restart(domainSize,domainOffset,domainLevel);
 
-  peano::kernel::parallel::JoinDataBufferPool::getInstance().createVertexBufferManually<Vertex>( true, tarch::parallel::NodePool::getInstance().getMasterRank());
-  peano::kernel::parallel::JoinDataBufferPool::getInstance().createCellBufferManually<Cell>( true, tarch::parallel::NodePool::getInstance().getMasterRank());
-  peano::kernel::parallel::SendReceiveBufferPool::getInstance().createBufferManually<Vertex>( tarch::parallel::NodePool::getInstance().getMasterRank(), peano::kernel::parallel::SendReceiveBufferPool::LIFO );
+  peano::parallel::JoinDataBufferPool::getInstance().createVertexBufferManually<Vertex>( true, tarch::parallel::NodePool::getInstance().getMasterRank());
+  peano::parallel::JoinDataBufferPool::getInstance().createCellBufferManually<Cell>( true, tarch::parallel::NodePool::getInstance().getMasterRank());
+  peano::parallel::SendReceiveBufferPool::getInstance().createBufferManually<Vertex>( tarch::parallel::NodePool::getInstance().getMasterRank(), peano::parallel::SendReceiveBufferPool::LIFO );
 
   logTraceOut( "restart(...)" );
   #else
@@ -90,35 +90,35 @@ void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::rec
   else if (
     !_state.isJoiningWithMaster()
   ) {
-    peano::kernel::parallel::messages::LoadBalancingMessage loadBalancingMessage;
+    peano::parallel::messages::LoadBalancingMessage loadBalancingMessage;
     loadBalancingMessage.receive(
       tarch::parallel::NodePool::getInstance().getMasterRank(),
-      peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),
+      peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),
       true
     );
     logDebug( "receiveStartupDataFromMaster()", "received load balancing message " << loadBalancingMessage.toString() );
 
     assertion(
-      loadBalancingMessage.getLoadBalancingFlag()!=peano::kernel::parallel::loadbalancing::Join ||
-      !peano::kernel::parallel::loadbalancing::Oracle::getInstance().hasWorkers()
+      loadBalancingMessage.getLoadBalancingFlag()!=peano::parallel::loadbalancing::Join ||
+      !peano::parallel::loadbalancing::Oracle::getInstance().hasWorkers()
     );
 
     if ( _state.isInvolvedInJoinOrFork() ) {
-      peano::kernel::parallel::loadbalancing::Oracle::getInstance().receivedStartCommand( peano::kernel::parallel::loadbalancing::Continue );
+      peano::parallel::loadbalancing::Oracle::getInstance().receivedStartCommand( peano::parallel::loadbalancing::Continue );
     }
     else {
-      peano::kernel::parallel::loadbalancing::Oracle::getInstance().receivedStartCommand(
-        peano::kernel::parallel::loadbalancing::getLoadBalancingFlag( loadBalancingMessage.getLoadBalancingFlag() )
+      peano::parallel::loadbalancing::Oracle::getInstance().receivedStartCommand(
+        peano::parallel::loadbalancing::getLoadBalancingFlag( loadBalancingMessage.getLoadBalancingFlag() )
       );
     }
 
-    if (peano::kernel::parallel::loadbalancing::Oracle::getInstance().getLastStartCommand()==peano::kernel::parallel::loadbalancing::Join) {
+    if (peano::parallel::loadbalancing::Oracle::getInstance().getLastStartCommand()==peano::parallel::loadbalancing::Join) {
       _state.joinWithRank(tarch::parallel::NodePool::getInstance().getMasterRank());
     }
 
     _state.receive(
       tarch::parallel::NodePool::getInstance().getMasterRank(),
-      peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag()
+      peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag()
     );
 
     logDebug( "receiveStartupDataFromMaster()", "received state " << _state.toString() );
@@ -136,11 +136,11 @@ void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::sen
   if ( _state.reduceStateAndCell() && !tarch::parallel::Node::getInstance().isGlobalMaster() ) {
     _state.send(
       tarch::parallel::NodePool::getInstance().getMasterRank(),
-      peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag()
+      peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag()
     );
     logDebug( "sendStateToMaster()", "sent state " << _state.toString() );
 
-    tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::kernel::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
+    tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
   }
   logTraceOut( "sendStateToMaster()" );
   #endif
@@ -168,8 +168,8 @@ void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::ite
   sendStateToMaster();
 
   #ifdef Parallel
-  peano::kernel::parallel::JoinDataBufferPool::getInstance().releaseMessages();
-  peano::kernel::parallel::SendReceiveBufferPool::getInstance().releaseMessages();
+  peano::parallel::JoinDataBufferPool::getInstance().releaseMessages();
+  peano::parallel::SendReceiveBufferPool::getInstance().releaseMessages();
   #endif
 
   _state.resetStateAtEndOfIteration();
