@@ -7,6 +7,7 @@
 #include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"
 #include "peano/utils/Loop.h"
+#include "tarch/logging/Log.h"
 
 #include <bitset>
 
