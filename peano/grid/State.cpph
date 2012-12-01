@@ -134,6 +134,12 @@ double peano::grid::State<StateData>::getNumberOfOuterVertices() const {
 
 
 template <class StateData>
+int peano::grid::State<StateData>::getMaxLevel() const {
+  return _stateData.getMaxLevel();
+}
+
+
+template <class StateData>
 double peano::grid::State<StateData>::getNumberOfInnerCells() const {
   return _stateData.getNumberOfInnerCells();
 }

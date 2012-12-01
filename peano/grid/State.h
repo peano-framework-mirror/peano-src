@@ -104,7 +104,7 @@ class peano::grid::State {
     std::set<int>                _loadRebalancingRemoteRanks;
     #endif
   public:
-    virtual ~State();
+     ~State();
 
     /**
      * Proxy.
@@ -119,27 +119,27 @@ class peano::grid::State {
     /**
      * @see getMaximumMeshWidth() for comments on the validity of the result
      */
-    virtual double getNumberOfInnerVertices() const;
+     double getNumberOfInnerVertices() const;
 
     /**
      * @see getMaximumMeshWidth() for comments on the validity of the result
      */
-    virtual double getNumberOfBoundaryVertices() const;
+     double getNumberOfBoundaryVertices() const;
 
     /**
      * @see getMaximumMeshWidth() for comments on the validity of the result
      */
-    virtual double getNumberOfOuterVertices() const;
+     double getNumberOfOuterVertices() const;
 
     /**
      * @see getMaximumMeshWidth() for comments on the validity of the result
      */
-    virtual double getNumberOfInnerCells() const;
+     double getNumberOfInnerCells() const;
 
     /**
      * @see getMaximumMeshWidth() for comments on the validity of the result
      */
-    virtual double getNumberOfOuterCells() const;
+     double getNumberOfOuterCells() const;
 
     /**
      * Get maximum  mesh width
@@ -156,12 +156,14 @@ class peano::grid::State {
      *
      * @see resetStateAtBeginOfIteration()
      */
-    virtual tarch::la::Vector<DIMENSIONS,double> getMaximumMeshWidth() const;
+    tarch::la::Vector<DIMENSIONS,double> getMaximumMeshWidth() const;
 
     /**
      * @see getMaximumMeshWidth() for comments on the validity of the result
      */
-    virtual tarch::la::Vector<DIMENSIONS,double> getMinimumMeshWidth() const;
+    tarch::la::Vector<DIMENSIONS,double> getMinimumMeshWidth() const;
+
+    int getMaxLevel() const;
 
     void incNumberOfInnerVertices( double increment );
     void incNumberOfBoundaryVertices( double increment );
@@ -239,30 +241,30 @@ class peano::grid::State {
      */
     void receive(int source, int tag);
 
-    virtual void joinWithRank( int rank );
-    virtual void splitIntoRank( int rank );
-    virtual bool isForkTriggered() const;
-    virtual bool isForking() const;
+     void joinWithRank( int rank );
+     void splitIntoRank( int rank );
+     bool isForkTriggered() const;
+     bool isForking() const;
 
-    virtual bool isInvolvedInJoinOrFork() const;
+     bool isInvolvedInJoinOrFork() const;
 
-    virtual bool isJoinWithMasterTriggered() const;
-    virtual bool isJoiningWithMaster() const;
+     bool isJoinWithMasterTriggered() const;
+     bool isJoiningWithMaster() const;
 
-    virtual bool isJoiningWithWorker() const;
+     bool isJoiningWithWorker() const;
 
-    virtual bool isForkTriggeredForRank(int rank) const;
+     bool isForkTriggeredForRank(int rank) const;
 
-    virtual bool isJoinTriggeredForRank(int rank) const;
+     bool isJoinTriggeredForRank(int rank) const;
 
-    virtual bool hasJoinedWithMaster() const;
+     bool hasJoinedWithMaster() const;
 
-    virtual bool isForkingRank(int rank) const;
-    virtual bool isJoiningRank(int rank) const;
+     bool isForkingRank(int rank) const;
+     bool isJoiningRank(int rank) const;
 
-    virtual bool isNewWorkerDueToForkOfExistingDomain() const;
+     bool isNewWorkerDueToForkOfExistingDomain() const;
 
-    virtual void setIsNewWorkerDueToForkOfExistingDomain(bool value);
+     void setIsNewWorkerDueToForkOfExistingDomain(bool value);
 
     std::set<int> getForkingOrJoiningOrTriggeredForRebalancingRanks() const;
 
@@ -298,7 +300,7 @@ class peano::grid::State {
      *
      * @see send()
      */
-    virtual bool hasWorker() const;
+    bool hasWorker() const;
 
     bool mayForkDueToLoadBalancing(int workerRank) const;
     bool mayJoinDueToLoadBalancing(int workerRank) const;
