@@ -152,7 +152,16 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
   assertion2( masterVertex.isAdjacentToDomainOf(tarch::parallel::Node::getInstance().getRank()), masterVertex.toString(), localVertex.toString() );
 
   const bool                                          masterIsRefinedLocalVertexIsNot  = masterVertex.getRefinementControl()==Vertex::Records::Refined && localVertex.getRefinementControl()!=Vertex::Records::Refined;
+  const bool                                          workerIsRefiningOrTriggeredRefinementWhileMasterVertexIsUnrefined  =
+    (localVertex.getRefinementControl()==Vertex::Records::Refining || localVertex.getRefinementControl()==Vertex::Records::RefinementTriggered) && masterVertex.getRefinementControl()==Vertex::Records::Unrefined;
   const typename Vertex::Records::InsideOutsideDomain insideOutsideDomainOfLocalVertex = localVertex._vertexData.getInsideOutsideDomain();
+
+  assertion3(
+    !workerIsRefiningOrTriggeredRefinementWhileMasterVertexIsUnrefined || MasterIsNotResponsibleAnymore,
+    masterVertex.toString(),
+    localVertex.toString(),
+    tarch::parallel::Node::getInstance().getRank()
+  );
 
   localVertex._vertexData.setIsHangingNode(       masterVertex._vertexData.getIsHangingNode() );
   localVertex._vertexData.setRefinementControl(   masterVertex._vertexData.getRefinementControl() );
@@ -171,9 +180,20 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
     assertionEquals2( localVertex._vertexData.getInsideOutsideDomain(), masterVertex._vertexData.getInsideOutsideDomain(),                    localVertex.toString(), masterVertex.toString() );
   }
 
-  if (masterIsRefinedLocalVertexIsNot) {
+  if (masterIsRefinedLocalVertexIsNot ) {
     localVertex._vertexData.setRefinementControl( Vertex::Records::Refining );
   }
+  else if (workerIsRefiningOrTriggeredRefinementWhileMasterVertexIsUnrefined) {
+    // the local vertex was already refining. That can happen if and only if
+    // the create event has triggered a refinement. In that case, Peano tries
+    // to refine immediately, i.e. not in two sweeps. As we are forking however
+    // we have disable this immediate refine here manually - the master did not
+    // do the same thing, as the vertex is already remote on the master. So we
+    // reset the refining to refinement-triggered.
+    localVertex._vertexData.setRefinementControl( Vertex::Records::RefinementTriggered );
+    logDebug( "mergeWithForkedVertexFromMaster(...)","manually reset refinement state of " << localVertex.toString() );
+  }
+
 
   localVertex.invalidateAdjacentCellInformation();
   #endif
