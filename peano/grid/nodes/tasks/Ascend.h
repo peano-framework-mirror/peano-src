@@ -41,6 +41,8 @@ class peano::grid::nodes::tasks::Ascend {
     typedef peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>   TouchVertexLastTimeLoopBody;
     typedef peano::grid::nodes::loops::CallAscendLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>                AscendLoopBody;
 
+    static tarch::logging::Log  _log;
+
     const int              _treeDepth;
     State&                 _state;
     EventHandle&           _eventHandle;

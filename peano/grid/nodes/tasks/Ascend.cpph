@@ -4,6 +4,10 @@
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
+tarch::logging::Log  peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::_log( "peano::grid::nodes::tasks::Ascend" );
+
+
+template <class Vertex, class Cell, class State, class EventHandle>
 peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
   const int              treeDepth,
   State&                 state,
@@ -24,9 +28,15 @@ peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVerticesLastTime(int level) {
-  const bool runOperation =
+  // @todo should become const again
+  /*const */ bool runOperation =
     (_eventHandle.touchVertexLastTimeSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
     (_eventHandle.touchVertexLastTimeSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && level == _treeDepth);
+
+  if (!runOperation) {
+    runOperation = true;
+//    logWarning( "touchVerticesLastTime(int)", "flagging touch last as nop or whole tree does not work yet" );
+  }
 
   if (runOperation) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
