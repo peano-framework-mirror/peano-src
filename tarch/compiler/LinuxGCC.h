@@ -57,7 +57,7 @@
 #define CompilerHasUTSName
 
 
-#define CompilerHasTimespec
+//#define CompilerHasTimespec
 
 /**
  * Some compiler/MPI combinations define the constant
