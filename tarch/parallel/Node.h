@@ -7,6 +7,8 @@
 #include "tarch/parallel/MPIConstants.h"
 #include "tarch/logging/Log.h"
 
+#include <ctime>
+
 
 namespace tarch {
   namespace parallel {
@@ -281,21 +283,21 @@ class tarch::parallel::Node {
      * @return Time stamp when next warning should be written if no message has
      *         been received meanwhile.
      */
-    clock_t getDeadlockWarningTimeStamp() const;
+    std::clock_t getDeadlockWarningTimeStamp() const;
 
     /**
      * @return Time stamp when next application should terminate because of a
      *         time out if no message has been received meanwhile.
      */
-    clock_t getDeadlockTimeOutTimeStamp() const;
+    std::clock_t getDeadlockTimeOutTimeStamp() const;
 
     bool isTimeOutDeadlockEnabled() const;
     bool isTimeOutWarningEnabled() const;
 
     bool isInitialised() const;
 
-    void setTimeOutWarning( const clock_t & value );
-    void setDeadlockTimeOut( const clock_t & value );
+    void setTimeOutWarning( const std::clock_t & value );
+    void setDeadlockTimeOut( const std::clock_t & value );
     void setCommunicator( MPI_Comm communicator );
 
     /**
