@@ -185,6 +185,9 @@ class tarch::parallel::Node {
     void shutdown();
 
     /**
+     * Return rank of this node. In the serial version, i.e. without MPI, this
+     * operation always returns 0.
+     *
      * @return Rank of this node
      */
     int getRank() const;

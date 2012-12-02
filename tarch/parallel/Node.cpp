@@ -319,8 +319,12 @@ bool tarch::parallel::Node::init(int* argc, char*** argv) {
 
 
 int tarch::parallel::Node::getRank() const {
+#ifdef Parallel
   assertion(_initIsCalled);
   return _rank;
+#else
+  return 0;
+#endif
 }
 
 
