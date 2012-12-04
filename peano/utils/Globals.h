@@ -66,6 +66,7 @@
   #define THREE_POWER_D (BasePowerExponent<3,DIMENSIONS>::value)
   #define THREE_POWER_D_MINUS_ONE (BasePowerExponent<3,DIMENSIONS>::value-1)
   #define THREE_POWER_D_DIVIDED_BY_THREE (BasePowerExponent<3,DIMENSIONS-1>::value)
+  #define THREE_POWER_D_TIMES_FOUR_POWER_D (BasePowerExponent<3,DIMENSIONS>::value*BasePowerExponent<4,DIMENSIONS>::value)
   #define FOUR_POWER_D  (BasePowerExponent<4,DIMENSIONS>::value)
   #define FOUR_POWER_D_DIVIDED_BY_FOUR  (BasePowerExponent<4,DIMENSIONS-1>::value)
   #define FIVE_POWER_D  (BasePowerExponent<5,DIMENSIONS>::value)
