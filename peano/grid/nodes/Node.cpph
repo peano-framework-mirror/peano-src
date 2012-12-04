@@ -150,6 +150,11 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       #endif
     }
 
+    State workerState;
+    workerState.receive(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
+    state.mergeWithWorkerState(workerState);
+    peano::parallel::loadbalancing::Oracle::getInstance().setWorkerHasWorker(currentWorker,workerState.hasWorker());
+
     _eventHandle.mergeWithMaster(
       receivedWorkerCell,
       receivedWorkerVertices,
@@ -160,13 +165,10 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       coarseGridVerticesEnumerator,
       coarseGridCell,
       fineGridPositionOfCell,
-      currentWorker
+      currentWorker,
+      workerState,
+      state
     );
-
-    State workerState;
-    workerState.receive(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
-    state.mergeWithWorkerState(workerState);
-    peano::parallel::loadbalancing::Oracle::getInstance().setWorkerHasWorker(currentWorker,workerState.hasWorker());
 
     peano::parallel::loadbalancing::Oracle::getInstance().receivedTerminateCommand(
       currentWorker,

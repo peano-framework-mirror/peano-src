@@ -106,7 +106,7 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
       ) {
         if (!_state.isForkTriggeredForRank(*p) && !_state.isJoiningRank(*p) ) {
           Vertex copy = _fineGridVertices[positionInVertexArray];
-          _threadLocalEventHandle.prepareSendToNeighbour(copy,*p);
+          _threadLocalEventHandle.prepareSendToNeighbour(copy,*p,_fineGridVerticesEnumerator.getLevel());
           if ( _state.isJoinWithMasterTriggered() ) {
             copy.replaceAdjancyEntriesOfLocalRankWithMaster();
           }

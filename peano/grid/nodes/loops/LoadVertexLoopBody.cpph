@@ -149,7 +149,8 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
           receivedVertex,
           currentNeighbourRank,
           _fineGridVerticesEnumerator.getVertexPosition(positionInLocalCell),
-          _fineGridVerticesEnumerator.getCellSize()
+          _fineGridVerticesEnumerator.getCellSize(),
+          _fineGridVerticesEnumerator.getLevel()
         );
       }
     }
