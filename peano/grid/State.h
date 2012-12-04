@@ -64,25 +64,6 @@ class peano::grid::State {
 
     State();
     State(const PersistentState& argument);
-
-    #ifdef Parallel
-    /**
-     * Merge with worker state
-     *
-     * This is a local variant of the state merger that is usually not called
-     * alone. However, I have some general remarks on the state:
-     *
-     * - beginIteration is the first time when a mapping sees a state.
-     * - This state then is distributed by Peano automatically among the
-     *   workers.
-     * - Throughout the traversal, Peano merges back worker states into
-     *   the master due to this operation, i.e.
-     * - When you receive endIteration(), all the worker states already are
-     *   merged into the master state and no merges are pending.
-     */
-    void mergeWithWorkerState(const peano::grid::State<StateData>& workerState);
-    #endif
-
   private:
     /**
      * Logging device
@@ -314,6 +295,23 @@ class peano::grid::State {
     bool isInvolvedInJoinOrFork() const { return false; }
     
     void restart();
+    #endif
+
+
+    #ifdef Parallel
+    /**
+     * Merge with worker state
+     *
+     *
+     * - beginIteration is the first time when a mapping sees a state.
+     * - This state then is distributed by Peano automatically among the
+     *   workers.
+     * - Throughout the traversal, Peano merges back worker states into
+     *   the master due to this operation, i.e.
+     * - When you receive endIteration(), all the worker states already are
+     *   merged into the master state and no merges are pending.
+     */
+    void mergeWithWorkerState(const peano::grid::State<StateData>& workerState);
     #endif
 };
 
