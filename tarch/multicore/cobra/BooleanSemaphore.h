@@ -1,9 +1,7 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
-#ifndef _TARCH_MULTICORE_BOOLEAN_SEMAPHORE_COBRA_H_
+// use, please see the copyright notice at www.peano-framework.org
+#if !defined( _TARCH_MULTICORE_BOOLEAN_SEMAPHORE_COBRA_H_ ) && defined(SharedCobra)
 #define _TARCH_MULTICORE_BOOLEAN_SEMAPHORE_COBRA_H_
-
 
 
 namespace tarch {
@@ -14,8 +12,6 @@ namespace tarch {
 }
 
 
-
-#if defined(SharedCobra)
 
 #include <string>
 #include <cobra/thread.hpp>
@@ -66,7 +62,6 @@ class tarch::multicore::BooleanSemaphore {
      */
     static void continueWithTask();
 };
-#endif
 
 
 #endif
