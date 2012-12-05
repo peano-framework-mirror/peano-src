@@ -53,13 +53,41 @@ class peano::datatraversal::ActionSetTraversalLoop {
     );
 
     #ifdef SharedTBB
+    /**
+     * @todo This range partitioning does work but not yield better
+     * performance. I thus do not use it yet but rely on straightforward
+     * tbb::parallel_reduce.
+     */
+    class HandleSubrangeWithBiPartitioning {
+      private:
+        LoopBody                                _loopBody;
+        const peano::datatraversal::ActionSet&  _actionSet;
+        const bool                              _isLeftTask;
+        const int                               _left;
+        const int                               _right;
+        const int                               _grainSize;
+
+      public:
+        HandleSubrangeWithBiPartitioning(
+          const LoopBody&                         loopBody,
+          const peano::datatraversal::ActionSet&  actionSet,
+          const bool                              isLeftTask,
+          const int                               left,
+          const int                               right,
+          const int                               grainSize
+        );
+
+        void operator() ();
+    };
+
+
     class ActionSetTraversalLoopInstance {
       private:
-        LoopBody                                        _loopBody;
+        LoopBody                                _loopBody;
         const peano::datatraversal::ActionSet&  _actionSet;
       public:
         ActionSetTraversalLoopInstance(
-          const LoopBody&                                 loopBody,
+          const LoopBody&                         loopBody,
           const peano::datatraversal::ActionSet&  actionSet
         );
 
