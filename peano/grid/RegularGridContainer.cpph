@@ -631,21 +631,6 @@ void peano::grid::RegularGridContainer<Vertex,Cell>::copyRootNodeDataFromRegular
 
 
 template < class Vertex, class Cell >
-bool peano::grid::RegularGridContainer<Vertex,Cell>::mayForkLoadOrStoreVertexTaskOnRegularSubtree(
-  const int   currentLevel,
-  const bool  isParentCellAtPathBoundary,
-  const int   maxLevelToFork,
-  const int   coarsestLevelOfThisTask,
-  const int   expectedNumberOfLoadsOrStores
-) const {
-  return !isParentCellAtPathBoundary &&
-         expectedNumberOfLoadsOrStores>0 &&
-         maxLevelToFork>=currentLevel &&
-         currentLevel>coarsestLevelOfThisTask;
-}
-
-
-template < class Vertex, class Cell >
 bool peano::grid::RegularGridContainer<Vertex,Cell>::isParentCellAtPatchBoundaryWithinRegularSubtree(
   const tarch::la::Vector<DIMENSIONS,int>&  offsetWithinPatch,
   const int                                 currentLevel

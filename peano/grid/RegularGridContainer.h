@@ -23,6 +23,33 @@ namespace peano {
       class Vertex,
       class Cell
     > class RegularGridContainer;
+
+    /**
+     * Are We Allowed to Fork Throughout a Vertex Load or Store Process on a Regular Subtree?
+     *
+     * We are allowed to fork if the following three properties hold.
+     *
+     * - The current level is smaller or equal to the maximum level that may be
+     *   forked.
+     * - The task currently already has processed at least one level. This is
+     *   not the case if the current level equals the coarsest level+1 - if
+     *   the latter holds, we first have to load at least one level before
+     *   forking further.
+     * - The @f$ 3^d @f$ cells to be handled next are not on the whole patch's
+     *   boundary.
+     *
+     * Please note that these conditions comprise that current level always is
+     * the level that is to be loaded next. Consequently,
+     * cellsPerAxisOnCurrentLevel also refers to currentLevel and not to the
+     * current coarse grid cell.
+     */
+    bool mayForkLoadOrStoreVertexTaskOnRegularSubtree(
+      const int   currentLevel,
+      const bool  isParentCellAtPathBoundary,
+      const int   maxLevelToFork,
+      const int   coarsestLevelOfThisTask,
+      const int   expectedNumberOfLoadsOrStores
+    );
   }
 }
 
@@ -254,33 +281,6 @@ class peano::grid::RegularGridContainer {
     static tarch::la::Vector<DIMENSIONS,int> getNumberOfVertices( int level );
 
     std::string toString() const;
-
-    /**
-     * Are We Allowed to Fork Throughout a Vertex Load or Store Process on a Regular Subtree?
-     *
-     * We are allowed to fork if the following three properties hold.
-     *
-     * - The current level is smaller or equal to the maximum level that may be
-     *   forked.
-     * - The task currently already has processed at least one level. This is
-     *   not the case if the current level equals the coarsest level+1 - if
-     *   the latter holds, we first have to load at least one level before
-     *   forking further.
-     * - The @f$ 3^d @f$ cells to be handled next are not on the whole patch's
-     *   boundary.
-     *
-     * Please note that these conditions comprise that current level always is
-     * the level that is to be loaded next. Consequently,
-     * cellsPerAxisOnCurrentLevel also refers to currentLevel and not to the
-     * current coarse grid cell.
-     */
-    bool mayForkLoadOrStoreVertexTaskOnRegularSubtree(
-      const int   currentLevel,
-      const bool  isParentCellAtPathBoundary,
-      const int   maxLevelToFork,
-      const int   coarsestLevelOfThisTask,
-      const int   expectedNumberOfLoadsOrStores
-    ) const;
 
     bool isParentCellAtPatchBoundaryWithinRegularSubtree(
       const tarch::la::Vector<DIMENSIONS,int>&  offsetWithinPatch,
