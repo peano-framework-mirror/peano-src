@@ -9,7 +9,7 @@
 
 #include "tarch/timing/Watch.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhase.h"
-#include "tarch/multicore/BooleanSemaphore.h"
+//#include "tarch/multicore/BooleanSemaphore.h"
 
 
 namespace peano {
@@ -23,6 +23,9 @@ namespace peano {
 
 /**
  * Oracle for the Autotuning
+ *
+ * @todo Doku ueber multithreading
+ *
  *
  * The oracle holds a set of OraceForOnePhase instances. If the respositories
  * switch to another adapter, they notify the oracle that they wanna switched
@@ -43,37 +46,25 @@ class peano::datatraversal::autotuning::Oracle {
   private:
     static const int AdapterStatesReservedForRepostorySteering = 3;
 
-    struct OracleKey {
-      int          _phase;
-      MethodTrace  _askingMethod;
-
-      OracleKey(int phase, MethodTrace askingMethod);
-      OracleKey();
-      ~OracleKey();
-
-      bool operator<(const OracleKey& rhs) const;
-      bool operator==(const OracleKey& rhs) const;
-    };
-
     static tarch::logging::Log  _log;
 
     Oracle();
 
-    typedef std::map<OracleKey, OracleForOnePhase*>                     OracleContainer;
-
     struct ValuesPerOracleKey {
-      int                    _recursiveCallsForThisOracle;
+      #ifdef Asserts
+      /**
+       * The oracle mechanism does not support recursive usage (anymore). In
+       * the asserts mode, we check that no recursive calls do pop up.
+       */
+      bool                   _recursiveCallsForThisOracle;
+      #endif
       bool                   _measureTime;
       tarch::timing::Watch*  _watch;
+      OracleForOnePhase*     _oracle;
     };
 
-    /**
-     * For the watches, we have to count how often the code has triggered
-     * the oracle. If a code part calls parallelise multiple times, we
-     * start the watch only for the first, and make it terminate for the
-     * last.
-     */
-    typedef std::map<OracleKey, ValuesPerOracleKey>  WatchContainer;
+    ValuesPerOracleKey*                        _oracles;
+
 
     /**
      * Timer for whole iterations
@@ -82,28 +73,23 @@ class peano::datatraversal::autotuning::Oracle {
      * every time one calls switchToOracle(), i.e. at the beginning of each
      * Peano grid sweep.
      */
-    tarch::timing::Watch  _watchSinceLastSwitchCall;
-
-    /**
-     * Maps oracle id's to indexes
-     */
-    OracleContainer  _oracles;
-    WatchContainer   _watches;
+    tarch::timing::Watch                       _watchSinceLastSwitchCall;
 
     /**
      * Oracle, method and problem size must not change between the
      * parallelise() and loopHasTerminated() calls.
      */
-    int                                        _currentOracle;
-
-    tarch::multicore::BooleanSemaphore         _booleanSemaphore;
+    int                                        _currentPhase;
 
     OracleForOnePhase*                         _oraclePrototype;
 
-    OracleKey                                  _lastKeyUsed;
+    int                                        _numberOfOracles;
 
-    void createOracles(int numberOfOracles);
+    void createOracles();
     void deleteOracles();
+
+    int getTotalNumberOfOracles() const;
+    int getKey(const MethodTrace& askingMethod ) const;
   public:
     ~Oracle();
 

@@ -1,7 +1,7 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
+#include "peano/datatraversal/autotuning/OracleForOnePhaseUsingAllThreads.h"
 #include "tarch/Assertions.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
-#include "tarch/multicore/Lock.h"
 
 #if defined(SharedCobra)
 #include "tarch/multicore/cobra/Core.h"
@@ -18,18 +18,16 @@ peano::datatraversal::autotuning::Oracle& peano::datatraversal::autotuning::Orac
 
 
 peano::datatraversal::autotuning::Oracle::Oracle():
-  _watchSinceLastSwitchCall("peano::datatraversal::autotuning::Oracle", "Oracle()", false),
   _oracles(),
-  _watches(),
-  _currentOracle(0),
-  _booleanSemaphore(),
-  _oraclePrototype(0) {
+  _watchSinceLastSwitchCall("peano::datatraversal::autotuning::Oracle", "Oracle()", false),
+  _currentPhase(0),
+  _oraclePrototype(0),
+  _numberOfOracles(0) {
 }
 
 
 void peano::datatraversal::autotuning::Oracle::setOracle( OracleForOnePhase* oraclePrototype ) {
-  tarch::multicore::Lock scopeLock( _booleanSemaphore );
-
+  logTraceIn( "setOracle(Oracle*)");
   assertion( oraclePrototype!=0 );
 
   if (_oraclePrototype!=0) {
@@ -37,112 +35,112 @@ void peano::datatraversal::autotuning::Oracle::setOracle( OracleForOnePhase* ora
   }
   _oraclePrototype = oraclePrototype;
 
-  int numberOfOracles = static_cast<int>( _oracles.size() );
-
   deleteOracles();
-  createOracles(numberOfOracles);
+  createOracles();
+  logTraceOut( "setOracle(Oracle*)");
+}
+
+
+int peano::datatraversal::autotuning::Oracle::getTotalNumberOfOracles() const {
+  return (_numberOfOracles+AdapterStatesReservedForRepostorySteering)*peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling;
+}
+
+
+int peano::datatraversal::autotuning::Oracle::getKey(const MethodTrace& askingMethod ) const {
+  return _currentPhase*peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling + askingMethod;
 }
 
 
 void peano::datatraversal::autotuning::Oracle::plotStatistics() {
-  logInfo( "plotStatistics()", "used " << _watches.size() << " oracle(s) ");
-
-  for (
-    OracleContainer::const_iterator p = _oracles.begin();
-    p != _oracles.end();
-    p++
-  ) {
-    if ( p->first._phase >= AdapterStatesReservedForRepostorySteering ) {
-      p->second->plotStatistics();
-    }
+  assertion(_oracles!=0);
+  for (int i=0; i<getTotalNumberOfOracles();i++) {
+    assertion(_oracles[i]._oracle!=0);
+    _oracles[i]._oracle->plotStatistics();
   }
 }
 
 
 peano::datatraversal::autotuning::Oracle::~Oracle() {
   deleteOracles();
-  delete _oraclePrototype;
-  _oraclePrototype = 0;
+  if (_oraclePrototype!=0) {
+    delete _oraclePrototype;
+    _oraclePrototype = 0;
+  }
 }
 
 
 void peano::datatraversal::autotuning::Oracle::setNumberOfOracles(int value) {
   assertion( value>0 );
+  logTraceInWith1Argument( "setNumberOfOracles(int)", value);
 
-  tarch::multicore::Lock scopeLock( _booleanSemaphore );
   deleteOracles();
-  createOracles(value);
+  _numberOfOracles=value;
+  createOracles();
+
+  logTraceIn( "setNumberOfOracles(int)");
 }
 
 
-void peano::datatraversal::autotuning::Oracle::createOracles(int numberOfOracles) {
+void peano::datatraversal::autotuning::Oracle::createOracles() {
   #if defined(SharedMemoryParallelisation)
+  logTraceIn( "createOracles()");
 
   if (_oraclePrototype==0) {
-	  logWarning( "createOracles(int)", "no oracle type configured. Perhaps forgot to call peano::datatraversal::autotuning::Oracle::setOracle()" );
+	  logWarning( "createOracles(int)", "no oracle type configured. Perhaps forgot to call peano::datatraversal::autotuning::Oracle::setOracle(). Peano uses default oracle" );
+	  _oraclePrototype = new OracleForOnePhaseUsingAllThreads(2);
   }
   else {
-    assertion( _oracles.size()==0 );
-    assertion( _watches.size()==0 );
-	  assertion( _oraclePrototype!=0 );
-	  for (int i=0; i<numberOfOracles; i++) {
-	    for (int j=0; j<NumberOfDifferentMethodsCalling; j++) {
-	      OracleKey currentKey;
-	      currentKey._phase        = i;
-	      currentKey._askingMethod = toMethodTrace(j);
+    assertion( _oracles==0 );
+    assertion( _oraclePrototype!=0 );
 
-        _oracles[currentKey]                               = _oraclePrototype->createNewOracle(currentKey._phase - AdapterStatesReservedForRepostorySteering + 1,currentKey._askingMethod);
-        _watches[currentKey]._recursiveCallsForThisOracle  = 0;
-        _watches[currentKey]._measureTime                  = false;
-        _watches[currentKey]._watch                        = new tarch::timing::Watch("peano::datatraversal::autotuning::Oracle", "createOracles(int)", false);
-	    }
+    _oracles = new ValuesPerOracleKey[getTotalNumberOfOracles()];
+
+	  for (int i=0; i<getTotalNumberOfOracles(); i++) {
+      #ifdef Asserts
+	    _oracles[i]._recursiveCallsForThisOracle  = false;
+      #endif
+
+      const int          phase = i/peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling;
+      const MethodTrace  trace = toMethodTrace(i-phase*peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling);
+      _oracles[i]._measureTime                  = false;
+	    _oracles[i]._watch                        = new tarch::timing::Watch("peano::datatraversal::autotuning::Oracle", "createOracles(int)", false);
+	    _oracles[i]._oracle                       = _oraclePrototype->createNewOracle(phase,trace);
     }
   }
+
+  logTraceOut( "createOracles()");
   #endif
 }
 
 
 void peano::datatraversal::autotuning::Oracle::deleteOracles() {
-  const int NumberOfOracles = static_cast<int>(_oracles.size()) / NumberOfDifferentMethodsCalling;
-  for (int i=0; i<NumberOfOracles; i++) {
-    for (int j=0; j<NumberOfDifferentMethodsCalling; j++) {
-      OracleKey currentKey;
-      currentKey._phase        = i;
-      currentKey._askingMethod = toMethodTrace(j);
-
-      delete _oracles[currentKey];
-      delete _watches[currentKey]._watch;
-
-      _oracles.erase(currentKey);
-      _watches.erase(currentKey);
+  logTraceIn( "deleteOracles()");
+  if (_oracles != 0) {
+    for (int i=0; i<getTotalNumberOfOracles(); i++) {
+      delete _oracles[i]._oracle;
+      delete _oracles[i]._watch;
     }
+
+    delete[] _oracles;
+    _oracles = 0;
   }
-
-  _oracles.clear();
-  _watches.clear();
-
-  assertion1( _oracles.empty(), _oracles.size() );
-  assertion1( _watches.empty(), _watches.size() );
+  logTraceOut( "deleteOracles()");
 }
 
 
 void peano::datatraversal::autotuning::Oracle::switchToOracle(int id) {
   #if defined(SharedMemoryParallelisation)
   assertion1( id>=0, id );
-  assertion3( id<static_cast<int>(_oracles.size()), id, _oracles.size(), "see method's comment" );
 
   #if defined(SharedCobra)
   tarch::multicore::cobra::Core::getInstance().getScheduler().gc();
   #endif
-
-  tarch::multicore::Lock scopeLock( _booleanSemaphore );
-
   _watchSinceLastSwitchCall.stopTimer();
 
   assertion(_oraclePrototype!=0);
   _oraclePrototype->informAboutElapsedTimeOfLastTraversal(_watchSinceLastSwitchCall.getCalendarTime());
 
-  _currentOracle=id;
+  _currentPhase=id;
 
   _watchSinceLastSwitchCall.startTimer();
   #endif
@@ -155,35 +153,21 @@ int peano::datatraversal::autotuning::Oracle::parallelise(int problemSize, Metho
   int result;
 
   #if defined(SharedMemoryParallelisation)
-  if (_oraclePrototype==0) {
-    logWarning( "parallelise(int,Trace)", "no oracle type configured. Perhaps forgot to call peano::datatraversal::autotuning::Oracle::setOracle()" );
-    result = 0;
-  }
-  else {
-    assertion( _currentOracle>=0 );
-    assertion2( _currentOracle<static_cast<int>(_oracles.size()),  _currentOracle, _oracles.size() );
+  const int key = getKey(askingMethod);
+  assertion(_oracles!=0);
+  assertion(key>=0);
+  assertion(key<getTotalNumberOfOracles());
 
-    tarch::multicore::Lock scopeLock( _booleanSemaphore );
+  #ifdef Asserts
+  assertion2( !_oracles[key]._recursiveCallsForThisOracle, toString( askingMethod), _currentPhase );
+  _oracles[key]._recursiveCallsForThisOracle = true;
+  #endif
 
-    _lastKeyUsed._phase        = _currentOracle;
-    _lastKeyUsed._askingMethod = askingMethod;
-
-    assertion3(_watches.count(_lastKeyUsed)>0, _currentOracle, toString(askingMethod), askingMethod );
-    assertion3(_oracles.count(_lastKeyUsed)>0, _currentOracle, toString(askingMethod), askingMethod );
-
-    _watches[_lastKeyUsed]._recursiveCallsForThisOracle++;
-
-    if (_watches[_lastKeyUsed]._recursiveCallsForThisOracle==1) {
-      std::pair<int,bool> oracleDescision =  _oracles[_lastKeyUsed]->parallelise(problemSize);;
-      result = oracleDescision.first;
-      _watches[_lastKeyUsed]._measureTime = oracleDescision.second;
-      if ( oracleDescision.second ) {
-        _watches[_lastKeyUsed]._watch->startTimer();
-      }
-    }
-    else {
-      result = 0;
-    }
+  std::pair<int,bool> oracleDescision =  _oracles[key]._oracle->parallelise(problemSize);;
+  result = oracleDescision.first;
+  _oracles[key]._measureTime = oracleDescision.second;
+  if ( oracleDescision.second ) {
+    _oracles[key]._watch->startTimer();
   }
   #else
   result = 0;
@@ -200,58 +184,21 @@ int peano::datatraversal::autotuning::Oracle::parallelise(int problemSize, Metho
 void peano::datatraversal::autotuning::Oracle::parallelSectionHasTerminated(MethodTrace askingMethod) {
   logTraceInWith1Argument( "parallelSectionHasTerminated(...)", toString(askingMethod) );
   #if defined(SharedMemoryParallelisation)
-  if (_oraclePrototype!=0) {
-    assertion( _currentOracle>=0 );
-    assertion2( _currentOracle<static_cast<int>(_oracles.size()),  _currentOracle, _oracles.size() );
+  const int key = getKey(askingMethod);
+  assertion(_oraclePrototype!=0);
+  assertion(_oracles!=0);
+  assertion(key>=0);
+  assertion(key<getTotalNumberOfOracles());
 
-    tarch::multicore::Lock scopeLock( _booleanSemaphore );
+  #ifdef Asserts
+  assertion2( _oracles[key]._recursiveCallsForThisOracle, toString( askingMethod), _currentPhase );
+  _oracles[key]._recursiveCallsForThisOracle = false;
+  #endif
 
-    OracleKey currentKey;
-    currentKey._phase        = _currentOracle;
-    currentKey._askingMethod = askingMethod;
-
-    assertion(_watches.count(currentKey)>0);
-    assertion(_oracles.count(currentKey)>0);
-
-    assertion3( _watches[currentKey]._recursiveCallsForThisOracle>0, toString(askingMethod), currentKey._phase, toString(currentKey._askingMethod) );
-
-    _watches[currentKey]._recursiveCallsForThisOracle--;
-
-    if (_watches[currentKey]._recursiveCallsForThisOracle==0 && _watches[currentKey]._measureTime ) {
-      _watches[currentKey]._watch->stopTimer();
-      _oracles[currentKey]->parallelSectionHasTerminated(_watches[currentKey]._watch->getCalendarTime());
-    }
+  if (_oracles[key]._measureTime ) {
+    _oracles[key]._watch->stopTimer();
+    _oracles[key]._oracle->parallelSectionHasTerminated(_oracles[key]._watch->getCalendarTime());
   }
   #endif
   logTraceOut( "parallelSectionHasTerminated(...)" );
-}
-
-
-peano::datatraversal::autotuning::Oracle::OracleKey::OracleKey(int phase, MethodTrace askingMethod):
-  _phase(phase),
-  _askingMethod(askingMethod) {
-  assertion( phase>0 );
-  assertion( askingMethod>=0 );
-  assertion( askingMethod<NumberOfDifferentMethodsCalling );
-}
-
-
-peano::datatraversal::autotuning::Oracle::OracleKey::OracleKey() {
-}
-
-
-peano::datatraversal::autotuning::Oracle::OracleKey::~OracleKey() {
-}
-
-
-bool peano::datatraversal::autotuning::Oracle::OracleKey::operator<(const peano::datatraversal::autotuning::Oracle::OracleKey& rhs) const {
-  if (_askingMethod < rhs._askingMethod) return true;
-  if (_askingMethod > rhs._askingMethod) return false;
-
-  return _phase < rhs._phase;
-}
-
-
-bool peano::datatraversal::autotuning::Oracle::OracleKey::operator==(const peano::datatraversal::autotuning::Oracle::OracleKey& rhs) const {
-  return (_phase == rhs._phase) && (_askingMethod == rhs._askingMethod);
 }

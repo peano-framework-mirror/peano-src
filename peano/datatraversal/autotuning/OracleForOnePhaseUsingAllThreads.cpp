@@ -19,17 +19,30 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
   if (_numberOfThreads==1) {
     return std::pair<int,bool>(0,false);
   }
-//  else if (
-//      // @todo wieder raus
-//    _methodTrace == PipelineAscendTask ||
-//    _methodTrace == PipelineDescendTask ||
-//    _methodTrace == AscendOnRegularStationaryGrid ||
-//    _methodTrace == DescendOnRegularStationaryGrid
-//  ) {
-//    return std::pair<int,bool>(0,false);
-//  }
-  else {
+  else if (
+    (
+      _methodTrace==CallEnterCellOnRegularStationaryGrid
+      ||
+      _methodTrace==CallLeaveCellOnRegularStationaryGrid
+      ||
+      _methodTrace==CallTouchFirstTimeOnRegularStationaryGrid
+      ||
+      _methodTrace==CallTouchLastTimeOnRegularStationaryGrid
+      ||
+      _methodTrace==AscendOnRegularStationaryGrid
+      ||
+      _methodTrace==DescendOnRegularStationaryGrid
+      ||
+      _methodTrace==SplitLoadVerticesTaskOnRegularStationaryGrid
+      ||
+      _methodTrace==SplitStoreVerticesTaskOnRegularStationaryGrid
+    )
+  )
+    {
     return std::pair<int,bool>(problemSize<_numberOfThreads ? 1 : problemSize/_numberOfThreads,true);
+  }
+  else {
+    return std::pair<int,bool>(0,false);
   }
 }
 
