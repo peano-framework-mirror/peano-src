@@ -86,13 +86,13 @@ tarch::la::Vector<DIMENSIONS,int> peano::grid::TraversalOrderOnTopLevel::getCell
         if (k(d) && result(d)==-1) {
           result(d)=0;
         }
-        else if (not k(d) && result(d)==-1) {
+        else if (! k(d) && result(d)==-1) {
           result(d)=2;
         }
         else if (k(d) && result(d)==2) {
           result(d)=1;
         }
-        else if (not k(d) && result(d)==0) {
+        else if (! k(d) && result(d)==0) {
           result(d)=1;
         }
       }
