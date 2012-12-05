@@ -10,13 +10,6 @@ template <class Vertex, class Cell, class EventHandle>
 tarch::multicore::BooleanSemaphore peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::_semaphore;
 
 
-//#ifdef Parallel
-//#include <set>
-//
-//#include "peano/parallel/SendReceiveBufferPool.h"
-//#endif
-
-
 template <class Vertex, class Cell, class EventHandle>
 peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch(
   const int                                        treeDepth,
@@ -32,16 +25,19 @@ peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<
   _treeRemainsStatic(treeRemainsStatic),
   _localTreeRemainsStatic(treeRemainsStatic),
   _fineGridEnumerator(_regularGridContainer.getVertexEnumerator(1)),
-  _coarseGridEnumerator(_regularGridContainer.getVertexEnumerator(0)) {
+  _coarseGridEnumerator(_regularGridContainer.getVertexEnumerator(0)),
+  _invokeTouchLastTimeEvent(true) {
 }
 
 
 template <class Vertex, class Cell, class EventHandle>
-void peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::setLevel(int level) {
+void peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::setLevel(int level, bool invokeTouchVertexLastTime) {
   assertion( level>=0 );
 
   _fineGridEnumerator   = _regularGridContainer.getVertexEnumerator(level);
   _coarseGridEnumerator = _regularGridContainer.getVertexEnumerator(level-1);
+
+  _invokeTouchLastTimeEvent = invokeTouchVertexLastTime;
 
   tarch::multicore::Lock lock(_semaphore);
 
@@ -80,15 +76,17 @@ void peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedP
 
   Vertex& currentVertex = _regularGridContainer.getVertex(_level,fineGridVertexIndex);
   if (!currentVertex.isOutside() && !_regularGridContainer.isToBeWrittenToTemporaryStack(_level,fineGridVertexIndex) ) {
-    _threadLocalEventHandle.touchVertexLastTime(
-      currentVertex,
-      _fineGridEnumerator.getVertexPosition(),
-      _fineGridEnumerator.getCellSize(),
-      _regularGridContainer.getVertex(_level-1),
-      _coarseGridEnumerator,
-      _regularGridContainer.getCell(_level-1,coarseGridCellIndex),
-      positionWithinNextCoarserCell
-    );
+    if (_invokeTouchLastTimeEvent) {
+      _threadLocalEventHandle.touchVertexLastTime(
+        currentVertex,
+        _fineGridEnumerator.getVertexPosition(),
+        _fineGridEnumerator.getCellSize(),
+        _regularGridContainer.getVertex(_level-1),
+        _coarseGridEnumerator,
+        _regularGridContainer.getCell(_level-1,coarseGridCellIndex),
+        positionWithinNextCoarserCell
+      );
+    }
 
     bool const vertexRemainsStatic = currentVertex.getRefinementControl()==Vertex::Records::Refined || currentVertex.getRefinementControl()==Vertex::Records::Unrefined;
     if (_localTreeRemainsStatic && !vertexRemainsStatic) {

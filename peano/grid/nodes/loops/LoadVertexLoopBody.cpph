@@ -3,6 +3,8 @@
 #include "peano/geometry/GeometryHelper.h"
 #include "peano/MappingSpecification.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
+#include "tarch/multicore/BooleanSemaphore.h"
+#include "tarch/multicore/Lock.h"
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
@@ -33,7 +35,8 @@ peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,Even
   int*                                      counter,
   VertexStack&                              vertexStack,
   EventHandle&                              eventHandle,
-  peano::geometry::Geometry&                geometry
+  peano::geometry::Geometry&                geometry,
+  bool                                      runsInParallel
 ):
   _state(state),
   _fineGridVertices(fineGridVertices),
@@ -52,13 +55,18 @@ peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,Even
   _numberOfOuterVertices(0.0),
   _hasRefinened(false),
   _hasErased(false),
-  _hasChangedVertexState(false) {
+  _hasChangedVertexState(false),
+  _runsInParallel(runsInParallel) {
 }
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator>
 peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,CellFlagsFromEnumerator>::~LoadVertexLoopBody() {
-  tarch::multicore::Lock lock(_semaphore);
+  tarch::multicore::Lock lock(_semaphore,false);
+
+  if (_runsInParallel) {
+    lock.lock();
+  }
 
   _state.incNumberOfInnerVertices(_numberOfInnerVertices);
   _state.incNumberOfBoundaryVertices(_numberOfBoundaryVertices);

@@ -53,6 +53,15 @@ class peano::grid::nodes::tasks::Ascend {
     LeaveCellLoopBody            _leaveCellLoopBody;
     AscendLoopBody               _ascendLoopBody;
 
+    /**
+     * !!! Optimisation
+     *
+     * If the specification says NOP or LEAVES_ONLY we may not skip whole
+     * levels, as some vertices might have changed their refinement state. The
+     * user might have triggered a coarsening for example. As a consequence, I
+     * always invoke the touch last time loop on each level, but sometimes I
+     * decide to switch off the event invocation.
+     */
     void touchVerticesLastTime(int level);
     void ascend(int fineGridLevel);
     void leaveCells(int level);

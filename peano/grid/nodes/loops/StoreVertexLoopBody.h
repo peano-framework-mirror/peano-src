@@ -77,6 +77,8 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
     bool   _hasTriggeredRefinementForNextIteration;
     bool   _hasTriggeredEraseForNextIteration;
 
+    const bool   _runsInParallel;
+
     /**
      * Update Refinement Status Before Data is Written to Output Stream
      *
@@ -207,7 +209,8 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
       int*                                      counter,
       VertexStack&                              vertexStack,
       EventHandle&                              eventHandle,
-      peano::geometry::Geometry&                geometry
+      peano::geometry::Geometry&                geometry,
+      bool                                      runsInParallel
     );
 
     ~StoreVertexLoopBody();

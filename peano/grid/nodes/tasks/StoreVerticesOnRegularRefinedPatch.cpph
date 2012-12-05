@@ -285,7 +285,7 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
   #if defined(SharedMemoryParallelisation)
   const int ExpectedNumberOfStoresToOutputStack = coarseGridCell.getNumberOfStoresToOutputStack();
 
-  if ( _regularGridContainer.mayForkLoadOrStoreVertexTaskOnRegularSubtree(
+  if ( mayForkLoadOrStoreVertexTaskOnRegularSubtree(
     currentLevelOfCoarseCell,callStoreOperationsForBoundaryLayer,_maxLevelToFork, _coarsestLevelOfThisTask, ExpectedNumberOfStoresToOutputStack
     )
   ) {
@@ -545,8 +545,8 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
   #ifdef SharedMemoryParallelisation
   const bool handleFirstLevelSeperately =
     _coarsestLevelOfThisTask==0 &&
-    _maxLevelToFork>0 &&
-    treeDepth > 1;
+    _maxLevelToFork>=0 &&
+    _regularGridContainer.getVertexEnumerator(0).getCellFlags()>1;
   #else
   const bool handleFirstLevelSeperately = false;
   #endif
@@ -561,17 +561,18 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
     );
   }
 
+  tarch::multicore::Lock leaveOperatorlock( _semaphore, false );
+
   if (_coarsestLevelOfThisTask==0) {
     #ifdef SharedMemoryParallelisation
-    tarch::multicore::Lock leaveOperatorlock( _semaphore );
     assertion3(_activeStoreTasks>=1,_activeStoreTasks,_coarsestLevelOfThisTask,_coarsestCellsOffset);
-    bool allTasksHaveTerminated = _activeStoreTasks == 1;
+    bool allTasksHaveTerminated = false;
     logDebug( "operator()()", "wait until all store processes have terminated. active-tasks=" << _activeStoreTasks );
-    leaveOperatorlock.free();
     while (!allTasksHaveTerminated) {
       tarch::multicore::BooleanSemaphore::sendCurrentTaskToBack( "peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch::operator()" );
-      tarch::multicore::Lock lock( _semaphore );
+      leaveOperatorlock.lock();
       allTasksHaveTerminated = _activeStoreTasks == 1;
+      leaveOperatorlock.free();
     }
     tarch::multicore::BooleanSemaphore::continueWithTask();
     #else
@@ -581,7 +582,7 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
     _regularGridContainer.haveStoredAllPatchsVertices(treeDepth);
   }
 
-  tarch::multicore::Lock lock( _semaphore );
+  leaveOperatorlock.lock();
   _activeStoreTasks--;
   assertion( _activeStoreTasks>=0 );
 

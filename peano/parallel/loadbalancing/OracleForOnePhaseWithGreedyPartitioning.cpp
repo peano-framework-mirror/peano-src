@@ -1,7 +1,7 @@
 #include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
 
 #include "tarch/Assertions.h"
-#include "tarch/la/Scalar.h"
+#include "tarch/la/ScalarOperations.h"
 
 
 tarch::logging::Log peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning::_log( "peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning" );

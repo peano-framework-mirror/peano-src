@@ -40,8 +40,6 @@ class peano::grid::tests::RefinementTest: public tarch::tests::TestCase {
 	  virtual ~RefinementTest();
 
     virtual void run();
-
-    void virtual setUp();
 };
 
 #endif

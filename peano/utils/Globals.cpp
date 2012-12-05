@@ -1,8 +1,7 @@
 #include "peano/utils/Globals.h"
 
 #include "tarch/Assertions.h"
-#include "tarch/la/Scalar.h"
-//#include "tarch/la/Utilities.h"
+#include "tarch/la/ScalarOperations.h"
 
 #include <cmath>
 

@@ -11,11 +11,11 @@ tarch::logging::Log peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch
 
 template <class Vertex, class Cell, class VertexStack>
 peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::LoadVerticesOnRegularRefinedPatch(
-  const bool                                                        isTraversalInverted,
+  const bool                                       isTraversalInverted,
   peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
-  VertexStack&                                                      vertexStack,
-  bool                                                              loadProcessRunsInParallelToOtherTasks,
-  int                                                               maxLevelToFork
+  VertexStack&                                     vertexStack,
+  bool                                             loadProcessRunsInParallelToOtherTasks,
+  int                                              maxLevelToFork
 ):
   _isTraversalInverted(isTraversalInverted),
   _regularGridContainer(regularGridContainer),
@@ -32,14 +32,14 @@ peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexS
 
 template <class Vertex, class Cell, class VertexStack>
 peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>::LoadVerticesOnRegularRefinedPatch(
-  const bool                                                        isTraversalInverted,
+  const bool                                       isTraversalInverted,
   peano::grid::RegularGridContainer<Vertex,Cell>&  regularGridContainer,
-  VertexStack&                                                      vertexStack,
-  bool                                                              loadProcessRunsInParallelToOtherTasks,
-  int                                                               maxLevelToFork,
-  const int                                                         currentLevel,
-  const tarch::la::Vector<DIMENSIONS,int>&                          offsetWithinPatch,
-  typename VertexStack::PopBlockVertexStackView                     stackView
+  VertexStack&                                     vertexStack,
+  bool                                             loadProcessRunsInParallelToOtherTasks,
+  int                                              maxLevelToFork,
+  const int                                        currentLevel,
+  const tarch::la::Vector<DIMENSIONS,int>&         offsetWithinPatch,
+  typename VertexStack::PopBlockVertexStackView    stackView
 ):
   _isTraversalInverted(isTraversalInverted),
   _regularGridContainer(regularGridContainer),
@@ -417,7 +417,7 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
   #if defined(SharedMemoryParallelisation)
   const int ExpectedNumberOfLoadsFromInputStack = coarseGridCell.getNumberOfLoadsFromInputStack();
 
-  if ( _regularGridContainer.mayForkLoadOrStoreVertexTaskOnRegularSubtree(
+  if ( mayForkLoadOrStoreVertexTaskOnRegularSubtree(
     currentLevelOfCoarseCell,callLoadOperationsForBoundaryLayer,_maxLevelToFork, _coarsestLevelOfThisTask, ExpectedNumberOfLoadsFromInputStack
   )) {
     #ifdef Dim2
@@ -592,7 +592,10 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
   }
   logDebug( "loadSubVerticesWithCellsOnFirstLevelInSharedMemoryMode(...)", "marked vertices of first level" );
 
-  assertion(currentFineGridLevel<_regularGridContainer.getVertexEnumerator(0).getCellFlags());
+  assertion2(
+    currentFineGridLevel<_regularGridContainer.getVertexEnumerator(0).getCellFlags(),
+    currentFineGridLevel,_regularGridContainer.getVertexEnumerator(0).getCellFlags()
+  );
 
   _stackView = _vertexStack.popBlockFromInputStack(sizeOfStackViewBeforeWeCanFork);
   typedef LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>  ForkedTask;
@@ -651,8 +654,8 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
   #ifdef SharedMemoryParallelisation
   else if (
     _coarsestLevelOfThisTask==0 &&
-    _maxLevelToFork>0 &&
-    _regularGridContainer.getVertexEnumerator(0).getCellFlags() > 1
+    _maxLevelToFork>=0 &&
+    _regularGridContainer.getVertexEnumerator(0).getCellFlags()>1
   ) {
     loadSubVerticesWithCellsOnFirstLevelInSharedMemoryMode();
   }

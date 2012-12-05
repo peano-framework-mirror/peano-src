@@ -188,9 +188,6 @@ void peano::grid::tests::RefinementTest::test2DCellM1M2P0P0() {
 }
 
 
-void peano::grid::tests::RefinementTest::setUp() {
-}
-
 
 #ifdef UseTestSpecificCompilerSettings
 #pragma optimize("",on)

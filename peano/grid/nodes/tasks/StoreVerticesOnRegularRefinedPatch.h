@@ -45,7 +45,7 @@ class peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
     static int                                                        _activeStoreTasks;
 
     const bool                                                        _isTraversalInverted;
-    peano::grid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
+    peano::grid::RegularGridContainer<Vertex,Cell>&                   _regularGridContainer;
     VertexStack&                                                      _vertexStack;
 
     const bool                                                        _storeProcessRunsInParallelToOtherTasks;
@@ -146,6 +146,7 @@ class peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
       const tarch::la::Vector<DIMENSIONS,int>&                          offsetWithinPatch,
       typename VertexStack::PushBlockVertexStackView                    stackView
    );
+
   public:
     StoreVerticesOnRegularRefinedPatch(
       const bool                                                        isTraversalInverted,

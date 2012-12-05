@@ -75,6 +75,8 @@ class peano::grid::nodes::loops::LoadVertexLoopBody {
     bool   _hasErased;
     bool   _hasChangedVertexState;
 
+    const bool   _runsInParallel;
+
     void loadVertexFromInputStream(int positionInArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell);
     void createHangingNode(int positionInArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell);
 
@@ -172,7 +174,8 @@ class peano::grid::nodes::loops::LoadVertexLoopBody {
       int*                                      counter,
       VertexStack&                              vertexStack,
       EventHandle&                              eventHandle,
-      peano::geometry::Geometry&                geometry
+      peano::geometry::Geometry&                geometry,
+      bool                                      runsInParallel
     );
 
     ~LoadVertexLoopBody();

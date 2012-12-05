@@ -173,9 +173,9 @@ DataType peano::parallel::JoinDataBufferImplementation<DataType>::getTopElement(
   if (isEmpty()) {
     logTraceInWith6Arguments( "getTopElement()", "is-empty", _tag, _rank, _totalNumberOfElements, _currentElement, _receiveBuffer.size() );
 
-    const clock_t  timeOutWarning          = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
-    const clock_t  timeOutShutdown         = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
-    bool           triggeredTimeoutWarning = false;
+    const std::clock_t  timeOutWarning          = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+    const std::clock_t  timeOutShutdown         = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
+    bool                triggeredTimeoutWarning = false;
 
     while (isEmpty()) {
       // deadlock aspect

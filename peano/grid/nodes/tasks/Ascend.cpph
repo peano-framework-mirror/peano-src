@@ -28,25 +28,19 @@ peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVerticesLastTime(int level) {
-  // @todo should become const again
-  /*const */ bool runOperation =
+  bool invokeEvent =
     (_eventHandle.touchVertexLastTimeSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
     (_eventHandle.touchVertexLastTimeSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && level == _treeDepth);
 
-  if (!runOperation) {
-    runOperation = true;
-//    logWarning( "touchVerticesLastTime(int)", "flagging touch last as nop or whole tree does not work yet" );
-  }
-
-  if (runOperation) {
-    const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
-    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+  const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
+  const int                               sharedMemoryGrainSize =
+    !_eventHandle.touchVertexLastTimeSpecification().multithreading ? 0 :
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
       tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid
     );
-    _touchVertexLastTimeLoopBody.setLevel( level );
-    peano::datatraversal::dForLoop<TouchVertexLastTimeLoopBody>( NumberOfVertices, _touchVertexLastTimeLoopBody, sharedMemoryGrainSize, false );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid);
-  }
+  _touchVertexLastTimeLoopBody.setLevel( level, invokeEvent );
+  peano::datatraversal::dForLoop<TouchVertexLastTimeLoopBody>( NumberOfVertices, _touchVertexLastTimeLoopBody, sharedMemoryGrainSize, false );
+  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid);
 
   _gridContainer.haveCalledAllEventsOnThisLevel(level);
 }
@@ -61,9 +55,11 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::leaveCell
 
   if (runOperation) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
-    const int                               sharedMemoryGrainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-      tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::CallLeaveCellOnRegularStationaryGrid
-    );
+    const int                               sharedMemoryGrainSize =
+      !_eventHandle.leaveCellSpecification().multithreading ? 0 :
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+        tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::CallLeaveCellOnRegularStationaryGrid
+      );
 
     _leaveCellLoopBody.setLevel( level );
     peano::datatraversal::SingleLevelCellLoop<LeaveCellLoopBody> loop(
@@ -84,9 +80,11 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::ascend(in
 
   if (runOperation) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfCoarseGridCells = _gridContainer.getNumberOfCells(fineGridLevel-1);
-    const int                               sharedMemoryGrainSize   = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-      tarch::la::volume(NumberOfCoarseGridCells),peano::datatraversal::autotuning::AscendOnRegularStationaryGrid
-    );
+    const int                               sharedMemoryGrainSize   =
+      !_eventHandle.ascendSpecification().multithreading ? 0 :
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+        tarch::la::volume(NumberOfCoarseGridCells),peano::datatraversal::autotuning::AscendOnRegularStationaryGrid
+      );
 
     _ascendLoopBody.setCoarseGridLevel(fineGridLevel-1);
     peano::datatraversal::SingleLevelCellLoop<AscendLoopBody> loop(

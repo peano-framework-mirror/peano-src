@@ -9,13 +9,6 @@ template <class Vertex, class Cell, class State, class EventHandle>
 tarch::multicore::BooleanSemaphore peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::_semaphore;
 
 
-//#ifdef Parallel
-//#include <set>
-//
-//#include "peano/parallel/SendReceiveBufferPool.h"
-//#endif
-
-
 template <class Vertex, class Cell, class State, class EventHandle>
 peano::grid::nodes::loops::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::CallTouchVertexFirstTimeLoopBodyOnRegularRefinedPatch(
   State&                                           state,
