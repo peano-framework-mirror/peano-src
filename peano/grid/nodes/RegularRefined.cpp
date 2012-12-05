@@ -1,6 +1,25 @@
 #include "peano/grid/nodes/RegularRefined.h"
 
 
+int peano::grid::nodes::transformOracleResult( int oracleResult, int TreeDepth, int NumberOfVerticesInSubtree ) {
+  assertion1(oracleResult>=0,oracleResult);
+
+  int result;
+  if (oracleResult==0) {
+    result = -1;
+  }
+  else {
+    result = 0;
+    while ( result<=TreeDepth && oracleResult < NumberOfVerticesInSubtree ) {
+      result++;
+      NumberOfVerticesInSubtree /= THREE_POWER_D;
+    }
+  }
+
+  return result;
+}
+
+
 void peano::grid::nodes::computePositionRelativeToNextCoarserLevelFromFineGridVertexPosition(
   const tarch::la::Vector<DIMENSIONS,int>&  fineGridPosition,
   tarch::la::Vector<DIMENSIONS,int>&        offsetOfCoarseGridEnumerator,

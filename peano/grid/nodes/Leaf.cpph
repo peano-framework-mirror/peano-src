@@ -49,6 +49,9 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
   assertion1( fineGridCell.isLeaf(), fineGridCell );
 
   typedef loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle,peano::grid::NotStationary> LoopBody;
+  int grainSize =
+    !Base::_eventHandle.touchVertexFirstTimeSpecification().multithreading ? 0 :
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelise(TWO_POWER_D,peano::datatraversal::autotuning::LoadVertices);
   LoopBody loopBody(
     state,
     fineGridVertices,
@@ -60,12 +63,13 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     counter,
     Base::_vertexStack,
     Base::_eventHandle,
-    Base::_geometry
+    Base::_geometry,
+    grainSize>0
   );
   peano::datatraversal::ActionSetTraversalLoop<LoopBody>(
     peano::grid::aspects::CellLocalPeanoCurve::getReadVertexSequence(fineGridCell,state.isTraversalInverted(),true),
     loopBody,
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelise(TWO_POWER_D,peano::datatraversal::autotuning::LoadVertices)
+    grainSize
   );
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::LoadVertices);
 
@@ -265,12 +269,17 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     counter,
     Base::_vertexStack,
     Base::_eventHandle,
-    Base::_geometry
+    Base::_geometry,
+    false
   );
+  int grainSize =
+    !Base::_eventHandle.touchVertexLastTimeSpecification().multithreading ? 0 :
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelise(TWO_POWER_D,peano::datatraversal::autotuning::StoreVertices);
+
   peano::datatraversal::ActionSetTraversalLoop<LoopBody>(
     peano::grid::aspects::CellLocalPeanoCurve::getWriteVertexSequence(fineGridCell,state.isTraversalInverted(),true),
     loopBody,
-    0
+    grainSize
   );
 
   logTraceOutWith2Arguments( "store(...)", state, fineGridCell );

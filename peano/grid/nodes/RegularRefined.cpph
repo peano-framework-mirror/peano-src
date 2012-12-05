@@ -54,16 +54,6 @@ bool peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
-int peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::transformOracleResult( int oracleResult, int TreeDepth, int NumberOfVerticesInSubtree ) {
-  assertion1(oracleResult>=0,oracleResult);
-  const int TransformedResult = TreeDepth-(TreeDepth * oracleResult / NumberOfVerticesInSubtree);
-  assertion2(TransformedResult>=0,oracleResult,TransformedResult);
-  assertion2(TransformedResult<=TreeDepth,oracleResult,TransformedResult);
-  return (oracleResult==0) ? 0 : ( (TransformedResult==0) ? 1 : TransformedResult);
-}
-
-
-template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
 void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::traverse(
   State&                                    state,
   Cell&                                     fineGridCell,
@@ -148,7 +138,7 @@ void peano::grid::nodes::RegularRefined<Vertex,Cell,State,VertexStack,CellStack,
         growStack,
         peano::datatraversal::autotuning::SplitLoadVerticesTaskOnRegularStationaryGrid
       ),
-      TreeDepth,growStack
+      TreeDepth, growStack
     );
 
     bool Parallelise = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(

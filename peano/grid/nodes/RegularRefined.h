@@ -26,6 +26,30 @@ namespace peano {
           tarch::la::Vector<DIMENSIONS,int>&        offsetOfCoarseGridEnumerator,
           tarch::la::Vector<DIMENSIONS,int>&        fineGridPositionRelativeToCoarserCell
         );
+
+        /**
+         * Translate result from oracle
+         *
+         * The oracle has a grain size semantics and not the level-wise semantics,
+         * i.e. if it is given k and it returns k/2, the oracle expects the calling
+         * function to split up the problem such that the concurrency level is two.
+         * However, the tree splits for the read and write vertex processes wanna
+         * know up to which level they may split up the tree.
+         *
+         * Consequently, we have to translate the result due to the following
+         * formula:
+         *
+         * - oracleResult=0, return 0
+         * - otherwise return T-s
+         *
+         * where s is the normalised grain size, i.e. the size divided by the total
+         * number of vertices times the tree depth.
+         *
+         * @param NumberOfVerticesInSubtree Is redundant as we could reconstruct it
+         *          from TreeDepth, but I decided to use a precomputed value that
+         *          is needed for the stacks anyway.
+         */
+        int transformOracleResult( int oracleResult, int TreeDepth, int NumberOfVerticesInSubtree );
       }
     }
 }
@@ -168,29 +192,6 @@ class peano::grid::nodes::RegularRefined: public peano::grid::nodes::Node<Vertex
 
     RegularGridContainer&  _regularGridContainer;
 
-    /**
-     * Translate result from oracle
-     *
-     * The oracle has a grain size semantics and not the level-wise semantics,
-     * i.e. if it is given k and it returns k/2, the oracle expects the calling
-     * function to split up the problem such that the concurrency level is two.
-     * However, the tree splits for the read and write vertex processes wanna
-     * know up to which level they may split up the tree.
-     *
-     * Consequently, we have to translate the result due to the following
-     * formula:
-     *
-     * - oracleResult=0, return 0
-     * - otherwise return T-s
-     *
-     * where s is the normalised grain size, i.e. the size divided by the total
-     * number of vertices times the tree depth.
-     *
-     * @param NumberOfVerticesInSubtree Is redundant as we could reconstruct it
-     *          from TreeDepth, but I decided to use a precomputed value that
-     *          is needed for the stacks anyway.
-     */
-    static int transformOracleResult( int oracleResult, int TreeDepth, int NumberOfVerticesInSubtree );
   public:
     RegularRefined(
       VertexStack&                vertexStack,
