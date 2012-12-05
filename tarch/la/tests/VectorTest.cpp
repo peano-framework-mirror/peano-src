@@ -1,7 +1,4 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
-// This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
-#include "VectorTest.h"
+#include "tarch/la/tests/VectorTest.h"
 #include "tarch/la/Vector.h"
 #include "tarch/la/DynamicVector.h"
 #include "tarch/la/WrappedVector.h"
@@ -126,7 +123,7 @@ void VectorTest::testAssignment ()
   validateEquals (vector[1], 2);
   validateEquals (vector[2], 3);
 
-  // Assign values of one type of vector to another type of vector
+  // Assign values of one type of vector to a!her type of vector
   DynamicVector<int> dynvector(3);
   dynvector = vector;
   validateEquals (dynvector[0], 1);
@@ -197,7 +194,7 @@ void VectorTest::testAssignment ()
   validateEquals(u(1),4.0);
   validateEquals(u(2),4.0);
   validateEquals(u(3),4.0);
-  // not valid any more in tarch! -> compile error
+  // ! valid any more in tarch! -> compile error
 //  u = 1.0, 2.0, 3.0, 4.0;
 //  validateEquals(u(0),1.0);
 //  validateEquals(u(1),2.0);
@@ -208,7 +205,7 @@ void VectorTest::testAssignment ()
   double b = 12.0;
   double c = 13.0;
   double d = 14.0;
-  // not valid any more in tarch! -> compile error
+  // ! valid any more in tarch! -> compile error
 //  u = a, b, c, d;
 //  validateEquals(u(0),11.0);
 //  validateEquals(u(1),12.0);
@@ -613,20 +610,20 @@ void VectorTest:: testVectorVectorOperations ()
   Vector<3,double> vec0(1.0, 2.0, 3.0);
   Vector<3,double> vec1(vec0);
   validate (equals(vec0,vec1));
-  validate (not oneGreater(vec0,vec1));
+  validate (! oneGreater(vec0,vec1));
   validate (oneGreaterEquals(vec0,vec1));
-  validate (not allGreater(vec0,vec1));
-  validate (not firstGreater(vec0,vec1));
+  validate (! allGreater(vec0,vec1));
+  validate (! firstGreater(vec0,vec1));
 
   assignList(vec0) = 2.0, 2.0, 3.0;
-  validate (not equals(vec0,vec1));
+  validate (! equals(vec0,vec1));
   validate (oneGreater(vec0,vec1));
   validate (oneGreaterEquals(vec0,vec1));
-  validate (not allGreater(vec0,vec1));
+  validate (! allGreater(vec0,vec1));
   validate (firstGreater(vec0,vec1));
 
   assignList(vec0) = 2.0, 3.0, 4.0;
-  validate (not equals(vec0,vec1));
+  validate (! equals(vec0,vec1));
   validate (oneGreater(vec0,vec1));
   validate (oneGreaterEquals(vec0,vec1));
   validate (allGreater(vec0,vec1));
@@ -637,21 +634,21 @@ void VectorTest:: testVectorVectorOperations ()
   vec0(1) = vec1(1);
   vec0(2) = vec1(2) + 0.99 * tolerance;
   validateWithParams3(equals(vec0,vec1,tolerance),vec0,vec1,vec0(2)-vec1(2));
-  validate (not oneGreater(vec0,vec1,tolerance));
+  validate (! oneGreater(vec0,vec1,tolerance));
   validate (oneGreaterEquals(vec0,vec1));
-  validate (not allGreater(vec0,vec1,tolerance));
-  validateWithParams2(not firstGreater(vec0,vec1,tolerance), vec0, vec1);
+  validate (! allGreater(vec0,vec1,tolerance));
+  validateWithParams2(! firstGreater(vec0,vec1,tolerance), vec0, vec1);
 
   vec0(2) = vec1(2) + 10.0 * tolerance;
-  validate (not equals(vec0,vec1,tolerance));
+  validate (! equals(vec0,vec1,tolerance));
   validate (oneGreater(vec0,vec1,tolerance));
   validate (oneGreaterEquals(vec0,vec1));
-  validate (not allGreater(vec0,vec1,tolerance));
+  validate (! allGreater(vec0,vec1,tolerance));
   validateWithParams3 (firstGreater(vec0,vec1,tolerance), vec0, vec1,vec0(2)-vec1(2));
 
   assignList(vec0) = 1.0, 2.0, 3.0;
   vec0 += 10.0 * tolerance;
-  validate (not equals(vec0,vec1,tolerance));
+  validate (! equals(vec0,vec1,tolerance));
   validate (oneGreater(vec0,vec1,tolerance));
   validate (oneGreaterEquals(vec0,vec1));
   validate (allGreater(vec0,vec1,tolerance));
@@ -662,7 +659,7 @@ void VectorTest:: testVectorVectorOperations ()
   validate (oneGreaterEquals(vec0,vec1));
 
   assignList(vec0) = 1.0, 1.0, 4.0;
-  validate (not firstGreater(vec0,vec1));
+  validate (! firstGreater(vec0,vec1));
   assignList(vec0) = 2.0, 0.0, 0.0;
   validate (firstGreater(vec0,vec1));
   assignList(vec0) = 1.0, 2.0 + 10.0 * tolerance, 2.0;

@@ -1,6 +1,3 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
-// This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
 #include "tarch/la/tests/ScalarTest.h"
 
 #include "tarch/la/ScalarOperations.h"
@@ -34,17 +31,17 @@ void ScalarTest::testComparison()
   double eps = 1e-14;
 
   validate (greater(b, a, eps));
-  validate (not greater(a, a - eps, eps));
+  validate (! greater(a, a - eps, eps));
   validate (greater(a, a - 10.0 * eps, eps));
 
-  validate (not greaterEquals(a, b, eps));
+  validate (! greaterEquals(a, b, eps));
   validate (greaterEquals(b, a, eps));
   validate (greaterEquals(a, a, eps));
   validate (greaterEquals(a, a + 0.1*eps, eps));
-  validate (not greaterEquals(a, a + 10*eps, eps));
+  validate (! greaterEquals(a, a + 10*eps, eps));
 
   validate (smaller(a, b, eps));
-  validate (not smaller(a, a + eps, eps));
+  validate (! smaller(a, a + eps, eps));
   validate (smaller(a, a + 10.0 * eps, eps));
 
   validate (smallerEquals(a, b, eps));
@@ -52,10 +49,10 @@ void ScalarTest::testComparison()
   validate (smallerEquals(a + eps, a, eps));
   validate (smallerEquals(a, a + 10.0 * eps, eps));
 
-  validate (not equals(a, b, eps));
+  validate (! equals(a, b, eps));
   validate (equals(a, a, eps));
   validate (equals(a, a + eps, eps));
-  validate (not equals(a, a + 10.0 * eps, eps));
+  validate (! equals(a, a + 10.0 * eps, eps));
   validate (equals(a, a + 10.0 * eps, 10.0 * eps));
   #endif
 }

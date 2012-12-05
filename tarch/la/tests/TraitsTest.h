@@ -1,8 +1,9 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _TARCH_LA_TESTS_TRAITSTEST_H_
 #define _TARCH_LA_TESTS_TRAITSTEST_H_
+
+// @todo evtl. kann man das komplett weglassen
 
 #include "tarch/tests/TestCase.h"
 
