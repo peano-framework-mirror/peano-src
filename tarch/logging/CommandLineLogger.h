@@ -57,6 +57,8 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
      * <log-filter target="debug" component="component-name" rank="int|*" switch="on|off" />
      */
     struct FilterListEntry {
+      static const int AnyRank;
+
       /**
        * The message type target can be either "debug" or "info". Only messages
        * with corresponding target are filtered by the FilterListEntry.
@@ -69,7 +71,7 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
        * Sometimes, one wants to block all log entries of one namespace of one
        * node (parallel case). In this case _rank holds the corresponding entry,
        * if all entries from one namespace have to be blocked, the value of
-       * _rank equals -1.
+       * _rank equals AnyRank.
        */
       int         _rank;
 
@@ -112,8 +114,7 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
      */
     bool filterOut(
       const std::string& targetName,
-      const std::string& className,
-      int                rank
+      const std::string& className
     );
 
     /**

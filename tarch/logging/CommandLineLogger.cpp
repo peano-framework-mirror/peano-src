@@ -1,8 +1,6 @@
 #include "tarch/logging/CommandLineLogger.h"
 
-#ifdef Parallel
 #include "tarch/parallel/Node.h"
-#endif
 
 #include "tarch/Assertions.h"
 
@@ -27,10 +25,12 @@ const std::string::size_type tarch::logging::CommandLineLogger::NumberOfIndentSp
 const std::string::size_type tarch::logging::CommandLineLogger::NumberOfTraceColumnSpaces    = 55;
 const std::string::size_type tarch::logging::CommandLineLogger::NumberOfStandardColumnSpaces = 12;
 
+const int tarch::logging::CommandLineLogger::FilterListEntry::AnyRank = -1;
+
 
 tarch::logging::CommandLineLogger::FilterListEntry::FilterListEntry( const std::string& targetName, bool isBlackListEntry ):
   _targetName(targetName),
-  _rank(-1),
+  _rank(AnyRank),
   _namespaceName(""),
   _isBlackEntry(isBlackListEntry) {
   assertion1( targetName==std::string("info") || targetName==std::string("debug") || targetName==std::string(""), targetName );
@@ -63,7 +63,7 @@ std::string tarch::logging::CommandLineLogger::FilterListEntry::toString() const
   }
   #ifdef Parallel
   msg << "rank:";
-  if (_rank!=-1) {
+  if (_rank!=AnyRank) {
     msg << _rank;
   }
   else {
@@ -380,8 +380,7 @@ void tarch::logging::CommandLineLogger::clearFilterList() {
 
 bool tarch::logging::CommandLineLogger::filterOut(
   const std::string& targetName,
-  const std::string& className,
-  int                rank
+  const std::string& className
 ) {
   bool result    = true;
   bool foundRule = false;
@@ -389,29 +388,22 @@ bool tarch::logging::CommandLineLogger::filterOut(
   for (FilterList::const_iterator p = _filterlist.begin(); p!=_filterlist.end(); p++ ) {
     int length = static_cast<int>(p->_namespaceName.size());
     if ( length >= lengthActive ) {
-      #ifdef Parallel
       if (
-        (targetName.find(p->_targetName, 0)==0) &&
-        (className.find( p->_namespaceName, 0)==0) &&
-        (p->_rank == -1 || p->_rank == tarch::parallel::Node::getInstance().getRank())
+        (p->_targetName.find(targetName, 0)==0) &&
+        (className==p->_namespaceName)
+        #ifdef Parallel
+        &&
+        (p->_rank == AnyRank || p->_rank == tarch::parallel::Node::getInstance().getRank())
+        #endif
       ) {
         lengthActive = length;
         result       = p->_isBlackEntry;
         foundRule    = true;
       }
-      #else
-      if ( (targetName.find(p->_targetName, 0)==0) &&
-           (className.find( p->_namespaceName, 0 ) == 0))
-      {
-        lengthActive = length;
-        result       = p->_isBlackEntry;
-        foundRule    = true;
-      }
-      #endif
     }
   }
   if (!foundRule) {
-    logWarning( "filterOut(...)", "did not find filter rule for target \"" << targetName << "\" and class \"" << className << "\" on rank " << rank );
+    logWarning( "filterOut(...)", "did not find filter rule for target \"" << targetName << "\" and class \"" << className << "\" on rank " << tarch::parallel::Node::getInstance().getRank() );
   }
   return result;
 }
@@ -420,28 +412,12 @@ bool tarch::logging::CommandLineLogger::filterOut(
 
 
 bool tarch::logging::CommandLineLogger::writeDebug(const std::string& className) {
-  #ifdef Parallel
-  int rank = -1;
-  if (tarch::parallel::Node::getInstance().isInitialised()) {
-    rank = tarch::parallel::Node::getInstance().getRank();
-  }
-  #else
-  int rank = -1;
-  #endif
-  return !filterOut("debug",className,rank);
+  return !filterOut("debug",className);
 }
 
 
 bool tarch::logging::CommandLineLogger::writeInfo(const std::string& className) {
-  #ifdef Parallel
-  int rank = -1;
-  if (tarch::parallel::Node::getInstance().isInitialised()) {
-    rank = tarch::parallel::Node::getInstance().getRank();
-  }
-  #else
-  int rank = -1;
-  #endif
-  return !filterOut("info",className,rank);
+  return !filterOut("info",className);
 }
 
 
