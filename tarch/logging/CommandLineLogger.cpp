@@ -389,11 +389,11 @@ bool tarch::logging::CommandLineLogger::filterOut(
     int length = static_cast<int>(p->_namespaceName.size());
     if ( length >= lengthActive ) {
       if (
-        (p->_targetName.find(targetName, 0)==0) &&
-        (className==p->_namespaceName)
+        (targetName == p->_targetName) &&
+        (className.find(p->_namespaceName,0)==0)
         #ifdef Parallel
         &&
-        (p->_rank == AnyRank || p->_rank == tarch::parallel::Node::getInstance().getRank())
+        (p->_rank == FilterListEntry::AnyRank || p->_rank == tarch::parallel::Node::getInstance().getRank())
         #endif
       ) {
         lengthActive = length;
@@ -402,6 +402,7 @@ bool tarch::logging::CommandLineLogger::filterOut(
       }
     }
   }
+
   if (!foundRule) {
     logWarning( "filterOut(...)", "did not find filter rule for target \"" << targetName << "\" and class \"" << className << "\" on rank " << tarch::parallel::Node::getInstance().getRank() );
   }
