@@ -13,7 +13,7 @@
 namespace peano {
   namespace parallel {
     template <class Vertex>
-    class SendReceiceBufferAbstractImplementation;
+    class SendReceiveBufferAbstractImplementation;
   }
 }
 
@@ -79,7 +79,7 @@ namespace peano {
  * @version $Revision: 1.39 $
  */
 template <class Vertex>
-class peano::parallel::SendReceiceBufferAbstractImplementation: public peano::parallel::SendReceiveBuffer {
+class peano::parallel::SendReceiveBufferAbstractImplementation: public peano::parallel::SendReceiveBuffer {
   protected:
     /**
      * Log device.
@@ -265,7 +265,7 @@ class peano::parallel::SendReceiceBufferAbstractImplementation: public peano::pa
      *                              communicating with.
      * @param bufferSize            maximal size of buffer to use.
      */
-    SendReceiceBufferAbstractImplementation( int toRank, int bufferSize );
+    SendReceiveBufferAbstractImplementation( int toRank, int bufferSize );
 
     /**
      * Destructur
@@ -279,7 +279,7 @@ class peano::parallel::SendReceiceBufferAbstractImplementation: public peano::pa
      * holds if no other ranks already started to iterate once more (which
      * does not apply, if the simulation shuts down).
      */
-    virtual ~SendReceiceBufferAbstractImplementation();
+    virtual ~SendReceiveBufferAbstractImplementation();
 
     /**
      * Sends a message to the destination node. The vertex might be buffered, so
@@ -333,7 +333,7 @@ class peano::parallel::SendReceiceBufferAbstractImplementation: public peano::pa
 #pragma pack (pop)
 #endif
 
-#include "peano/parallel/SendReceiceBufferAbstractImplementation.cpph"
+#include "peano/parallel/SendReceiveBufferAbstractImplementation.cpph"
 
 #endif
 

@@ -3,7 +3,7 @@
 #ifndef _PEANO_PARALLEL_SEND_RECEIVE_BUFFER_LIFO_H_
 #define _PEANO_PARALLEL_SEND_RECEIVE_BUFFER_LIFO_H_
 
-#include "peano/parallel/SendReceiceBufferAbstractImplementation.h"
+#include "peano/parallel/SendReceiveBufferAbstractImplementation.h"
 #include <vector>
 
 
@@ -76,14 +76,14 @@ namespace peano {
  * @version $Revision: 1.39 $
  */
 template <class Vertex>
-class peano::parallel::SendReceiveBufferLIFO: public peano::parallel::SendReceiceBufferAbstractImplementation<Vertex> {
+class peano::parallel::SendReceiveBufferLIFO: public peano::parallel::SendReceiveBufferAbstractImplementation<Vertex> {
   private:
     /**
      * Log device.
      */
     static tarch::logging::Log _log;
 
-    typedef peano::parallel::SendReceiceBufferAbstractImplementation<Vertex> Base;
+    typedef peano::parallel::SendReceiveBufferAbstractImplementation<Vertex> Base;
 
   protected:
     virtual void updateDeployCounterDueToSwitchReceiveAndDeployBuffer();
