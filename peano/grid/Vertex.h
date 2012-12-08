@@ -367,18 +367,33 @@ class peano::grid::Vertex {
     /**
      * Return set of adjacent ranks
      *
-     * This operation gives you a set of the adjacent ranks. That information
-     * is used frequently by the grid management. However, it should not be
-     * used (at least that's what I recommend) by the solvers: The set of
-     * adjacent ranks basically tells you which ranks are adjacent to a
-     * vertex. This is interesting information if you wanna for example
-     * exchange data besides the vertices (this is done automatically) at the
-     * parallel boundary. However, the set does not comprise any rank
-     * semantics. If you do for example a fork, the set might contain ranks
-     * that will be adjacent in the next iteration but are not neighbours yet,
-     * i.e. do not accept data. Please use the prepare send to data instead.
+     * Returns the set of adjacent remote ranks (the own rank is not included).
+     * Please do not call this operation for vertices that do not belong to the
+     * parallel boundary, i.e. call it only for vertices for which
+     * isAdjacentToRemoteRank() does hold. If you take the size of the result
+     * and add one, you know how often this vertex globally does exist.
+     *
+     * @return Ranks of nodes that do hold a copy of the vertex besides the
+     *         local rank.
      */
     std::set<int> getAdjacentRemoteRanks() const;
+
+    /**
+     * List of adjacent ranks
+     *
+     * This operation returns the ranks that are responsible for the
+     * @f$ 2^d @f$ adjacent cells. It is not defined on vertices that are not
+     * part of a parallel domain boundary (see isAdjacentToRemoteRank()). The
+     * result is ordered along the z-curve, i.e. the very first entry is the
+     * rank of the node that is responsible for the left bottom adjacent cell
+     * (for d=2). The next entry corresponds to the right bottom cell, and so
+     * forth.
+     *
+     * This operation was written for the grid management. For PDE-solvers,
+     * please use getAdjacentRemoteRanks() instead.
+     *
+     * @return Ranks that are responsible for adjacent cells.
+     */
     tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const;
 
     /**
