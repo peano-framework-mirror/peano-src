@@ -102,6 +102,7 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
     #if !defined(SharedMemoryParallelisation) && defined(Debug)
     std::stack<std::string>  _indentTraces;
     #endif
+
   private:
     static Log _log;
 
@@ -127,6 +128,8 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
     bool           _logMessageType;
     bool           _logTrace;
     std::ostream*  _outputStream;
+    int            _iterationCounter;
+    std::string    _outputFileName;
 
 
     /**
@@ -215,6 +218,8 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
     bool        getLogTrace() const;
 
     std::ostream& out();
+
+    void reopenOutputStream();
   public:
     virtual ~CommandLineLogger();
 
@@ -293,6 +298,13 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
     void setLogMessageType( bool value = true );
     void setLogTrace( bool value = true );
 
+    /**
+     * @param outputLogFileName If this argument is not the empty string, the
+     *        logger pipes all debug data into a file and not to the terminal
+     *        anymore.
+     *
+     * @see closeAllOutputFilesAndReopenNewOnes
+     */
     void setLogFormat(
       const std::string& columnSeparator,
       bool logTimeStamp,
@@ -306,6 +318,15 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
     virtual void receiveDanglingMessages();
 
     void printFilterListToWarningDevice() const;
+
+    /**
+     * The command line logger can pipe debug data into an output file instead
+     * of piping everything to the terminal. This happens if you call
+     * setLogFormat() with a non-empty log file name. This operation closes the
+     * output file, and opens a new one. Many uses, e.g., prefer one debug
+     * output file per traversal.
+     */
+    void closeOutputStreamAndReopenNewOne();
 };
 
 #endif

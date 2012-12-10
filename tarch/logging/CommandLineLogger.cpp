@@ -93,7 +93,8 @@ bool tarch::logging::CommandLineLogger::FilterListEntry::operator==(const Filter
 
 
 tarch::logging::CommandLineLogger::CommandLineLogger():
-  _outputStream(0) {
+  _outputStream(0),
+  _iterationCounter(0) {
   configureOutputStreams();
   setLogColumnSeparator();
   setLogTimeStamp();
@@ -159,6 +160,12 @@ std::string tarch::logging::CommandLineLogger::addSeparators(std::string::size_t
   }
 
   return message;
+}
+
+
+void tarch::logging::CommandLineLogger::closeOutputStreamAndReopenNewOne() {
+  _iterationCounter ++;
+  reopenOutputStream();
 }
 
 
@@ -334,6 +341,24 @@ void tarch::logging::CommandLineLogger::indent( bool indent, const std::string& 
 }
 
 
+void tarch::logging::CommandLineLogger::reopenOutputStream() {
+  if (_outputStream!=0) {
+    _outputStream->flush();
+    delete _outputStream;
+    _outputStream = 0;
+  }
+
+  if (!_outputFileName.empty() ) {
+    std::ostringstream fileName;
+    if (_iterationCounter>0) {
+      fileName << "it-" << _iterationCounter << "-";
+    }
+    fileName << _outputFileName;
+    _outputStream = new std::ofstream( fileName.str().c_str() );
+  }
+}
+
+
 void tarch::logging::CommandLineLogger::setLogFormat(
   const std::string& columnSeparator,
   bool logTimeStamp,
@@ -350,9 +375,8 @@ void tarch::logging::CommandLineLogger::setLogFormat(
   _logMessageType            = logMessageType;
   _logTrace                  = logTrace;
 
-  if (!outputLogFileName.empty()) {
-    _outputStream = new std::ofstream( outputLogFileName.c_str() );
-  }
+  _outputFileName = outputLogFileName;
+  reopenOutputStream();
 }
 
 
