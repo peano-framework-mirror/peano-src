@@ -1,0 +1,87 @@
+/**
+
+ @page "Parallel Vertex Lifecycle"
+ 
+ Peano realises a non-overlapping domain decomposition where vertices that are 
+ adjacent to k domains do exist k times globally. They are replicated. The data 
+ exchange follows a Jacobi-style, i.e. each vertex is sent away to all adjacent 
+ subdomains at the end of the traversal. At the begin of the subsequent traversal,
+ all k copies of the vertex are available on each of the k subpartitions.  
+ Only attributes marked with parallelise are taken into account by the send process.
+ Hanging vertices are not communicated.
+
+ This scheme implies that you often have to distribute operations among two 
+ grid runs: If you evaluate a matrix-vector product (compute a residual, e.g.), 
+ you typically do this in the cell events and you can be sure that the result 
+ for one vertex is available in touchVertexLastTime(), as all adjacent cells of 
+ this vertex then have been visited. That statement still holds. However, some 
+ of these adjacent vertices might have been deployed to a different rank. So, 
+ you don't have the residual at hand in this iteration - you have it available 
+ at the begin of the subsequent traversal when you receive all the copies of the 
+ vertex from the other ranks. The data of the parallel boundary vertices lacks 
+ behind something like half an iteration. 
+ 
+ @image html VertexLifecycle.png
+
+ We assume that a vertex is shared between two partitions (blue). After each 
+ traversal, the vertex is copied and send to the neighbour. Prior to the next 
+ usage of the vertex, you have on each partition the vertex data (blue) as well 
+ as a copy of the neighbour (red) at hand.
+
+ !!! Event order 
+  
+ You can again plug into the different communication steps in Peano. The event 
+ lifecycle per vertex then reads as follows: 
+ 
+ - pop vertex from input stream
+ - call mergeWithNeighbour() for each rank that holds a version of this very vertex
+ - call touchVertexFirstTime()
+ - ...
+ - call touchVertexLastTime()
+ - call prepareSendToNeighbour() and send away a copy to each rank that also holds a version of this very vertex
+ - push vertex to output stream
+ 
+ For the @f$ 2^d @f$ vertices of the local spacetree's root, the event order is
+ more complicated. Peano can only deploy complete spacetrees to a different rank. 
+ The root node's vertices consequently are parallel domain boundary vertices. 
+ They are exchanged due to the mechanism described above. However, they also 
+ are subject to additional events. 
+
+ If a subspacetree is deployed to a rank, this rank is a worker of another rank 
+ handling coarser cells of the spacetree. The latter is its master. Whenever 
+ the master traversal encounters the root of a worker's spacetree:
+ 
+ - The master calls prepareSendToWorker().
+ - The @f$ 2^d @f$ vertices and the cell are sent to the worker.
+ - The worker calls receiveDataFromMaster() for these @f$ 2^d+1 @f$ objects. They are not yet merged into the local data.
+ - The worker invokes beginIteration() and runs through its local spacetree (see notes above).
+ - For each vertex and each cell of the spacetree root, it
+   - calls mergeWithNeighbour() for each rank that holds a version of this very vertex,
+   - calls touchVertexFirstTime(), and 
+   - calls mergeWithWorker() passing it the data received from the master.
+ - ...
+ - When the worker's subtree traversal has terminated, the @f$ 2^d @f$ vertices of the root
+   - are sent to all adjacent ranks and
+   - stored on the output stream.
+ - Now, it invokes endIteration().
+ - Peano invokes prepareSendToMaster() for the @f$ 2^d @f$ vertices and the cell. 
+   As they are already stored, you may manipulate their content before you send 
+   it away, but the originals on the local node remain unmodified for the next 
+   iteration.
+ - The master finally receives this data from the worker and calls mergeWithMaster().
+ 
+ See Node::updateCellsParallelStateAfterLoadForRootOfDeployedSubtree() for the source code. 
+ Again, the involved vertices and the involved cell do exist at least twice: On the worker 
+ and on the master. Again, you have to take care for the data consistency in the events. 
+ Different to the boundary data exchange, this communication pattern however is synchronous - 
+ you receive data of the current traversal not of the traversal before. 
+ 
+ !!! Forks and joins
+ 
+ If partitions are forked or joined, Peano moves or copies vertices from one 
+ rank to another. Here, all vertex properties are communicated, not only those 
+ marked as parallelise. You consequently typically do not have to plug into the
+ rebalancing mechanism. If you have to do (as you are using dynamic heap data 
+ associated to the records, e.g.) Peano provides the corresponding events. 
+ 
+ */

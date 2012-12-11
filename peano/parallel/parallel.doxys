@@ -3,16 +3,7 @@
  @dir "Parallelisation"
  
  This directory holds all the classes that are needed to run the Peano grids 
- in parallel. The parallelisation scheme follows some very simple ideas. First, 
- all the subdomains are hyperhexahedrons, i.e.
- 
- @image html parallel-well-suited-domains.png
-  
- the left partitioning is o.k., but the right one is not supported. Second, the 
- code realised a strict bipartitioning scheme for the regular grid and a 
- @f$ 3^d @f$ tree partitioning for the spacetree grid. The bipartioning for the 
- regular grid yields that whenever we merge two paritions, the result is again 
- an hexahedron. 
+ in parallel due to MPI.  
  
  !!! Creating the DaStGen Messages
  
@@ -24,38 +15,6 @@
  java -jar pdt/lib/DaStGen.jar --plugin PeanoSnippetGenerator --naming PeanoNameTranslator src/peano/parallel/dastgen/LoadBalancingMessage.def src/peano/parallel/messages 
  \endcode
  
- !!! Forks of Existing Domains
- 
- The parallelisation of the regular grid follows a two-step scheme.
- 
- @image html SplitProcess_concept.png
- 
- After lots of discussions, we decided to implement the spacetree grid forks 
- similar to the regular grid. Throughout the steps down (i.e. not after the 
- cell handling / this is a severe difference to the regular grid), the 
- traversal checks whether the oracle tells it to fork. If it does, and if a 
- patch, i.e. a @f$ 3^d @f$ set of cells, contains more than one local cell that 
- is inside the domain
- 
- - the node tries to book a new worker from the node pool, 
- - the oracle is told that we have forked once,
- - the cell is assigned to the new worker (but still processed locally),
- - and the adjacency lists of all vertices are updated and sent away with new 
-   adjacency information. 
-
- @image html SplitProcess_spacetree_phase1.png
-
- In the subsequent iteration all cells and all vertices that are adjacent to 
- the new worker are forwarded to this worker. This way, I avoid the 
- complicated reconstruction of the space-filling curve on the new worker.      
-
- @image html SplitProcess_spacetree_phase2.png
- 
- As a result of the last step, several vertices are adjacent solely to remote 
- ranks. These vertices are immediately coarsed and are not available anymore in 
- a third iteration. 
-
- @image html SplitProcess_spacetree_phase3.png
  
  !!! Tuning the MPI Settings
  
@@ -66,10 +25,10 @@
  performance. If N is too big, the buffer might not become full, and then the 
  N'<N messages are exchanged at the end of the traversal which introduces an 
  explicit communication phase in each iteration. This communication phase harms 
- the performance often, as then all nodes compete for bandwidth ressources. 
+ the performance often, as then all nodes compete for bandwidth resources. 
  
  To find out whether all data is sent in the background, study the info output 
- of peano::kernel::parallel::SendReceiveBufferPool::releaseMessages(). If the 
+ of peano::parallel::SendReceiveBufferPool::releaseMessages(). If the 
  time spent in this routine is close to zero, then you don't have a significant 
  data exchange phase at the end of the sweep and you can try to increase your 
  buffer size. 
