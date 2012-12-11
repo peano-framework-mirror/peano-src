@@ -212,7 +212,6 @@ void peano::grid::State<StateData>::resetStateAtEndOfIteration() {
       _stateData.setLoadRebalancingState(StateData::NoRebalancing);
       break;
     case StateData::JoinWithMasterTriggered:
-      assertion2(!isGridStationary(),toString(),tarch::parallel::Node::getInstance().getRank());
       assertion(_loadRebalancingRemoteRanks.empty());
       _stateData.setHasChangedVertexOrCellState(true);
       _stateData.setLoadRebalancingState(StateData::JoiningWithMaster);
