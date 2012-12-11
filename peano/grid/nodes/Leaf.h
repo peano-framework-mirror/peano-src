@@ -36,7 +36,8 @@ class peano::grid::nodes::Leaf: public peano::grid::nodes::Node<Vertex,Cell,Stat
 
     static void validateRefinementStateOfVertices(
       Vertex const * const          fineGridVertices,
-      const SingleLevelEnumerator&  fineGridVerticesEnumerator
+      const SingleLevelEnumerator&  fineGridVerticesEnumerator,
+      bool                          calledByStore
     );
   public:
     Leaf(

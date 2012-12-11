@@ -79,7 +79,8 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
   );
   validateRefinementStateOfVertices(
     fineGridVertices,
-    fineGridVerticesEnumerator
+    fineGridVerticesEnumerator,
+    false
   );
 
   Base::updateCellsGeometryInformationAfterLoad(
@@ -110,15 +111,17 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
 void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::validateRefinementStateOfVertices(
   Vertex const * const          fineGridVertices,
-  const SingleLevelEnumerator&  fineGridVerticesEnumerator
+  const SingleLevelEnumerator&  fineGridVerticesEnumerator,
+  bool                          calledByStore
 ) {
   logTraceIn( "validateRefinementStateOfVertices(...)" );
   dfor2(k)
-    assertion3(
+    assertion4(
       fineGridVertices[ fineGridVerticesEnumerator(k) ].isHangingNode() ||
       fineGridVertices[ fineGridVerticesEnumerator(k) ].getRefinementControl() != Vertex::Records::Refined,
       fineGridVertices[ fineGridVerticesEnumerator(k) ].toString(),
       fineGridVerticesEnumerator.toString(),
+      calledByStore,
       k
     );
   enddforx
@@ -244,7 +247,8 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
   validateRefinementStateOfVertices(
     fineGridVertices,
-    fineGridVerticesEnumerator
+    fineGridVerticesEnumerator,
+    true
   );
   Base::updateCellsParallelStateBeforeStore(
     state,
