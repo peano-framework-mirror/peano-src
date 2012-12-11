@@ -28,12 +28,12 @@ namespace peano {
        * @image html AdjacencyListsEnumeration.png
        *
        * Definition:
-       * - A local node is reponsible for an entry i of the adjacency list, if the
+       * - A local node is responsible for an entry i of the adjacency list, if the
        *   neighbour's adjacency list's entry i equals the node's rank.
-       * - The neighbour is reponsible for an entry i of the adjacency list, if
+       * - The neighbour is responsible for an entry i of the adjacency list, if
        *   the original local adjacency list's entry i equals the neighbour's rank.
        *
-       * Several merge scnearios could occur. They are discussed below. In this
+       * Several merge scenarios could occur. They are discussed below. In this
        * discussion, we always have to study two neighbouring processes, as
        * only two ranks are taken into account by the operation. Vertices
        * adjacent to several ranks are mapped to a sequence of local node -
