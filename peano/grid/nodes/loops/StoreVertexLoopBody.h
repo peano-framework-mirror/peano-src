@@ -108,7 +108,21 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
      * it is streamed to the output stack, i.e. before
      * updateRefinementFlagsAndStoreVertexToOutputStream() is called.
      * The operation also validates that the vertex is adjacent to a remote
-     * rank. If it is not, it immediately returns.
+     * rank. If it is not, it immediately returns. Otherwise, it runs through
+     * a sequence of checks.
+     *
+     * !!! Code is joining with a worker
+     *
+     * We are in the second phase of the join, i.e. now data is transferred
+     * from the worker to this node. As a consequence, we can replace all
+     * worker entries by the local rank's number before we write the vertex
+     * to the output stream.
+     *
+     * !!! Code is joining with master
+     *
+     * We are in the second phase of the joint, i.e. the local data is moved
+     * to the master. There is nothing to do on the local rank - all data will
+     * be thrown away after this iteration anyway:
      *
      * Usually, non-remote vertices that are adjacent to a neighbour are
      * passed to the send receive buffer pool. Yet, such vertices are
@@ -117,10 +131,42 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
      * to the master, we can be sure that noone has sent us any vertices
      * anymore and nobody is expecting this node to send any information.
      *
-     * The check 'is adjacent to other partitions' and 'is remote' and so
-     * forth is split up into two checks, as this operation also takes care
-     * that subpartitions that have been deployed to different nodes are
-     * coarsened and the corresponding degrees of freedom are erased.
+     *
+     * !!! Code is not joining with master
+     *
+     * If the vertex is not remote (it holds the local rank number as adjacent
+     * number as well), send a copy to the neighbour. If the join with the
+     * master is already triggered, we have to replace the entries before.
+     * Otherwise, we can take the plain copy but have to pass it to the event
+     * handle before.
+     *
+     * !!! Vertex is not adjacent to local domain
+     *
+     * In this case, the vertex has not to be sent away. The local rank is not
+     * adjacent to it, so it is not involved in any communication for this
+     * vertex. If such a vertex is not outside yet, we have deployed it to
+     * another rank in this iteration and now are not responsible for this
+     * vertex anymore. Consequently, we can call a destroy event for this
+     * vertex and coarse it.
+     *
+     * !!! Remote vertex detected throughout first traversal of new worker
+     *
+     * If we detect a remote vertex in the first iteration on a worker, we
+     * set all adjacency information to the local master: The vertex adjacency
+     * now is correct but we will not be informed when it changes later on
+     * due to load balancing. So it makes sense, to set all data to the master
+     * rank indicating that the master knows more about the state of this
+     * vertex while we keep not track of its state.
+     *
+     * If this check is removed, the following scenario may happen: Node 1
+     * forks into 2 and 3 in one step. On node 2, are remote vertex has the
+     * adjacent ranks 0 and 3. It is not kept consistent anymore - it does not
+     * take part in any communication. Let's now assume that 1 and 3 merge.
+     * So fine, everything is fine, but our vertex with 0,3 is not updated to
+     * hold exclusively 0s. Unfortunately, our local node 2 accepts
+     * 3 as new worker. Now, this (invalid) adjacency information makes
+     * problems, as Peano considers a remote vertex suddenly as domain
+     * boundary vertex.
      */
     void exchangeVerticesDueToParallelisation(int positionInArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell);
 
