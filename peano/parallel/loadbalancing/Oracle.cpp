@@ -126,7 +126,7 @@ void peano::parallel::loadbalancing::Oracle::removeWorker(int rank) {
   ) {
     if (p->_rank == rank) {
       logInfo(
-        "notifyAboutSplitOfExistingGrid()",
+        "removeWorker()",
         tarch::parallel::Node::getInstance().getRank()
         << "+"
         << p->_rank
