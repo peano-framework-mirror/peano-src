@@ -89,14 +89,14 @@ void tarch::parallel::FCFSNodePoolStrategy::removeNode( int rank ) {
 }
 
 
-bool tarch::parallel::FCFSNodePoolStrategy::hasIdleNode() const {
+bool tarch::parallel::FCFSNodePoolStrategy::hasIdleNode(int forMaster) const {
   return !_nodes.empty() &&
          _nodes.front().isIdle();
 }
 
 
 int tarch::parallel::FCFSNodePoolStrategy::removeNextIdleNode() {
-  assertion( hasIdleNode() );
+  assertion( hasIdleNode(-1) );
   int result = _nodes.front().getRank();
   _nodes.pop_front();
   return result;
@@ -182,7 +182,7 @@ std::string tarch::parallel::FCFSNodePoolStrategy::toString() const {
 
 
 int tarch::parallel::FCFSNodePoolStrategy::reserveNode(int forMaster) {
-  assertion(hasIdleNode());
+  assertion1(hasIdleNode(forMaster),forMaster);
 
   NodePoolListEntry result = _nodes.front();
   _nodes.pop_front();

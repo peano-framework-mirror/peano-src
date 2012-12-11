@@ -34,8 +34,7 @@ namespace tarch {
  * @version $Revision: 1.6 $
  */
 class tarch::parallel::FCFSNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
-  private:
-
+  protected:
     typedef std::list<NodePoolListEntry>   NodeContainer;
 
     /**
@@ -83,7 +82,7 @@ class tarch::parallel::FCFSNodePoolStrategy: public tarch::parallel::NodePoolStr
     virtual void clearRegisteredNodes();
     virtual int getNumberOfRegisteredNodes() const;
     virtual std::string toString() const;
-    virtual bool hasIdleNode() const;
+    virtual bool hasIdleNode(int forMaster) const;
     virtual int removeNextIdleNode();
 };
 

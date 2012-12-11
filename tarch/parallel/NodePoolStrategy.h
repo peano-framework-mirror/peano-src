@@ -144,7 +144,7 @@ class tarch::parallel::NodePoolStrategy {
      * The node pool needs this information if it wants to send all the nodes a
      * terminate signal.
      */
-    virtual bool hasIdleNode() const = 0;
+    virtual bool hasIdleNode(int forMaster) const = 0;
 };
 
 #endif

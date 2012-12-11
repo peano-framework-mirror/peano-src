@@ -216,7 +216,7 @@ void tarch::parallel::NodePool::terminate() {
   _isAlive = false;
 
   #ifdef Parallel
-  while ( _strategy->hasIdleNode() ) {
+  while ( _strategy->hasIdleNode(-1) ) {
 	  int rank = _strategy->removeNextIdleNode();
 	  tarch::parallel::messages::ActivationMessage answerMessage( JobRequestMessageAnswerValues::Terminate );
     answerMessage.send( rank, _jobManagementTag, true );
@@ -254,7 +254,7 @@ int tarch::parallel::NodePool::getFreeNode(int forMaster) {
   logTraceInWith1Argument( "getFreeNode(int)", forMaster );
 
   int result;
-  if ( _strategy->hasIdleNode() ) {
+  if ( _strategy->hasIdleNode(forMaster) ) {
     result = _strategy->reserveNode(forMaster);
   }
   else {
@@ -437,7 +437,7 @@ void tarch::parallel::NodePool::replyToWorkerRequestMessages() {
 
     while ( !queue.empty() ) {
       tarch::parallel::messages::WorkerRequestMessage nextRequestToAnswer = _strategy->extractElementFromRequestQueue(queue);
-      if ( _isAlive &&  _strategy->hasIdleNode() ) {
+      if ( _isAlive &&  _strategy->hasIdleNode(nextRequestToAnswer.getSenderRank()) ) {
         int activatedNode = _strategy->reserveNode(nextRequestToAnswer.getSenderRank());
 
         tarch::parallel::messages::NodePoolAnswerMessage answerMessage( activatedNode );
