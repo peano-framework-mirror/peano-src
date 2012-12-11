@@ -168,6 +168,8 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
      */
     static const std::string::size_type NumberOfTraceColumnSpaces;
 
+    static const int                    DigitsInFilenamesIterationNumer;
+
     /**
      * Takes the message and adds spaces such that the entries are aligned like
      * in a table. Should either be passed NumberOfIndentSpaces or

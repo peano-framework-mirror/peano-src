@@ -21,9 +21,11 @@ tarch::logging::Log tarch::logging::CommandLineLogger::_log( "tarch::logging::Co
 std::string::size_type tarch::logging::CommandLineLogger::_indent = 0;
 
 
-const std::string::size_type tarch::logging::CommandLineLogger::NumberOfIndentSpaces         = 2;
-const std::string::size_type tarch::logging::CommandLineLogger::NumberOfTraceColumnSpaces    = 55;
-const std::string::size_type tarch::logging::CommandLineLogger::NumberOfStandardColumnSpaces = 12;
+const std::string::size_type tarch::logging::CommandLineLogger::NumberOfIndentSpaces             = 2;
+const std::string::size_type tarch::logging::CommandLineLogger::NumberOfTraceColumnSpaces        = 55;
+const std::string::size_type tarch::logging::CommandLineLogger::NumberOfStandardColumnSpaces     = 12;
+const int                    tarch::logging::CommandLineLogger::DigitsInFilenamesIterationNumer  = 3;
+
 
 const int tarch::logging::CommandLineLogger::FilterListEntry::AnyRank = -1;
 
@@ -351,7 +353,13 @@ void tarch::logging::CommandLineLogger::reopenOutputStream() {
   if (!_outputFileName.empty() ) {
     std::ostringstream fileName;
     if (_iterationCounter>0) {
-      fileName << "it-" << _iterationCounter << "-";
+      fileName << "it-" ;
+      int leadingZeros = std::pow(10,DigitsInFilenamesIterationNumer-1);
+      while (_iterationCounter < leadingZeros) {
+        fileName << "0";
+        leadingZeros /= 10;
+      }
+      fileName << _iterationCounter << "-";
     }
     fileName << _outputFileName;
     _outputStream = new std::ofstream( fileName.str().c_str() );
