@@ -135,11 +135,21 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
         );
         _fineGridVertices[positionInVertexArray].switchToOutside();
       }
+
       if ( _fineGridVertices[positionInVertexArray].getRefinementControl()==Vertex::Records::Refined ) {
         _fineGridVertices[positionInVertexArray].erase();
         _hasTriggeredEraseForNextIteration = true;
       }
-      logDebug("operator()", "coarsed vertex as it is remote: " << _fineGridVertices[positionInVertexArray].toString() );
+
+      if (
+        _state.isNewWorkerDueToForkOfExistingDomain()
+      ) {
+        _fineGridVertices[positionInVertexArray].setAdjacentRanks( tarch::la::Vector<TWO_POWER_D,int>(
+          tarch::parallel::NodePool::getInstance().getMasterRank()
+        ) );
+      }
+
+      logDebug("operator()", "coarsed vertex as it is remote and deleted all adjacency information: " << _fineGridVertices[positionInVertexArray].toString() );
     }
   }
   #endif
