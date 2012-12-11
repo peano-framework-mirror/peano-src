@@ -77,7 +77,7 @@ void peano::datatraversal::autotuning::Oracle::setNumberOfOracles(int value) {
   _numberOfOracles=value;
   createOracles();
 
-  logTraceIn( "setNumberOfOracles(int)");
+  logTraceOut( "setNumberOfOracles(int)");
 }
 
 
