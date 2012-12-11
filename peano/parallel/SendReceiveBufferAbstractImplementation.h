@@ -203,7 +203,7 @@ class peano::parallel::SendReceiveBufferAbstractImplementation: public peano::pa
      *
      * Switches the receive and the deploy buffer. If the number of received
      * messages and sent messages is equal, it is sufficient to interchange
-     * receive and deploy buffer. Yet, iterations might interfer and neighbour
+     * receive and deploy buffer. Yet, iterations might overlap and neighbour
      * messages might (in the same iteration) send messages before the current
      * process starts to send anything. The receiving node is not able to
      * differ between the two cases, so both cases are allowed (see
@@ -221,8 +221,6 @@ class peano::parallel::SendReceiveBufferAbstractImplementation: public peano::pa
      * interchanged.
      *
      * @image html parallel_SendReceiveBuffer_receivePageIfAvailable.png
-     *
-     * If two iterations overlap, the receive buffer is not filled continigous.
      *
      * !!! Algorithm
      *
