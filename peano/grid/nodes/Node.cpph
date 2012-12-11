@@ -436,7 +436,7 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
           state.changedCellState();
         }
 
-        _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridCell,receivedCell,*p);
+        _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridCell,receivedCell,*p,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize(),fineGridVerticesEnumerator.getLevel());
         peano::parallel::JoinDataBufferPool::getInstance().removeCellFromStream(*p);
         logDebug( "updateCellsParallelStateAfterLoadIfNodeIsJoiningWithWorker(...)", "received and merged cell " << fineGridCell.toString()  << " due to join with worker");
 
@@ -479,7 +479,7 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
               case peano::grid::aspects::ParallelMerge::MasterVertexStateRemainsUnaltered:
                 break;
             }
-            _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridVertices[fineGridVerticesEnumerator(k)],receivedVertex,*p);
+            _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridVertices[fineGridVerticesEnumerator(k)],receivedVertex,*p,fineGridVerticesEnumerator.getVertexPosition(k),fineGridVerticesEnumerator.getCellSize(),fineGridVerticesEnumerator.getLevel());
             peano::parallel::JoinDataBufferPool::getInstance().removeVertexFromStream(*p);
             logDebug( "updateCellsParallelStateAfterLoadIfNodeIsJoiningWithWorker(...)", "received and merged vertex " << fineGridVertices[fineGridVerticesEnumerator(k)].toString()  << " due to join with worker");
           }
@@ -487,6 +487,66 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       }
     }
     logTraceOut( "updateCellsParallelStateAfterLoadIfNodeIsJoiningWithWorker(...)" );
+  #endif
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(
+  State&                                    state,
+  Cell&                                     fineGridCell,
+  Vertex                                    fineGridVertices[FOUR_POWER_D],
+  const SingleLevelEnumerator&              fineGridVerticesEnumerator,
+  Cell&                                     coarseGridCell,
+  Vertex                                    coarseGridVertices[FOUR_POWER_D],
+  const SingleLevelEnumerator&              coarseGridVerticesEnumerator,
+  const tarch::la::Vector<DIMENSIONS,int>&  fineGridPositionOfCell
+) const {
+  #ifdef Parallel
+    logTraceInWith2Arguments( "updateCellsParallelStateAfterLoad(...)", state.toString(), fineGridCell.toString() );
+    dfor2(k)
+      logDebug( "updateCellsParallelStateAfterLoad(...)", "- adjacent vertex: " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
+    enddforx
+    const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> localAdjacencyBitset = peano::grid::aspects::VertexStateAnalysis::whichPersistentVerticesAreAdjacentToRank(tarch::parallel::Node::getInstance().getRank(),fineGridVertices,fineGridVerticesEnumerator);
+    if (localAdjacencyBitset.any()) {
+      const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> adjacencyBitset( peano::parallel::JoinDataBufferPool::getInstance().getCellMarkerFromStream(tarch::parallel::NodePool::getInstance().getMasterRank()) );
+
+      #if defined(Debug) && (defined(Dim2) || defined(Dim3) || defined(Dim4))
+      assertionEquals2(
+        fineGridCell.getLevel(),
+        peano::parallel::JoinDataBufferPool::getInstance().getCellLevelFromStream(tarch::parallel::NodePool::getInstance().getMasterRank()),
+        fineGridVerticesEnumerator.toString(),
+        tarch::parallel::NodePool::getInstance().getMasterRank()
+      );
+      #endif
+      assertionEquals4(localAdjacencyBitset,adjacencyBitset,localAdjacencyBitset,adjacencyBitset,fineGridVerticesEnumerator.toString(),tarch::parallel::NodePool::getInstance().getMasterRank());
+
+      logDebug( "updateCellsParallelStateAfterLoad(...)", "received flag " << adjacencyBitset );
+      peano::parallel::JoinDataBufferPool::getInstance().removeCellMarkerFromStream(tarch::parallel::NodePool::getInstance().getMasterRank(),false);
+
+      const Cell receivedCell = peano::parallel::JoinDataBufferPool::getInstance().getCellFromStream<Cell>(tarch::parallel::NodePool::getInstance().getMasterRank());
+      peano::grid::aspects::ParallelMerge::mergeWithForkedCellFromMaster(
+        fineGridCell,
+        receivedCell
+      );
+      _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridCell,receivedCell,tarch::parallel::NodePool::getInstance().getMasterRank(),fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize(),fineGridVerticesEnumerator.getLevel());
+      peano::parallel::JoinDataBufferPool::getInstance().removeCellFromStream(tarch::parallel::NodePool::getInstance().getMasterRank());
+      logDebug( "updateCellsParallelStateAfterLoad(...)", "received and merged cell " << fineGridCell.toString() );
+
+      dfor2(k)
+        if (adjacencyBitset[kScalar]) {
+          const Vertex receivedVertex = peano::parallel::JoinDataBufferPool::getInstance().getVertexFromStream<Vertex>(tarch::parallel::NodePool::getInstance().getMasterRank());;
+          peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
+            fineGridVertices[fineGridVerticesEnumerator(k)],
+            receivedVertex
+          );
+          _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridVertices[fineGridVerticesEnumerator(k)],receivedVertex,tarch::parallel::NodePool::getInstance().getMasterRank(),fineGridVerticesEnumerator.getVertexPosition(k),fineGridVerticesEnumerator.getCellSize(),fineGridVerticesEnumerator.getLevel());
+          peano::parallel::JoinDataBufferPool::getInstance().removeVertexFromStream(tarch::parallel::NodePool::getInstance().getMasterRank());
+          logDebug( "updateCellsParallelStateAfterLoad(...)", "received and merged vertex " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
+        }
+      enddforx
+    }
+    logTraceOut( "updateCellsParallelStateAfterLoad(...)" );
   #endif
 }
 
@@ -592,50 +652,16 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     logTraceOut( "updateCellsParallelStateAfterLoad(...)" );
   }
   else if (state.isNewWorkerDueToForkOfExistingDomain() ) {
-    logTraceInWith2Arguments( "updateCellsParallelStateAfterLoad(...)", state.toString(), fineGridCell.toString() );
-    dfor2(k)
-      logDebug( "updateCellsParallelStateAfterLoad(...)", "- adjacent vertex: " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
-    enddforx
-    const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> localAdjacencyBitset = peano::grid::aspects::VertexStateAnalysis::whichPersistentVerticesAreAdjacentToRank(tarch::parallel::Node::getInstance().getRank(),fineGridVertices,fineGridVerticesEnumerator);
-    if (localAdjacencyBitset.any()) {
-      const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> adjacencyBitset( peano::parallel::JoinDataBufferPool::getInstance().getCellMarkerFromStream(tarch::parallel::NodePool::getInstance().getMasterRank()) );
-
-      #if defined(Debug) && (defined(Dim2) || defined(Dim3) || defined(Dim4))
-      assertionEquals2(
-        fineGridCell.getLevel(),
-        peano::parallel::JoinDataBufferPool::getInstance().getCellLevelFromStream(tarch::parallel::NodePool::getInstance().getMasterRank()),
-        fineGridVerticesEnumerator.toString(),
-        tarch::parallel::NodePool::getInstance().getMasterRank()
-      );
-      #endif
-      assertionEquals4(localAdjacencyBitset,adjacencyBitset,localAdjacencyBitset,adjacencyBitset,fineGridVerticesEnumerator.toString(),tarch::parallel::NodePool::getInstance().getMasterRank());
-
-      logDebug( "updateCellsParallelStateAfterLoad(...)", "received flag " << adjacencyBitset );
-      peano::parallel::JoinDataBufferPool::getInstance().removeCellMarkerFromStream(tarch::parallel::NodePool::getInstance().getMasterRank(),false);
-
-      const Cell receivedCell = peano::parallel::JoinDataBufferPool::getInstance().getCellFromStream<Cell>(tarch::parallel::NodePool::getInstance().getMasterRank());
-      peano::grid::aspects::ParallelMerge::mergeWithForkedCellFromMaster(
-        fineGridCell,
-        receivedCell
-      );
-      _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridCell,receivedCell,tarch::parallel::NodePool::getInstance().getMasterRank());
-      peano::parallel::JoinDataBufferPool::getInstance().removeCellFromStream(tarch::parallel::NodePool::getInstance().getMasterRank());
-      logDebug( "updateCellsParallelStateAfterLoad(...)", "received and merged cell " << fineGridCell.toString() );
-
-      dfor2(k)
-        if (adjacencyBitset[kScalar]) {
-          const Vertex receivedVertex = peano::parallel::JoinDataBufferPool::getInstance().getVertexFromStream<Vertex>(tarch::parallel::NodePool::getInstance().getMasterRank());;
-          peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
-            fineGridVertices[fineGridVerticesEnumerator(k)],
-            receivedVertex
-          );
-          _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridVertices[fineGridVerticesEnumerator(k)],receivedVertex,tarch::parallel::NodePool::getInstance().getMasterRank());
-          peano::parallel::JoinDataBufferPool::getInstance().removeVertexFromStream(tarch::parallel::NodePool::getInstance().getMasterRank());
-          logDebug( "updateCellsParallelStateAfterLoad(...)", "received and merged vertex " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
-        }
-      enddforx
-    }
-    logTraceOut( "updateCellsParallelStateAfterLoad(...)" );
+    updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(
+      state,
+      fineGridCell,
+      fineGridVertices,
+      fineGridVerticesEnumerator,
+      coarseGridCell,
+      coarseGridVertices,
+      coarseGridVerticesEnumerator,
+      fineGridPositionOfCell
+    );
   }
   #endif
 }
