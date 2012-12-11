@@ -139,7 +139,6 @@ class peano::grid::Cell {
      */
     void toString(std::ostream& out) const;
 
-    #ifdef Parallel
     /**
      * Is cell remote?
      *
@@ -154,6 +153,8 @@ class peano::grid::Cell {
       bool          considerForkingNodesToBeRemote,
       bool          considerJoiningNodesToBeRemote
     ) const;
+
+    #ifdef Parallel
     bool isAssignedToRemoteRank() const;
 
     /**

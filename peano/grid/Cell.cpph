@@ -270,6 +270,24 @@ std::ostream& operator<<(std::ostream& out, const peano::grid::Cell<CellData>& a
 }
 
 
+template <class CellData>
+template <class State>
+bool peano::grid::Cell<CellData>::isRemote(
+  const State&  state,
+  bool          considerForkingNodesToBeRemote,
+  bool          considerJoiningNodesToBeRemote
+) const {
+  #ifdef Parallel
+  return _cellData.getResponsibleRank()!=tarch::parallel::Node::getInstance().getRank()
+     && !state.isForkTriggeredForRank(_cellData.getResponsibleRank())
+     && (considerJoiningNodesToBeRemote || !state.isJoiningRank(_cellData.getResponsibleRank()))
+     && (considerForkingNodesToBeRemote || !state.isForkingRank(_cellData.getResponsibleRank()));
+  #else
+  return false;
+  #endif
+}
+
+
 #ifdef Parallel
 template <class CellData>
 void peano::grid::Cell<CellData>::replaceAccessNumbersAndEvenFlags( const Cell& otherCell ) {
@@ -325,20 +343,6 @@ void peano::grid::Cell<CellData>::receive(int source, int tag, bool exchangeOnly
 template <class CellData>
 bool peano::grid::Cell<CellData>::isAssignedToRemoteRank() const {
   return _cellData.getResponsibleRank()!=tarch::parallel::Node::getInstance().getRank();
-}
-
-
-template <class CellData>
-template <class State>
-bool peano::grid::Cell<CellData>::isRemote(
-  const State&  state,
-  bool          considerForkingNodesToBeRemote,
-  bool          considerJoiningNodesToBeRemote
-) const {
-  return _cellData.getResponsibleRank()!=tarch::parallel::Node::getInstance().getRank()
-     && !state.isForkTriggeredForRank(_cellData.getResponsibleRank())
-     && (considerJoiningNodesToBeRemote || !state.isJoiningRank(_cellData.getResponsibleRank()))
-     && (considerForkingNodesToBeRemote || !state.isForkingRank(_cellData.getResponsibleRank()));
 }
 
 
