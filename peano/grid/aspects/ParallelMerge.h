@@ -124,12 +124,32 @@ class peano::grid::aspects::ParallelMerge {
      * - The level is the same on master and worker for a cell.
      *
      * The inside/outside information has to be equal. For this, the worker has
-     * call the geometry. However, it does not do this for the @f$ 3^d-1 @f$
-     * cells of level one besides the middle one. Those 'belong' to the master,
-     * those are not updated locally, and thus their inside/outside information
-     * might be wrong locally. Summed up, this means that the inside/outside flag
-     * is equal if and only if the master forks this element currently to the
-     * local rank.
+     * called the geometry before the merge happens.. However, it does not do this
+     * for the @f$ 3^d-1 @f$ cells of level one besides the middle one. Those
+     * 'belong' to the master, those are not updated locally, and thus their
+     * inside/outside information might be wrong locally. Summed up, this means
+     * that the inside/outside flag is equal if and only if the master forks
+     * this element currently to the local rank.
+     *
+     * It can happen that the master has refined a cell that is not yet refined
+     * on the worker. Indeed, that's a standard case. Here, we set the cell's
+     * local state to leaf and rely on mergeWithForkedVertexFromMaster() to set
+     * the vertex's state to refining().
+     *
+     * !!! Reassignment of remote cells
+     *
+     * If a cell is remote, i.e. not handled by the local node anymore, its
+     * responsible information is taken from the master and it is consistent.
+     * However, if the master decides to rebalance, we will not get this information
+     * and the information will become invalid. Thus, I erase the responsibility
+     * information and indicate that this remote cell belongs somehow to the master
+     * and that the master knows more about the real resopnsibility. If we remove
+     * this reset mechanism, inconsistencies can occur. See
+     * StoreVertexLoopBody::exchangeVerticesDueToParallelisation() for a scenario
+     * where also this code part fails.
+     *
+     * @see mergeWithJoinedCellFromWorker()
+     * @see mergeWithForkedVertexFromMaster()
      */
     template <class Cell>
     static void mergeWithForkedCellFromMaster(
@@ -139,6 +159,12 @@ class peano::grid::aspects::ParallelMerge {
 
 
     /**
+     * Merge cell from worker into master throughout a joint
+     *
+     * This operation is basically the counterpart of mergeWithForkedCellFromMaster().
+     * There are some slight differences however:
+     *
+     * -
      *
      * @return This cells hasn't existed before, so immediately after the
      *         merge the grid management should call a create for this
