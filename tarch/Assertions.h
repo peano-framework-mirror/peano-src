@@ -76,7 +76,6 @@
       setAssertionOutputFormat; \
       std::cerr << "assertion in file " << __FILE__ << ", line " << __LINE__ << " failed: " << #expr <<  std::endl; \
       std::cerr << "parameter " << #param << ": " << param << std::endl; \
-      std::cerr << "Explanation:" << param << std::endl; \
       std::cerr << explanation << std::endl; \
       assertionTriggersExit; \
     }
