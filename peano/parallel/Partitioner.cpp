@@ -25,12 +25,13 @@ void peano::parallel::Partitioner::initDatatypes() {
 
 void peano::parallel::Partitioner::shutdownDatatypes() {
   #ifdef Parallel
-  assertion(peano::parallel::messages::ForkMessage::Datatype!=0);
-  assertion(peano::parallel::messages::LoadBalancingMessage::Datatype!=0);
-  peano::parallel::messages::ForkMessage::shutdownDatatype();
-  peano::parallel::messages::LoadBalancingMessage::shutdownDatatype();
-  peano::parallel::messages::ForkMessage::Datatype = 0;
-  peano::parallel::messages::LoadBalancingMessage::Datatype = 0;
+  if (peano::parallel::messages::ForkMessage::Datatype!=0) {
+    peano::parallel::messages::ForkMessage::shutdownDatatype();
+    peano::parallel::messages::LoadBalancingMessage::shutdownDatatype();
+
+    peano::parallel::messages::ForkMessage::Datatype = 0;
+    peano::parallel::messages::LoadBalancingMessage::Datatype = 0;
+  }
   #endif
 }
 
