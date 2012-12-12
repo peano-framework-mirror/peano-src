@@ -82,6 +82,8 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
 ) {
   logTraceInWith3Arguments( "exchangeVerticesDueToParallelisation(...)", positionInVertexArray, positionInLocalCell, _fineGridVertices[positionInVertexArray].toString() );
 
+  _fineGridVertices[positionInVertexArray].refineVertexIfItHasOnlyRefinedAdjacentCells();
+
   #ifdef Parallel
   if (
     _state.isJoiningWithWorker() &&
@@ -166,8 +168,6 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
   logTraceInWith2Arguments( "updateRefinementFlagsAndStoreVertexToOutputStream(...)", positionInVertexArray, positionInLocalCell );
 
   assertion(!_fineGridVertices[positionInVertexArray].isHangingNode() );
-
-  _fineGridVertices[positionInVertexArray].refineVertexIfItHasOnlyRefinedAdjacentCells();
 
   _hasTriggeredRefinementForNextIteration |= _fineGridVertices[positionInVertexArray].getRefinementControl() == Vertex::Records::RefinementTriggered;
   _hasTriggeredEraseForNextIteration      |= _fineGridVertices[positionInVertexArray].getRefinementControl() == Vertex::Records::EraseTriggered;

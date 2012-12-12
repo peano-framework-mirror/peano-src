@@ -82,34 +82,61 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
     /**
      * Update Refinement Status Before Data is Written to Output Stream
      *
-     * t.b.d.
+     * Operation basically calls Vertex::updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack()
+     * and updates the state's global fields to track whether the grid
+     * will change and has changed. Finally, the vertex is piped to the
+     * output stream.
+     *
+     * The method is not to be called for hanging nodes.
      *
      * !!! Thread-safety
      *
-     * This operation is invoked for vertices fetched from the input stack.
-     * The access to the output stack is already serialised, i.e. there's
-     * never two simultaneous accesses to the output stack. Consequently, this
-     * operation also is serialised and there's no need to make it thread-safe
-     * explicitly.
+     * The operation does not modify the state directly but works on the
+     * local attributes such as _hasRefined(). These fields then are merged
+     * into the shared state in the destructor. The destructor hence has to
+     * be thread safe.
      *
-     * !!! Parallelisation
+     * !!! Note on dynamic refinement
      *
-     * If the vertex is a boundary vertex, we send away copies to the neighbour
-     * partitions. If it is remote, i.e. not adjacent to the current domain, no
-     * sends are triggered. Instead, we erase the vertex immediately.
+     * We we have complicated refinement patterns, it can happen that
+     * vertices surrounded by @f$ 2^d @f$ refined cells are unrefined.
+     * This induces that there is a haning node on the next finer level
+     * that cannot be seen by the vis, as it is sourounded by @f$ 2^d @f$
+     * cells as well.
+     *
+     * I thus keep track of the number of adjacent refined cells throughout
+     * the traversal. If a vertex has @f$ 2^d @f$ refined cells around it
+     * but is unrefined itself, I can trigger a refinement automatically by
+     * calling updateRefinementFlagsAndStoreVertexToOutputStream().
+     *
+     * Though this operation is a refinement operation, I may not call it
+     * here. If I called it here, I'd introduce a bug in the MPI
+     * parallelisation mode: If a vertex is member of the domain
+     * boundary and runs into the case described before, one node would
+     * trigger a refinement here. However, the vertex copy is already sent
+     * to the neighbours, i.e. next iteration the local node refined. The
+     * neighbours however are not aware yet of this refinement. It is thus
+     * important to call updateRefinementFlagsAndStoreVertexToOutputStream()
+     * before the vertex is passed to the send/receive buffer.
+     *
+     * @see updateRefinementFlagsAndStoreVertexToOutputStream()
      */
     void updateRefinementFlagsAndStoreVertexToOutputStream(int positionInArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell);
 
     /**
      * Exchange and update parallel information
      *
-     * The operation degrades to nop if the code is not compiled with MPI
+     * The operation degrades (almost entierly) to nop if the code is not compiled with MPI
      * support. We call this operation for each persistent vertex before
      * it is streamed to the output stack, i.e. before
      * updateRefinementFlagsAndStoreVertexToOutputStream() is called.
      * The operation also validates that the vertex is adjacent to a remote
      * rank. If it is not, it immediately returns. Otherwise, it runs through
      * a sequence of checks.
+     *
+     * Independent of the MPI flags, the operation calls refineVertexIfItHasOnlyRefinedAdjacentCells()
+     * on the vertex. There is a dedicated section in updateRefinementFlagsAndStoreVertexToOutputStream()
+     * on this issue.
      *
      * !!! Code is joining with a worker
      *
@@ -167,6 +194,8 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
      * 3 as new worker. Now, this (invalid) adjacency information makes
      * problems, as Peano considers a remote vertex suddenly as domain
      * boundary vertex.
+     *
+     * @see updateRefinementFlagsAndStoreVertexToOutputStream()
      */
     void exchangeVerticesDueToParallelisation(int positionInArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell);
 
