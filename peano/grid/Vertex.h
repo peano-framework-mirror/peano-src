@@ -283,6 +283,7 @@ class peano::grid::Vertex {
 
     /**
      * @see clearCounterOfAdjacentRefinedCells()
+     * @see StoreVertexLoopBody::updateRefinementFlagsAndStoreVertexToOutputStream()
      */
     void refineVertexIfItHasOnlyRefinedAdjacentCells();
 

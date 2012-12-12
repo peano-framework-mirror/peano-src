@@ -362,15 +362,26 @@ void peano::parallel::SendReceiveBufferAbstractImplementation<Vertex>::switchRec
 
   int copyToDeployBufferPage = 0;
   int numberOfElementsToCopy = _sizeOfReceiveBuffer - _numberOfElementsSent;
-  assertion9(
-    (numberOfElementsToCopy==0) || (numberOfTransferredReceivePages<_currentReceiveBufferPage),
-    _sizeOfReceiveBuffer, _numberOfElementsSent, numberOfElementsToCopy,
-    numberOfTransferredReceivePages, _currentReceiveBufferPage,
-    (_receiveBufferRequestHandle==0),
-    _destinationNodeNumber,
-    _bufferPageSize,
-    tarch::parallel::Node::getInstance().getRank()
-  );
+  #ifdef Asserts
+  const bool constraint = (numberOfElementsToCopy==0) || (numberOfTransferredReceivePages<_currentReceiveBufferPage);
+  if (!constraint) {
+    const int lastReceiveBufferPageBefilled = _currentReceiveBufferPage-1;
+    logError( "switchReceiveAndDeployBuffer()", "constraint (numberOfElementsToCopy==0) || (numberOfTransferredReceivePages<_currentReceiveBufferPage) failed. Print out receive buffer content of page " << _currentReceiveBufferPage );
+    for (int i=0; i<_bufferPageSize; i++) {
+      logError( "switchReceiveAndDeployBuffer()", "received element " << i << " in receive buffer page " << _currentReceiveBufferPage-1 << ": " << _receiveBuffer[_currentReceiveBuffer].at(lastReceiveBufferPageBefilled)[i].toString() );
+    }
+
+    assertion9(
+      false,
+      _sizeOfReceiveBuffer, _numberOfElementsSent, numberOfElementsToCopy,
+      numberOfTransferredReceivePages, _currentReceiveBufferPage,
+      (_receiveBufferRequestHandle==0),
+      _destinationNodeNumber,
+      _bufferPageSize,
+      tarch::parallel::Node::getInstance().getRank()
+    );
+  }
+  #endif
 
 
   for (int currentPage = numberOfTransferredReceivePages; currentPage < _currentReceiveBufferPage; currentPage++) {
