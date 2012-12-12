@@ -81,6 +81,12 @@ void tarch::parallel::NodePool::init() {
   tarch::parallel::messages::NodePoolAnswerMessage::initDatatype();
   tarch::parallel::messages::RegisterAtNodePoolMessage::initDatatype();
   tarch::parallel::messages::WorkerRequestMessage::initDatatype();
+
+  assertion( tarch::parallel::messages::ActivationMessage::Datatype!=0 );
+  assertion( tarch::parallel::messages::JobRequestMessage::Datatype!=0 );
+  assertion( tarch::parallel::messages::NodePoolAnswerMessage::Datatype!=0 );
+  assertion( tarch::parallel::messages::RegisterAtNodePoolMessage::Datatype!=0 );
+  assertion( tarch::parallel::messages::WorkerRequestMessage::Datatype!=0 );
   #endif
 }
 
@@ -143,11 +149,23 @@ void tarch::parallel::NodePool::shutdown() {
   }
 
   #ifdef Parallel
+  assertion1WithExplanation( tarch::parallel::messages::ActivationMessage::Datatype!=0, tarch::parallel::Node::getInstance().getRank(), "NodePool::shutdown() called twice" );
+  assertion1WithExplanation( tarch::parallel::messages::JobRequestMessage::Datatype!=0, tarch::parallel::Node::getInstance().getRank(), "NodePool::shutdown() called twice" );
+  assertion1WithExplanation( tarch::parallel::messages::NodePoolAnswerMessage::Datatype!=0, tarch::parallel::Node::getInstance().getRank(), "NodePool::shutdown() called twice" );
+  assertion1WithExplanation( tarch::parallel::messages::RegisterAtNodePoolMessage::Datatype!=0, tarch::parallel::Node::getInstance().getRank(), "NodePool::shutdown() called twice" );
+  assertion1WithExplanation( tarch::parallel::messages::WorkerRequestMessage::Datatype!=0, tarch::parallel::Node::getInstance().getRank(), "NodePool::shutdown() called twice" );
+
   tarch::parallel::messages::ActivationMessage::shutdownDatatype();
   tarch::parallel::messages::JobRequestMessage::shutdownDatatype();
   tarch::parallel::messages::NodePoolAnswerMessage::shutdownDatatype();
   tarch::parallel::messages::RegisterAtNodePoolMessage::shutdownDatatype();
   tarch::parallel::messages::WorkerRequestMessage::shutdownDatatype();
+
+  tarch::parallel::messages::ActivationMessage::Datatype         = 0;
+  tarch::parallel::messages::JobRequestMessage::Datatype         = 0;
+  tarch::parallel::messages::NodePoolAnswerMessage::Datatype     = 0;
+  tarch::parallel::messages::RegisterAtNodePoolMessage::Datatype = 0;
+  tarch::parallel::messages::WorkerRequestMessage::Datatype      = 0;
   #endif
 }
 
