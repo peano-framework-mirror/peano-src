@@ -314,6 +314,17 @@ void peano::grid::Cell<CellData>::initDatatype() {
 }
 
 
+
+template <class CellData>
+void peano::grid::Cell<CellData>::shutdownDatatype() {
+  if (MPIDatatypeContainer::Datatype!=0) {
+    MPIDatatypeContainer::shutdownDatatype();
+  }
+
+  MPIDatatypeContainer::Datatype = 0;
+}
+
+
 template <class CellData>
 void peano::grid::Cell<CellData>::send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallel) {
   assertion4(MPIDatatypeContainer::Datatype!=0,destination,tag,toString(),tarch::parallel::Node::getInstance().getRank());

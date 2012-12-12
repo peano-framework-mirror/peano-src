@@ -70,6 +70,7 @@ class peano::grid::Vertex {
      * This operation is robust, i.e. you can call it several times.
      */
     static void initDatatype();
+    static void shutdownDatatype();
 
     friend class peano::parallel::AdjacencyListAspect<Vertex<VertexData> >;
     #endif

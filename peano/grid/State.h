@@ -49,6 +49,7 @@ class peano::grid::State {
      * This operation is robust, i.e. you can call it several times.
      */
     static void initDatatype();
+    static void shutdownDatatype();
     #endif
 
     #if defined(ParallelExchangePackedRecords)

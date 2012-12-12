@@ -376,6 +376,16 @@ void peano::grid::Vertex<VertexData>::initDatatype() {
 
 
 template <class VertexData>
+void peano::grid::Vertex<VertexData>::shutdownDatatype() {
+  if (MPIDatatypeContainer::Datatype!=0) {
+    MPIDatatypeContainer::shutdownDatatype();
+  }
+
+  MPIDatatypeContainer::Datatype = 0;
+}
+
+
+template <class VertexData>
 void peano::grid::Vertex<VertexData>::send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallel) {
   assertion(MPIDatatypeContainer::Datatype!=0);
 

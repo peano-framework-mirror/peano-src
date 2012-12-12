@@ -346,6 +346,16 @@ void peano::grid::State<StateData>::initDatatype() {
 
 
 template <class StateData>
+void peano::grid::State<StateData>::shutdownDatatype() {
+  if (MPIDatatypeContainer::Datatype!=0) {
+    MPIDatatypeContainer::shutdownDatatype();
+  }
+
+  MPIDatatypeContainer::Datatype = 0;
+}
+
+
+template <class StateData>
 void peano::grid::State<StateData>::send(int destination, int tag) {
   assertion(MPIDatatypeContainer::Datatype!=0);
 
