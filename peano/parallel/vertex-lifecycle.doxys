@@ -82,6 +82,78 @@
  rank to another. Here, all vertex properties are communicated, not only those 
  marked as parallelise. You consequently typically do not have to plug into the
  rebalancing mechanism. If you have to do (as you are using dynamic heap data 
- associated to the records, e.g.) Peano provides the corresponding events. 
+ associated to the records, e.g.) Peano provides the corresponding events.
+ 
+ !!! Multiscale event interplay
+ 
+ The following case study shall illustrate the multiscale behaviour: We examine a 
+ node M(aster). It has forked two cells (inducing subtrees) to two nodes called 
+ W(orker) and N(eighbour). The case study focuses on the interplay of M and W with 
+ respect to the light blue vertex. 
+ 
+ @image html VertexExchange.png   
+ 
+ # The traversal automaton runs through the grid of M. This is traversal n.
+ # The first time M reads the red vertex $v_{red}$, it identifies that the red vertex is 
+   part of a domain boundary. Two out of its four adjacent cells are deployed to 
+   other ranks. The red vertex is merged with remote copies (of the light blue 
+   and green one) sent in the traversal before and mergeWithNeighbour() is 
+   invoked for each of these merges: $v_{red}(n) = v_{red}(n-1) \otimes v_{bright\ blue}(n-1) \otimes v_{\bright green}(n-1)$.
+ # Now M calls touchVertexFirstTime() as not 
+   all adjacent cells of the red vertex are deployed to other ranks. If all 
+   adjacent cells were deployed to other ranks touchVertexFirstTime()  would 
+   not be called, as it were a remote vertex.
+ # M at some point enters the cell deployed to rank W. Here, all adjacent 
+   vertices already are loaded. For W, no enterCell() is called, as W is a 
+   remote cell. Instead, W asks the oracle for load balancing instructions and 
+   passes the cell, its vertices, and some coarser information to prepareSendToWorker().
+   Afterwards, the cell and vertices are send to the worker. Only attributes labeled as 
+   parallelise are exchanged. A copy of the red vertex is handed over to W. See  
+   Node::updateCellsParallelStateAfterLoadForRootOfDeployedSubtree(). 
+ # M continues and runs through the same method for the neighbouring cell deployed 
+   to N. A copy of the red vertex is sent to N.
+ # W receives the startup information from M.
+ # W receives the copy of the red vertex $v_{red}(n)$ and calls 
+   receiveDataFromMaster() for this copy. The result is for the time being stored 
+   locally in $\hat v_{bright\ blue}(n) = receiveDataFromMaster(v_{red}(n))$. See Root::receiveCellAndVerticesFromMaster(). 
+ # W reads the bright blue vertex from the input stream. This vertex is a domain 
+   boundary vertex. W merges it with copies of the vertex, i.e. with the red 
+   and bright green vertex of the iteration before. 
+   $v_{bright\ blue}(n) = v_{bright\ blue}(n-1) \otimes v_{red}(n-1) \otimes v_{\bright green}(n-1)$.
+ # W calls touchVertexFirstTime() for $v_{bright\ blue}(n)$.
+ # The bright blue vertex is adjacent to the root of W's spacetree. The automaton 
+   thus merges it with the data received from the master due to the event mergeWithWorker().
+   $v_{bright\ blue}(n) \gets mergeWithWorker(v_{bright\ blue}(n), \hat v_{bright\ blue}(n))$. 
+   See Node::mergeReceivedCellAndVerticesFromMasterIntoLocalDataStructure().
+ # The automaton on W starts to descend in the spactree.
+ # It loads the dark blue vertex.
+ # The dark blue vertex is part of the parallel domain. Hence, call mergeWithNeighbour() 
+   to merge it with the remote data from the iteration before.
+   $v_{dark\ blue}(n) = v_{dark\ blue}(n-1) \otimes v_{dark green}(n-1)$.
+ # W calls touchVertexFirstTime on $v_{dark\ blue}(n)$.
+ # ...
+ # W calls touchVertexLastTime on $v_{dark\ blue}(n)$.
+ # W sends a copy of $v_{dark\ blue}(n)$ to the neighbour N for the next 
+   iteration. This copying process involves a call to prepareSendToNeighbour() 
+   if you wanna plug in there.
+ # W stores $v_{dark\ blue}(n)$.
+ # W calls touchVertexLastTime on $v_{bright\ blue}(n)$.
+ # W sends a copy of $v_{bright\ blue}(n)$ to the neighbour N for the next 
+   iteration. This copying process involves a call to prepareSendToNeighbour() 
+   if you wanna plug in there.
+ # W stores $v_{bright\ blue}(n)$.
+ # W sends a copy of $v_{bright\ blue}(n)$ to the master M. This copying process 
+   involes a call to  prepareSendToMaster(). See Root::sendCellAndVerticesToMaster().
+ # M receives the copy of $v_{bright\ blue}(n)$ for which the worker W already has 
+   called touchVertexLastTime().
+ # M also receives a copy of $v_{bright\ green}(n)$ for which the worker N already has 
+   called touchVertexLastTime().
+ # M  merges its local vertex with the two received copies:
+   $v_{red}(n) \gets v_{red}(n) \otimes v_{bright\ blue}(n) \otimes v_{bright\ green}(n)$.
+ # M calls touchVertexLastTime on $v_{red}(n)$.
+ # M sends a copy of $v_{red}(n)$ to the neighbours W and N for the next 
+   iteration. This copying process involves a call to prepareSendToNeighbour() 
+   if you wanna plug in there.
+ # M stores $v_{red}(n)$.
  
  */
