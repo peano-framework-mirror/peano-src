@@ -4,6 +4,7 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
+#include "peano/utils/PeanoOptimisations.h"
 
 
 template <class LoopBody>
@@ -51,22 +52,24 @@ void peano::datatraversal::ActionSetTraversalLoop<LoopBody>::loopParallel(
 ) {
   for (int currentStepInPath=0; currentStepInPath<traversal.getMaximumPath(); currentStepInPath++ ) {
     #ifdef SharedTBB
-    
-//    HandleSubrangeWithBiPartitioning task(
-//      loopBody,
-//      traversal.getActionSet(currentStepInPath),
-//      false, 0,
-//      traversal.getActionSet(currentStepInPath).getNumberOfParallelActions(),
-//      grainSize
-//    );
-//    task();
 
-
+    #ifdef UseParallelReduceForCellHandling
     ActionSetTraversalLoopInstance loopInstance(loopBody,traversal.getActionSet(currentStepInPath));
     tbb::parallel_reduce(
       tbb::blocked_range<int>(0,traversal.getActionSet(currentStepInPath).getNumberOfParallelActions(),grainSize),
       loopInstance
     );
+    #else
+    ActionSetTraversalLoopWithBiPartitioning task(
+      loopBody,
+      traversal.getActionSet(currentStepInPath),
+      false, 0,
+      traversal.getActionSet(currentStepInPath).getNumberOfParallelActions(),
+      grainSize
+    );
+    task();
+    #endif
+
     #elif SharedOMP
     // This check is due to a bug in the OpenMP-Library on Shaheen, which does not handle the case grainSize > problemSize correctly
     if(grainSize < traversal.getActionSet(currentStepInPath).getNumberOfParallelActions()) {
@@ -125,7 +128,7 @@ void peano::datatraversal::ActionSetTraversalLoop< LoopBody >::realiseParallelFo
 #ifdef SharedTBB
 template <class LoopBody>
 peano::datatraversal::ActionSetTraversalLoop<LoopBody>::ActionSetTraversalLoopInstance::ActionSetTraversalLoopInstance(
-  const LoopBody&                                 loopBody,
+  const LoopBody&                         loopBody,
   const peano::datatraversal::ActionSet&  actionSet
 ):
   _loopBody(loopBody),
@@ -157,10 +160,11 @@ void peano::datatraversal::ActionSetTraversalLoop<LoopBody>::ActionSetTraversalL
 template <class LoopBody>
 void peano::datatraversal::ActionSetTraversalLoop<LoopBody>::ActionSetTraversalLoopInstance::join(const ActionSetTraversalLoopInstance&  with) {
 }
+#endif
 
 
 template <class LoopBody>
-peano::datatraversal::ActionSetTraversalLoop<LoopBody>::HandleSubrangeWithBiPartitioning::HandleSubrangeWithBiPartitioning(
+peano::datatraversal::ActionSetTraversalLoop<LoopBody>::ActionSetTraversalLoopWithBiPartitioning::ActionSetTraversalLoopWithBiPartitioning(
   const LoopBody&                         loopBody,
   const peano::datatraversal::ActionSet&  actionSet,
   const bool                              isLeftTask,
@@ -178,20 +182,18 @@ peano::datatraversal::ActionSetTraversalLoop<LoopBody>::HandleSubrangeWithBiPart
 
 
 template <class LoopBody>
-void peano::datatraversal::ActionSetTraversalLoop<LoopBody>::HandleSubrangeWithBiPartitioning::operator() () {
+void peano::datatraversal::ActionSetTraversalLoop<LoopBody>::ActionSetTraversalLoopWithBiPartitioning::operator() () {
   logTraceInWith4Arguments( "operator()", _isLeftTask, _left, _right, _grainSize );
-  const bool split = !_isLeftTask && (_right-_left) > _grainSize && _grainSize>1;
+  const bool doSplit = !_isLeftTask && (_right-_left) > _grainSize && _grainSize>1;
 
-  if (split) {
-    const int medium = (_right+_left)/2;
-//    const int split  = _left + _grainSize;
-    const int split  = medium;
+  if (doSplit) {
+    const int split = (_right+_left)/2;
     logDebug( "operator()", "split: ("  << _left << "," << _right << ")->(" << _left << "," << split << ")+(" << split << "," << _right << ")" );
-    HandleSubrangeWithBiPartitioning leftTask(
+    ActionSetTraversalLoopWithBiPartitioning leftTask(
       _loopBody, _actionSet,
       true, _left, split, _grainSize
     );
-    HandleSubrangeWithBiPartitioning rightTask(
+    ActionSetTraversalLoopWithBiPartitioning rightTask(
       _loopBody, _actionSet,
       false, split, _right, _grainSize
     );
@@ -205,4 +207,3 @@ void peano::datatraversal::ActionSetTraversalLoop<LoopBody>::HandleSubrangeWithB
   logTraceOut( "operator()" );
 }
 
-#endif

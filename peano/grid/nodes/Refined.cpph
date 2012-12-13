@@ -101,7 +101,9 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(maxGrainSize,methodTrace);
     LoopBody loopBody( state, fineGridVertices, fineGridVerticesEnumerator, coarseGridCell, coarseGridVertices, coarseGridVerticesEnumerator, fineGridPositionOfCell, counter, Base::_vertexStack, Base::_eventHandle, Base::_geometry, grainSize>0 );
     peano::datatraversal::ActionSetTraversalLoop<LoopBody>( readVertexSequence, loopBody, grainSize );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    if (Base::_eventHandle.touchVertexFirstTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    }
   }
   else if ( fineGridVerticesEnumerator.getCellFlags() == peano::grid::StationaryButIrregular) {
     logDebug( "load(...)", "is a stationary irregular subtree" );
@@ -112,7 +114,9 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(maxGrainSize,methodTrace);
     LoopBody loopBody( state, fineGridVertices, fineGridVerticesEnumerator, coarseGridCell, coarseGridVertices, coarseGridVerticesEnumerator, fineGridPositionOfCell, counter, Base::_vertexStack, Base::_eventHandle, Base::_geometry, grainSize>0 );
     peano::datatraversal::ActionSetTraversalLoop<LoopBody>( readVertexSequence, loopBody, grainSize );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    if (Base::_eventHandle.touchVertexFirstTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    }
   }
   else if ( fineGridVerticesEnumerator.getCellFlags() == peano::grid::StationaryWithParallelBoundary) {
     logDebug( "load(...)", "is a stationary subtree containing parallel boundary" );
@@ -123,7 +127,9 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(maxGrainSize,methodTrace);
     LoopBody loopBody( state, fineGridVertices, fineGridVerticesEnumerator, coarseGridCell, coarseGridVertices, coarseGridVerticesEnumerator, fineGridPositionOfCell, counter, Base::_vertexStack, Base::_eventHandle, Base::_geometry, grainSize>0 );
     peano::datatraversal::ActionSetTraversalLoop<LoopBody>( readVertexSequence, loopBody, grainSize );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    if (Base::_eventHandle.touchVertexFirstTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    }
   }
   else {
     logDebug( "load(...)", "is an instationary subtree" );
@@ -134,7 +140,9 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(maxGrainSize,methodTrace);
     LoopBody loopBody( state, fineGridVertices, fineGridVerticesEnumerator, coarseGridCell, coarseGridVertices, coarseGridVerticesEnumerator, fineGridPositionOfCell, counter, Base::_vertexStack, Base::_eventHandle, Base::_geometry, grainSize );
     peano::datatraversal::ActionSetTraversalLoop<LoopBody>( readVertexSequence, loopBody, grainSize);
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    if (Base::_eventHandle.touchVertexFirstTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    }
   }
 
   Base::validatePositionOfVertices(
@@ -660,7 +668,9 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(maxGrainSize,methodTrace);
     LoopBody loopBody( state, fineGridVertices, fineGridVerticesEnumerator, coarseGridCell, coarseGridVertices, coarseGridVerticesEnumerator, fineGridPositionOfCell, counter, Base::_vertexStack, Base::_eventHandle, Base::_geometry, grainSize>0 );
     peano::datatraversal::ActionSetTraversalLoop<LoopBody>( writeVertexSequence, loopBody, grainSize );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    if (Base::_eventHandle.touchVertexLastTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    }
   }
   else if ( fineGridVerticesEnumerator.getCellFlags() >= peano::grid::StationaryWithParallelBoundary) {
     typedef loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, peano::grid::StationaryWithParallelBoundary> LoopBody;
@@ -670,7 +680,9 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(maxGrainSize,methodTrace);
     LoopBody loopBody( state, fineGridVertices, fineGridVerticesEnumerator, coarseGridCell, coarseGridVertices, coarseGridVerticesEnumerator, fineGridPositionOfCell, counter, Base::_vertexStack, Base::_eventHandle, Base::_geometry, grainSize>0 );
     peano::datatraversal::ActionSetTraversalLoop<LoopBody>( writeVertexSequence, loopBody, grainSize );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    if (Base::_eventHandle.touchVertexLastTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    }
   }
   else {
     typedef loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, peano::grid::NotStationary> LoopBody;
@@ -680,7 +692,9 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(maxGrainSize,methodTrace);
     LoopBody loopBody( state, fineGridVertices, fineGridVerticesEnumerator, coarseGridCell, coarseGridVertices, coarseGridVerticesEnumerator, fineGridPositionOfCell, counter, Base::_vertexStack, Base::_eventHandle, Base::_geometry, grainSize>0 );
     peano::datatraversal::ActionSetTraversalLoop<LoopBody>( writeVertexSequence, loopBody, grainSize );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    if (Base::_eventHandle.touchVertexLastTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    }
   }
 
   logTraceOutWith2Arguments( "store(...)", state, fineGridCell );

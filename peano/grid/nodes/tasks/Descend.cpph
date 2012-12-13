@@ -56,7 +56,9 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVer
       );
     _touchVertexFirstTimeLoopBody.setLevel(level);
     peano::datatraversal::dForLoop<TouchVertexFirstTimeLoopBody>( NumberOfVertices, _touchVertexFirstTimeLoopBody, sharedMemoryGrainSize, false );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid);
+    if (_eventHandle.touchVertexFirstTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid);
+    }
   }
 }
 
@@ -80,7 +82,9 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCel
       _enterCellLoopBody,
       sharedMemoryGrainSize
     );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid);
+    if (_eventHandle.enterCellSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid);
+    }
   }
 }
 
@@ -106,7 +110,9 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::descend(
       sharedMemoryGrainSize
     );
 
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::DescendOnRegularStationaryGrid);
+    if (_eventHandle.descendSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::DescendOnRegularStationaryGrid);
+    }
   }
 }
 

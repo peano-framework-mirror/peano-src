@@ -71,7 +71,9 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     loopBody,
     grainSize
   );
-  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::LoadVertices);
+  if (Base::_eventHandle.touchVertexFirstTimeSpecification().multithreading) {
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::LoadVertices);
+  }
 
   Base::validatePositionOfVertices(
     fineGridVertices,
@@ -285,6 +287,10 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     loopBody,
     grainSize
   );
+
+  if (Base::_eventHandle.touchVertexLastTimeSpecification().multithreading) {
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::StoreVertices);
+  }
 
   logTraceOutWith2Arguments( "store(...)", state, fineGridCell );
 }

@@ -105,6 +105,10 @@ class peano::datatraversal::dForRange {
      * passed argument is the valid state from which the new range is to be
      * constructed.
      *
+     * If we have to treat the boundary separately and as a whole, the new
+     * object becomes the boundary object. The argument range becomes a standard
+     * range that we might be allowed to split further.
+     *
      * @param range Original range
      */
     dForRange( dForRange& range, Split );

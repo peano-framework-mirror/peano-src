@@ -111,6 +111,23 @@ class peano::datatraversal::dForLoop {
       bool                                      handleBoundaryOfDomainSequential
     );
 
+    /**
+     * @see ActionSetTraversalLoop::ActionSetTraversalLoopWithBiPartitioning
+     */
+    class dForLoopWithBipartitioning {
+      private:
+        LoopBody     _loopBody;
+        const bool   _isLeftTask;
+        dForRange    _range;
+      public:
+        dForLoopWithBipartitioning( const LoopBody& loopBody, bool isLeftTask, dForRange range );
+
+        /**
+         * Process range
+         */
+        void operator() ();
+    };
+
     class dForLoopInstance {
       private:
         LoopBody  _loopBody;
@@ -157,6 +174,11 @@ class peano::datatraversal::dForLoop {
          */
         void join(const dForLoopInstance&  with);
     };
+
+    #ifdef SharedTBB
+    class HandleSubrangeWithBiPartitioning {
+    };
+    #endif
 
     #ifdef SharedCobra
     /**

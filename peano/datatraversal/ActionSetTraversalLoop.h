@@ -52,13 +52,20 @@ class peano::datatraversal::ActionSetTraversalLoop {
       LoopBody&                                                loopBody
     );
 
-    #ifdef SharedTBB
     /**
-     * @todo This range partitioning does work but not yield better
-     * performance. I thus do not use it yet but rely on straightforward
-     * tbb::parallel_reduce.
+     * Alternative implementation of parallel_reduce
+     *
+     * This operation provides an alternative implementation of the
+     * parallel_reduce. It is based upon a modified bipartitioning on a
+     * strongly imbalanced tree: The algorithm recursively splits up the
+     * iteration space into two parts. One part of each splitting (left)
+     * is handled as a whole and not split further. The other part (right)
+     * is split if the grain size allows to split. The result is an extremely
+     * unbalanced task tree.
+     *
+     * This splitting outperforms parallel_reduce by a factor of two.
      */
-    class HandleSubrangeWithBiPartitioning {
+    class ActionSetTraversalLoopWithBiPartitioning {
       private:
         LoopBody                                _loopBody;
         const peano::datatraversal::ActionSet&  _actionSet;
@@ -68,7 +75,7 @@ class peano::datatraversal::ActionSetTraversalLoop {
         const int                               _grainSize;
 
       public:
-        HandleSubrangeWithBiPartitioning(
+        ActionSetTraversalLoopWithBiPartitioning(
           const LoopBody&                         loopBody,
           const peano::datatraversal::ActionSet&  actionSet,
           const bool                              isLeftTask,
@@ -81,6 +88,7 @@ class peano::datatraversal::ActionSetTraversalLoop {
     };
 
 
+    #ifdef SharedTBB
     class ActionSetTraversalLoopInstance {
       private:
         LoopBody                                _loopBody;
