@@ -3,6 +3,9 @@
 #include "tarch/Assertions.h"
 
 
+const int tarch::multicore::tbb::Core::UseDefaultNumberOfThreads = 0;
+
+
 tarch::multicore::tbb::Core::Core():
   _numberOfThreads(::tbb::task_scheduler_init::default_num_threads()),
   _task_scheduler_init(_numberOfThreads) {
@@ -31,7 +34,7 @@ void tarch::multicore::tbb::Core::configure( int numberOfThreads ) {
     _task_scheduler_init.terminate();
   }
 
-  if (numberOfThreads==0) {
+  if (numberOfThreads==UseDefaultNumberOfThreads) {
     _numberOfThreads = ::tbb::task_scheduler_init::default_num_threads();
   }
   else {

@@ -29,6 +29,8 @@ class tarch::multicore::tbb::Core {
     int                         _numberOfThreads;
     ::tbb::task_scheduler_init  _task_scheduler_init;
   public:
+    static const int UseDefaultNumberOfThreads;
+
     /**
      * Destructor
      */
@@ -46,10 +48,8 @@ class tarch::multicore::tbb::Core {
      *
      * @param numberOfThreads Numer of threads that shall be used. This
      *        parameter either is greater than zero (which defines the number
-     *        of threads) or it equals zero which means that the code should
-     *        use the default number of threads. The latter value fits to the
-     *        semantics of
-     *        tarch::multicore::configurations::CoreConfiguration::getNumberOfThreads()
+     *        of threads) or it equals DefaultNumberOfThreads which means that the code should
+     *        use the default number of threads.
      */
     void configure( int numberOfThreads );
 
