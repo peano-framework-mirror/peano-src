@@ -7,10 +7,12 @@
 tarch::logging::Log  peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::_log( "peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads" );
 
 
-peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::OracleForOnePhaseUsingAllThreads(int numberOfThreads, const MethodTrace& methodTrace):
+peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::OracleForOnePhaseUsingAllThreads(int numberOfThreads, bool allowTreeSplits, bool pipelinePatchProcessing, const MethodTrace& methodTrace):
   _numberOfThreads(numberOfThreads),
   _executionTime(1.0),
-  _methodTrace(methodTrace) {
+  _methodTrace(methodTrace),
+  _allowTreeSplits(allowTreeSplits),
+  _pipelinePatchProcessing(pipelinePatchProcessing) {
   assertion( _numberOfThreads>=1 );
 }
 
@@ -39,7 +41,30 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
     )
   )
     {
-    return std::pair<int,bool>(problemSize<_numberOfThreads ? 1 : problemSize/_numberOfThreads,true);
+    const int divisor   = 2 << _numberOfThreads;
+    const int grainSize = problemSize / divisor;
+    return std::pair<int,bool>(grainSize<1 ? 1 : grainSize,true);
+  }
+  else if (
+    _allowTreeSplits &&
+    (
+      _methodTrace == SplitLoadVerticesTaskOnRegularStationaryGrid
+      ||
+      _methodTrace == SplitStoreVerticesTaskOnRegularStationaryGrid
+    )
+  ) {
+    const int grainSize = problemSize / _numberOfThreads;
+    return std::pair<int,bool>(grainSize<1 ? 1 : grainSize,true);
+  }
+  else if (
+    _pipelinePatchProcessing &&
+    (
+      _methodTrace == PipelineAscendTask
+      ||
+      _methodTrace == PipelineDescendTask
+    )
+  ) {
+    return std::pair<int,bool>(1,true);
   }
   else {
     return std::pair<int,bool>(0,false);
@@ -66,7 +91,7 @@ peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::~OracleForOn
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::createNewOracle(int adapterNumber, const MethodTrace& methodTrace) const {
-  return new OracleForOnePhaseUsingAllThreads(_numberOfThreads,methodTrace);
+  return new OracleForOnePhaseUsingAllThreads(_numberOfThreads,_allowTreeSplits,_pipelinePatchProcessing,methodTrace);
 }
 
 

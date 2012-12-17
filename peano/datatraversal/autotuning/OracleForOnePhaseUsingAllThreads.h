@@ -32,11 +32,13 @@ class peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads: public
     int                         _numberOfThreads;
     tarch::timing::Measurement  _executionTime;
     const MethodTrace           _methodTrace;
+    const bool                  _allowTreeSplits;
+    const bool                  _pipelinePatchProcessing;
   public:
     /**
      * Use a fixed number of threads.
      */
-    OracleForOnePhaseUsingAllThreads(int numberOfThreads, const MethodTrace& methodTrace = NumberOfDifferentMethodsCalling);
+    OracleForOnePhaseUsingAllThreads(int numberOfThreads, bool allowTreeSplits = false, bool pipelinePatchProcessing = false, const MethodTrace& methodTrace = NumberOfDifferentMethodsCalling);
 
     virtual ~OracleForOnePhaseUsingAllThreads();
 
