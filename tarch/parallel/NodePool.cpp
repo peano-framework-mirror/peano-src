@@ -172,7 +172,7 @@ void tarch::parallel::NodePool::shutdown() {
 
 tarch::parallel::NodePool::~NodePool() {
   if (_strategy != 0) {
-    logError( "~NodePool()", "forgot to call shutdown() on node " << Node::getInstance().getRank() );
+    std::cerr << "forgot to call shutdown() for NodePool on node " << Node::getInstance().getRank() << std::endl;
   }
 }
 

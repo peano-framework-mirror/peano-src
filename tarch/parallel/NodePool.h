@@ -235,9 +235,14 @@ class tarch::parallel::NodePool: public tarch::services::Service {
     static NodePool& getInstance();
 
     /**
-     * Destructor. Note that there is a warning if the destructor is called on
+     * Destructor.
+     *
+     * Note that there is a warning if the destructor is called on
      * an alive session. Ensure it has received a termination message before to
      * avoid this warning.
+     *
+     * This operation may not pipe to the _log environment, as that one might
+     * already be destructed.
      */
     virtual ~NodePool();
 
