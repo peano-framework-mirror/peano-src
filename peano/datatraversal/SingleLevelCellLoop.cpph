@@ -42,32 +42,8 @@ peano::datatraversal::SingleLevelCellLoop<LoopBody>::SingleLevelCellLoop() {
 
 template <class LoopBody>
 void peano::datatraversal::SingleLevelCellLoop<LoopBody>::run(
-  LoopBody&                                 loopBody,
-  int                                       grainSize,
-  const tarch::la::Vector<DIMENSIONS,int>&  range
-) {
-  assertion( tarch::la::volume(range)!=0 );
-
-  #if defined(SharedMemoryParallelisation)
-  run(
-    loopBody,
-    grainSize,
-    peano::datatraversal::ActionSetTraversal::getParallelCartesianGridTraversal(range)
-  );
-  #else
-  run(
-    loopBody,
-    grainSize,
-    peano::datatraversal::ActionSetTraversal::getSequentialCartesianGridTraversal(range)
-  );
-  #endif
-}
-
-
-template <class LoopBody>
-void peano::datatraversal::SingleLevelCellLoop<LoopBody>::run(
-  LoopBody&                                                loopBody,
-  int                                                      grainSize,
+  LoopBody&                                        loopBody,
+  int                                              grainSize,
   const peano::datatraversal::ActionSetTraversal&  cellTraversal
 ) {
   #if defined(SharedMemoryParallelisation)

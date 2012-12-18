@@ -26,6 +26,18 @@ namespace peano {
 
 template <class LoopBody>
 class peano::datatraversal::SingleLevelCellLoop {
+  private:
+    void run(
+      LoopBody&                                        loopBody,
+      int                                              grainSize,
+      const peano::datatraversal::ActionSetTraversal&  cellTraversal
+    );
+
+//    void run(
+//      LoopBody&                                 loopBody,
+//      int                                       grainSize,
+//      const tarch::la::Vector<DIMENSIONS,int>&  range
+//    );
   public:
     /**
      * Shortcut for calling the standard constructor and the run operation
@@ -41,18 +53,6 @@ class peano::datatraversal::SingleLevelCellLoop {
      * Standard constructor
      */
     SingleLevelCellLoop();
-
-    void run(
-      LoopBody&                                                loopBody,
-      int                                                      grainSize,
-      const peano::datatraversal::ActionSetTraversal&  cellTraversal
-    );
-
-    void run(
-      LoopBody&                                 loopBody,
-      int                                       grainSize,
-      const tarch::la::Vector<DIMENSIONS,int>&  range
-    );
 };
 
 
