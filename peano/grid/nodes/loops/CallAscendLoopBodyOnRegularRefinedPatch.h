@@ -82,8 +82,7 @@ class peano::grid::nodes::loops::CallAscendLoopBodyOnRegularRefinedPatch {
     /**
      * @see RegularRefined::callTouchVertexFirstTime()
      */
-    void operator() (const peano::datatraversal::Action& i);
-
+    void operator() (const tarch::la::Vector<DIMENSIONS, int>& i);
 };
 
 

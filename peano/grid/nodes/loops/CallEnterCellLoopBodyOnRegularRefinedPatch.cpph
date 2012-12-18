@@ -57,18 +57,18 @@ peano::grid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch<Vertex,Cel
 
 
 template <class Vertex, class Cell, class State, class EventHandle>
-void peano::grid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::operator() (const peano::datatraversal::Action&  i) {
+void peano::grid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::operator() (const tarch::la::Vector<DIMENSIONS, int>& i) {
   logDebug( "operator(...)", "study vertex at " << i._cartesianPosition << " on level " << _level );
 
   tarch::la::Vector<DIMENSIONS,int> offsetOfCoarseGridEnumerator;
   tarch::la::Vector<DIMENSIONS,int> positionWithinNextCoarserCell;
 
-  computePositionRelativeToNextCoarserLevelFromFineGridCellPosition(i._cartesianPosition,offsetOfCoarseGridEnumerator,positionWithinNextCoarserCell);
+  computePositionRelativeToNextCoarserLevelFromFineGridCellPosition(i,offsetOfCoarseGridEnumerator,positionWithinNextCoarserCell);
 
-  _fineGridEnumerator.setOffset(i._cartesianPosition);
+  _fineGridEnumerator.setOffset(i);
   _coarseGridEnumerator.setOffset(offsetOfCoarseGridEnumerator);
 
-  const int fineGridCellIndex   = _fineGridEnumerator.lineariseCellIndex(i._cartesianPosition);
+  const int fineGridCellIndex   = _fineGridEnumerator.lineariseCellIndex(i);
   const int coarseGridCellIndex = _coarseGridEnumerator.lineariseCellIndex(offsetOfCoarseGridEnumerator);
 
   Cell& currentCell = _regularGridContainer.getCell(_level,fineGridCellIndex);

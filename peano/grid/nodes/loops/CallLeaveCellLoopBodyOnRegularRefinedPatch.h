@@ -80,7 +80,7 @@ class peano::grid::nodes::loops::CallLeaveCellLoopBodyOnRegularRefinedPatch {
     /**
      * @see RegularRefined::callTouchVertexFirstTime()
      */
-    void operator() (const peano::datatraversal::Action& i);
+    void operator() (const tarch::la::Vector<DIMENSIONS, int>& i);
 };
 
 
