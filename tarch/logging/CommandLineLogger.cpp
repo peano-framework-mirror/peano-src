@@ -353,8 +353,11 @@ void tarch::logging::CommandLineLogger::reopenOutputStream() {
   if (!_outputFileName.empty() ) {
     std::ostringstream fileName;
     if (_iterationCounter>0) {
+      int leadingZeros = 1;
+      for (int i=0; i<DigitsInFilenamesIterationNumer-1; i++) {
+        leadingZeros*=10;
+      }
       fileName << "it-" ;
-      int leadingZeros = std::pow(10,DigitsInFilenamesIterationNumer-1);
       while (_iterationCounter < leadingZeros) {
         fileName << "0";
         leadingZeros /= 10;
