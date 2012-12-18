@@ -240,9 +240,9 @@ tarch::parallel::Node::~Node() {
 
 
 void tarch::parallel::Node::shutdown() {
+  #ifdef Parallel
   assertion( _rank!=-1 );
 
-  #ifdef Parallel
   MPI_Barrier( _communicator );
   MPI_Finalize();
   _communicator = MPI_COMM_WORLD;
