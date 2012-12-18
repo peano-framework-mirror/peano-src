@@ -27,18 +27,13 @@ namespace peano {
  *
  * A range is a d-dimensional hypercube together with a translation. It
  * identifies an index set. Consequently, it is a generalisation of TBB's
- * blocked_range2d. Besides the data set to be traversed, each block also
- * has an attribute isSequentialBoundaryRange(). If this attribute holds,
- * the range does not describe a set that is to be traversed, but it
- * describes a cube whose boundary elements have to be traversed
- * deterministically, i.e. you are not allowed to split up this boundary
- * domain and process the two sets in parallel.
+ * blocked_range2d.
  *
  * The range basically implements an kd-tree-like approach: Whenever a split
  * is invoked (due to the constructor), it analyses along which coordinate
  * axis that cube is the longest. Then, it cuts the cube along this axis into
- * two parts of (besides rounding) the same size. A cube basically is
- * dividable as long as its volume is greater than zero, i.e. as long as it
+ * two parts of (besides rounding) the same size. A cube basically can be
+ * split as long as its volume is greater than zero, i.e. as long as it
  * contains more than one vertex along one coordinate axis.
  * However, the standard behaviour of the range also takes into account the
  * minimum grain size. Therefore a cube is not divided down to only one
@@ -48,24 +43,6 @@ namespace peano {
  * division process is illustrated below on the left-hand side.
  *
  * @image html dForRange.png
- *
- * If the original range is constructed with the handleBoundaryOfDomainSequential
- * flag, the behaviour is different. In such a case, the first split extracts
- * the boundary set. This set is not dividable anymore, and it is to be
- * traversed deterministally as isSequentialBoundaryRange() holds (red arrow in
- * the illustration). The remaining inner part of the domain is processed as
- * the domain described above, it can be split up further, and the individual
- * subdomains may by handled in parallel.
- *
- * The range hence not only is a generalisation of TBB's blocked_range2d. It
- * also adds this new semantics due to isSequentialBoundaryRange(). The latter
- * is an important attribute for example for hybrid parallelisation. Domain
- * boundaries here often are exchanged via message passing and the order on
- * the domain boundaries is fixed and has to be preserved. At the same time,
- * the vertices inside a domain can be processed non-deterministically in
- * parallel. Load balancing techniques for such an example are important for
- * the inner domain. On the boundary, we may not parallelise anythign and,
- * thus, load balancing (splitting) is not of relevance.
  *
  * You find more information on the original blocked_range2d at
  *
@@ -82,7 +59,6 @@ class peano::datatraversal::dForRange {
     tarch::la::Vector<DIMENSIONS,int>  _range;
     int                                _grainSize;
     bool                               _handleBoundaryOfDomainSequential;
-    bool                               _isBoundaryRange;
   public:
     #ifdef SharedTBB
     typedef tbb::split Split;
@@ -95,7 +71,7 @@ class peano::datatraversal::dForRange {
     /**
      * Construct a Complete Range
      */
-    dForRange( const tarch::la::Vector<DIMENSIONS,int>&  range, int grainSize, bool handleBoundaryOfDomainSequential );
+    dForRange( const tarch::la::Vector<DIMENSIONS,int>&  range, int grainSize );
 
     /**
      * Split Constructor

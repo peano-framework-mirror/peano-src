@@ -37,7 +37,7 @@ void peano::datatraversal::tests::dForRangeTest::test2D10x10Range1() {
   #ifdef Dim2
   tarch::la::Vector<DIMENSIONS,int>  range(10);
 
-  peano::datatraversal::dForRange testRange1(range,1,false);
+  peano::datatraversal::dForRange testRange1(range,1);
 
   validate( testRange1.is_divisible() );
 
@@ -67,7 +67,7 @@ void peano::datatraversal::tests::dForRangeTest::test2D10x10Range12() {
   #ifdef Dim2
   tarch::la::Vector<DIMENSIONS,int>  range(10);
 
-  peano::datatraversal::dForRange testRange12(range,12,false);
+  peano::datatraversal::dForRange testRange12(range,12);
 
   validate( testRange12.is_divisible() );
 
@@ -97,7 +97,7 @@ void peano::datatraversal::tests::dForRangeTest::test2D10x10Range23() {
   #ifdef Dim2
   tarch::la::Vector<DIMENSIONS,int>  range(10);
 
-  peano::datatraversal::dForRange testRange23(range,23,false);
+  peano::datatraversal::dForRange testRange23(range,23);
 
   validate( testRange23.is_divisible() );
 
@@ -127,7 +127,7 @@ void peano::datatraversal::tests::dForRangeTest::test2D10x10Range40() {
   #ifdef Dim2
   tarch::la::Vector<DIMENSIONS,int>  range(10);
 
-  peano::datatraversal::dForRange testRange40(range,40,false);
+  peano::datatraversal::dForRange testRange40(range,40);
 
   validate( testRange40.is_divisible() );
 
@@ -173,7 +173,7 @@ void peano::datatraversal::tests::dForRangeTest::test2D10x10Range80() {
   #ifdef Dim2
   tarch::la::Vector<DIMENSIONS,int>  range(10);
 
-  peano::datatraversal::dForRange testRange80(range,80,false);
+  peano::datatraversal::dForRange testRange80(range,80);
 
   validate( testRange80.is_divisible() );
 

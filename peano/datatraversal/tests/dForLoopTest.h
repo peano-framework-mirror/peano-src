@@ -38,21 +38,6 @@ namespace peano
             void testCreateRangesVectorGrainSize1();
 
             /**
-             * This test divides a 4x4 patch of vertices into the ranges while putting all boundary
-             * vertices into one range. Thus, the result should be to have 5 ranges, one holding
-             * the boundary vertices and four for the four inner vertices.
-             */
-            void testCreateRangesVectorWithSequentialBoundaryGrainSize1();
-
-            /**
-             * This test divides a 12x12 patch of vertices into the appropriate ranges
-             * while putting all boundary vertices into one range. A grain size of 4 is
-             * used. Thus, the expected result is to have one boundary range and 32 ranges
-             * holding the rest of the vertices.
-             */
-            void testCreateRangesVectorWithSequentialBoundary12x12GrainSize4();
-
-            /**
              * This test checks wether the reduction at the end of a parallel for is performed
              * correctly.
              */

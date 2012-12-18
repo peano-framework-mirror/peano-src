@@ -27,8 +27,7 @@ template <class LoopBody>
 peano::datatraversal::dForLoop<LoopBody>::dForLoop(
   const tarch::la::Vector<DIMENSIONS,int>&  range,
   LoopBody&                                 body,
-  int                                       grainSize,
-  bool                                      handleBoundaryOfDomainSequential
+  int                                       grainSize
 ) {
 	assertion( grainSize >= 0 );
 	if (grainSize>0) {
@@ -37,13 +36,13 @@ peano::datatraversal::dForLoop<LoopBody>::dForLoop(
       #ifdef UseParallelReduceForVertexHandling
       dForLoopInstance loopInstance(body);
 	  	tbb::parallel_reduce(
-  		  dForRange( range, grainSize, handleBoundaryOfDomainSequential ),
+  		  dForRange( range, grainSize ),
   		  loopInstance
   		);
       #else
 	  	dForLoopWithBipartitioning(
     	  body, false,
-        dForRange( range, grainSize, handleBoundaryOfDomainSequential )
+        dForRange( range, grainSize )
 	  	);
       #endif
     #elif SharedOMP
@@ -51,7 +50,7 @@ peano::datatraversal::dForLoop<LoopBody>::dForLoop(
 		
 	  	dForLoopInstance loopInstance(body);
 
-	  	std::vector<dForRange> ranges = createRangesVector(range, grainSize, handleBoundaryOfDomainSequential);
+	  	std::vector<dForRange> ranges = createRangesVector(range, grainSize);
 
       #pragma omp parallel for schedule(dynamic, 1) firstprivate(loopInstance)
       for( int i=0; i < (int)(ranges.size()); i++ ){
@@ -62,7 +61,7 @@ peano::datatraversal::dForLoop<LoopBody>::dForLoop(
 
       tarch::multicore::cobra::Core::getInstance().getScheduler().call([&](::cobra::continuator& ctr) {
         realiseParallelForAsTaskBipartitioning(
-          peano::datatraversal::dForRange( range, grainSize, handleBoundaryOfDomainSequential ),
+          peano::datatraversal::dForRange( range, grainSize ),
           ctr,
           dForLoopInstance(body)
         );
@@ -89,8 +88,8 @@ peano::datatraversal::dForLoop<LoopBody>::dForLoop(
 template <class LoopBody>
 void peano::datatraversal::dForLoop<LoopBody>::realiseParallelForAsTaskBipartitioning(
   peano::datatraversal::dForRange  range,
-  ::cobra::continuator&                    ctr,
-   dForLoopInstance                        loopBody
+  ::cobra::continuator&            ctr,
+   dForLoopInstance                loopBody
 ) {
   if (range.is_divisible()) {
     peano::datatraversal::dForRange range1(range);
@@ -116,11 +115,10 @@ void peano::datatraversal::dForLoop<LoopBody>::realiseParallelForAsTaskBipartiti
 template <class LoopBody>
 std::vector<peano::datatraversal::dForRange> peano::datatraversal::dForLoop<LoopBody>::createRangesVector(
   const tarch::la::Vector<DIMENSIONS,int>&  range,
-  int                                       grainSize,
-  bool                                      handleBoundaryOfDomainSequential
+  int                                       grainSize
 ) {
   std::vector<dForRange> ranges;
-  ranges.push_back( dForRange( range, grainSize, handleBoundaryOfDomainSequential ) );
+  ranges.push_back( dForRange( range, grainSize ) );
   bool dividedRange;
   do {
     dividedRange = false;
@@ -152,7 +150,7 @@ peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::dForLoopInstance( co
 
 template <class LoopBody>
 void peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::operator() (const dForRange& range) {
-	logTraceInWith2Arguments( "dForLoopInstance::operator()", range.toString(), range.isSequentialBoundaryRange() );
+	logTraceInWith1Argument( "dForLoopInstance::operator()", range.toString() );
 
 	if (range.isSequentialBoundaryRange()) {
     dfor(i,range.getRange()) {

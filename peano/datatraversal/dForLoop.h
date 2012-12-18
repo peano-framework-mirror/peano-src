@@ -107,8 +107,7 @@ class peano::datatraversal::dForLoop {
 
     std::vector<dForRange> createRangesVector(
       const tarch::la::Vector<DIMENSIONS,int>&  range,
-      int                                       grainSize,
-      bool                                      handleBoundaryOfDomainSequential
+      int                                       grainSize
     );
 
     /**
@@ -186,8 +185,8 @@ class peano::datatraversal::dForLoop {
      */
     void realiseParallelForAsTaskBipartitioning(
       peano::datatraversal::dForRange  range,
-      ::cobra::continuator&                    ctr,
-      dForLoopInstance                         loopBody
+      ::cobra::continuator&            ctr,
+      dForLoopInstance                 loopBody
     );
     #endif
   public:
@@ -198,18 +197,11 @@ class peano::datatraversal::dForLoop {
      *                   documentation. If the grain size equals zero, the
      *                   multithreading is switched off. Another term for grain
      *                   size is chunk size (OpenMP prefers this term).
-     * @param handleBoundaryOfDomainSequential  The range describes a Cartesian
-     *                   grid that is to be traversed. For some applications it
-     *                   is essential that the grid of the domain is handled in
-     *                   the right order whereas the internal can be traversed
-     *                   in parallel. This flag switches such a behaviour on
-     *                   and off.
      */
     dForLoop(
       const tarch::la::Vector<DIMENSIONS,int>&  range,
       LoopBody&                                 body,
-      int                                       grainSize,
-      bool                                      handleBoundaryOfDomainSequential
+      int                                       grainSize
     );
 };
 

@@ -23,8 +23,6 @@ peano::datatraversal::tests::dForLoopTest::~dForLoopTest()
 void peano::datatraversal::tests::dForLoopTest::run()
 {
   testMethod( testCreateRangesVectorGrainSize1 );
-  testMethod( testCreateRangesVectorWithSequentialBoundaryGrainSize1 );
-  testMethod( testCreateRangesVectorWithSequentialBoundary12x12GrainSize4 );
   testMethod( testParallelReduction );
 }
 
@@ -38,12 +36,11 @@ void peano::datatraversal::tests::dForLoopTest::testCreateRangesVectorGrainSize1
   #ifdef Dim2
   tarch::la::Vector<DIMENSIONS,int> range(4);
   int grainSize = 1;
-  bool sequentialBoundary = false;
 
   TestLoopBody testLoopBody;
-  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize, sequentialBoundary);
+  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize);
 
-  std::vector<peano::datatraversal::dForRange> ranges = loop.createRangesVector(range, grainSize, sequentialBoundary);
+  std::vector<peano::datatraversal::dForRange> ranges = loop.createRangesVector(range, grainSize);
 
   validateEquals(16, ranges.size());
 
@@ -88,71 +85,6 @@ void peano::datatraversal::tests::dForLoopTest::testCreateRangesVectorGrainSize1
   #endif
 }
 
-void peano::datatraversal::tests::dForLoopTest::testCreateRangesVectorWithSequentialBoundaryGrainSize1()
-{
-  #ifdef Dim2
-  tarch::la::Vector<DIMENSIONS,int> range(4);
-  int grainSize = 1;
-  bool sequentialBoundary = true;
-
-  TestLoopBody testLoopBody;
-  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize, sequentialBoundary);
-
-  std::vector<peano::datatraversal::dForRange> ranges = loop.createRangesVector(range, grainSize, sequentialBoundary);
-
-  validateEqualsWithParams1(5, ranges.size(), ranges.size());
-
-  int volume = 0 ;
-  for(int i = 0; i < static_cast<int>(ranges.size()); i++){
-    if(!ranges[i].isSequentialBoundaryRange()) {
-      volume += tarch::la::volume(ranges[i].getRange());
-    }
-  }
-  validateEqualsWithParams1(4, volume, volume);
-  #endif
-}
-
-
-void peano::datatraversal::tests::dForLoopTest::testCreateRangesVectorWithSequentialBoundary12x12GrainSize4()
-{
-  #ifdef Dim2
-  tarch::la::Vector<DIMENSIONS,int> range(12);
-  int grainSize = 4;
-  bool sequentialBoundary = true;
-
-  TestLoopBody testLoopBody;
-  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize, sequentialBoundary);
-
-  std::vector<peano::datatraversal::dForRange> ranges = loop.createRangesVector(range, grainSize, sequentialBoundary);
-
-  validateEquals(33, ranges.size());
-
-  //Test total volume
-  int volume = 0 ;
-  for(int i = 0; i < static_cast<int>(ranges.size()); i++){
-    if(!ranges[i].isSequentialBoundaryRange()) {
-      volume += tarch::la::volume(ranges[i].getRange());
-    } else {
-      validateEquals(12*12, tarch::la::volume(ranges[i].getRange()));
-    }
-  }
-  validateEqualsWithParams1(100, volume, volume);
-
-
-  //Test overlapping
-  for(int i = 0; i < static_cast<int>(ranges.size()); i++) {
-    for(int j = i+1; j < static_cast<int>(ranges.size()); j++) {
-      if(!ranges[i].isSequentialBoundaryRange() && !ranges[j].isSequentialBoundaryRange()) {
-        bool foundNonOverlappingInterval = false;
-        for(int d = 0; d < DIMENSIONS; d++){
-            foundNonOverlappingInterval |= (ranges[i].getOffset()(d) + ranges[i].getRange()(d) <= ranges[j].getOffset()(d) || ranges[j].getOffset()(d) + ranges[j].getRange()(d) <= ranges[i].getOffset()(d));
-          }
-        validateWithParams4(foundNonOverlappingInterval, ranges[i].getOffset(), ranges[i].getRange(), ranges[j].getOffset(), ranges[j].getRange());
-      }
-    }
-  }
-  #endif
-}
 
 void peano::datatraversal::tests::dForLoopTest::testParallelReduction() {
   #if defined(Dim2)  && (defined(SharedTBB) || defined(SharedOMP))
@@ -160,13 +92,12 @@ void peano::datatraversal::tests::dForLoopTest::testParallelReduction() {
   range(0) = 4;
   range(1) = 4;
   int grainSize = 4;
-  bool sequentialBoundary = false;
 
   TestLoopBody testLoopBody;
   TestLoopBody::resetGlobalCounter();
-  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize, sequentialBoundary);
+  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize);
 
-  std::vector<peano::datatraversal::dForRange> ranges = loop.createRangesVector(range, grainSize, sequentialBoundary);
+  std::vector<peano::datatraversal::dForRange> ranges = loop.createRangesVector(range, grainSize);
 
   validateEquals(ranges.size(), 4);
 
