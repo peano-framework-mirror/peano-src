@@ -74,8 +74,6 @@ void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
   enddforx
 
   #endif
-
-  assertion(false);
 }
 
 
