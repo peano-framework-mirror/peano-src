@@ -1,5 +1,6 @@
 #include "peano/datatraversal/ActionSetTraversalLoop.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
+#include "peano/utils/PeanoOptimisations.h"
 
 
 template <class LoopBody>
@@ -12,60 +13,130 @@ peano::datatraversal::SingleLevelCellLoop<LoopBody>::SingleLevelCellLoop(
 
   #if defined(SharedMemoryParallelisation)
   if (grainSize>0) {
-    run(
-      loopBody,
-      grainSize,
-      peano::datatraversal::ActionSetTraversal::getParallelCartesianGridTraversal(range)
-    );
+    runParallel(loopBody,range,grainSize);
   }
   else {
-    run(
-      loopBody,
-      grainSize,
-      peano::datatraversal::ActionSetTraversal::getSequentialCartesianGridTraversal(range)
-    );
+    runSequentially(loopBody,range);
   }
   #else
-  run(
-    loopBody,
-    grainSize,
-    peano::datatraversal::ActionSetTraversal::getSequentialCartesianGridTraversal(range)
-  );
+  runSequentially(loopBody,range);
   #endif
 }
 
 
 template <class LoopBody>
-peano::datatraversal::SingleLevelCellLoop<LoopBody>::SingleLevelCellLoop() {
-}
-
-
-template <class LoopBody>
-void peano::datatraversal::SingleLevelCellLoop<LoopBody>::run(
-  LoopBody&                                        loopBody,
-  int                                              grainSize,
-  const peano::datatraversal::ActionSetTraversal&  cellTraversal
+void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runSequentially(
+  LoopBody&                                 loopBody,
+  const tarch::la::Vector<DIMENSIONS,int>&  range
 ) {
-  #if defined(SharedMemoryParallelisation)
-  if (grainSize>0) {
-    ActionSetTraversalLoop<LoopBody>(
-      cellTraversal,
-      loopBody,
-      grainSize
-    );
+  dfor(currentCell,range) {
+    loopBody(currentCell);
   }
-  else {
-    ActionSetTraversalLoop<LoopBody>(
-      cellTraversal,
-      loopBody,
-      0
-    );
-  }
+}
+
+
+template <class LoopBody>
+void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
+  LoopBody&                                 loopBody,
+  const tarch::la::Vector<DIMENSIONS,int>&  range,
+  int                                       grainSize
+) {
+  #ifdef UseParallelReduceForCellHandling
+
+  dfor2(k)
+    tarch::la::Vector<DIMENSIONS,int> localRange = range;
+    for (int d=0; d<DIMENSIONS; d++) {
+      if (localRange(d)%2==0) {
+        localRange(d) /= 2;
+      }
+      else {
+        localRange(d) = localRange(d) / 2 + 1;
+      }
+    }
+    dForLoopInstance loopInstance(loopBody,k);
+    tbb::parallel_reduce( dForRange( localRange, grainSize ), loopInstance );
+  enddforx
   #else
-  ActionSetTraversalLoop<LoopBody>(
-    cellTraversal,
-    loopBody,
-    0
-  );
+  dfor2(k)
+    tarch::la::Vector<DIMENSIONS,int> localRange = range;
+    for (int d=0; d<DIMENSIONS; d++) {
+      if (localRange(d)%2==0) {
+        localRange(d) /= 2;
+      }
+      else {
+        localRange(d) = localRange(d) / 2 + 1;
+      }
+    }
+    dForLoopWithBipartitioning(
+      loopBody, k, false,
+      dForRange( localRange, grainSize )
+    );
+  enddforx
+
   #endif
+
+  assertion(false);
+}
+
+
+
+template <class LoopBody>
+peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::dForLoopInstance( const LoopBody& loopBody, const tarch::la::Vector<DIMENSIONS,int>& offset ):
+  _loopBody(loopBody),
+  _offset(offset) {
+}
+
+
+template <class LoopBody>
+peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::dForLoopInstance( const dForLoopInstance& instance, SplitFlag ):
+  _loopBody(instance._loopBody),
+  _offset(instance._offset) {
+}
+
+
+template <class LoopBody>
+void peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::operator() (const dForRange& range) {
+  logTraceInWith1Argument( "dForLoopInstance::operator()", range.toString() );
+
+  dfor(i,range.getRange()) {
+    _loopBody(i*2 + range.getOffset() + _offset );
+  }
+
+  logTraceOutWith1Argument( "dForLoopInstance::operator()", range.toString() );
+}
+
+
+template <class LoopBody>
+void peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::join(const dForLoopInstance&  with) {
+}
+
+
+template <class LoopBody>
+peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopWithBipartitioning::dForLoopWithBipartitioning(const LoopBody& loopBody, const tarch::la::Vector<DIMENSIONS,int>& offset, bool isLeftTask, dForRange range):
+  _loopBody(loopBody),
+  _isLeftTask(isLeftTask),
+  _range(range),
+  _offset(offset) {
+}
+
+
+template <class LoopBody>
+void peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopWithBipartitioning::operator()() {
+  const bool doSplit = !_isLeftTask && _range.is_divisible();
+
+  if (doSplit) {
+      dForRange leftRange( _range, dForRange::Split() );
+      dForLoopWithBipartitioning leftTask(
+        _loopBody, true, leftRange
+      );
+      dForLoopWithBipartitioning rightTask(
+        _loopBody, false, _range
+      );
+      TaskSet::TaskSet(leftTask,rightTask,true);
+    }
+    else {
+      dfor(i,_range.getRange()) {
+        _loopBody(i*2 + _range.getOffset() + _offset );
+      }
+    }
 }

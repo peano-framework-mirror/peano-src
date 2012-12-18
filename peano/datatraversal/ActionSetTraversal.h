@@ -27,38 +27,6 @@ namespace peano {
 class peano::datatraversal::ActionSetTraversal {
   private:
     std::vector< ActionSet >  _actionSets;
-
-    /**
-     * Factory method for the action set. If CacheActionSets is unset, the
-     * public getter redirects the function call directly to this operation.
-     * Otherwise, this operation is the source of the cached return values.
-     */
-    #if defined(CacheActionSets)
-    static ActionSetTraversal*  createParallelCartesianGridTraversal(  const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-    #else
-    static ActionSetTraversal   createParallelCartesianGridTraversal(  const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-    #endif
-
-    /**
-     * Factory method for the action set. If CacheActionSets is unset, the
-     * public getter redirects the function call directly to this operation.
-     * Otherwise, this operation is the source of the cached return values.
-     */
-    #if defined(CacheActionSets)
-    static ActionSetTraversal*  createSequentialCartesianGridTraversal(const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-    #else
-    static ActionSetTraversal   createSequentialCartesianGridTraversal(const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-    #endif
-
-    /**
-     * Returns key of problem or 0 if there is no key
-     */
-    static int getKey(const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-
-    /**
-     * Inverse of getKey().
-     */
-    static tarch::la::Vector<DIMENSIONS,int> getNumberOfCellsFromKey( int key );
   public:
     /**
      * Standard constructor.
@@ -71,34 +39,6 @@ class peano::datatraversal::ActionSetTraversal {
      * Destructor
      */
     ~ActionSetTraversal();
-
-    /**
-     * Construct parallel cell traversal
-     *
-     * Construct cell traversal for regular Cartesian grid. This traversal
-     * identifies a red-black type colouring with @f$ 2^d @f$ colours, and it
-     * consists solely of enter actions. You specify a @f$ numberOfCells_1 \times numberOfCells_2 \times \dots \times numberOfCells_d @f$
-     * grid. The operation splits up the elements of this d-dimensional array
-     * into @f$ 2^d @f$ different sets such that no two elements within one set
-     * are adjacent to each other. And then it returns exactly this sequence of
-     * sets that you can execute in parallel.
-     *
-     * @param numberOfCells Number of cells.
-     */
-    #if defined(CacheActionSets)
-    static const ActionSetTraversal& getParallelCartesianGridTraversal(const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-    #else
-    static ActionSetTraversal getParallelCartesianGridTraversal(const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-    #endif
-
-    /**
-     * This is the sequential version of getSequentialCartesianGridTraversal().
-     */
-    #if defined(CacheActionSets)
-    static const ActionSetTraversal& getSequentialCartesianGridTraversal(const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-    #else
-    static ActionSetTraversal getSequentialCartesianGridTraversal(const tarch::la::Vector<DIMENSIONS,int>& numberOfCells);
-    #endif
 
     /**
      * This operation takes a action set traversal representing a total order,
