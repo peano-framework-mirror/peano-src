@@ -11,10 +11,8 @@
 #endif
 
 
-#ifdef Parallel
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
-#endif
 
 
 void peano::fillLookupTables() {
@@ -44,10 +42,8 @@ int peano::initParallelEnvironment(int* argc, char*** argv) {
 
 
 void peano::shutdownParallelEnvironment() {
-  #ifdef Parallel
   tarch::parallel::NodePool::getInstance().shutdown();
   tarch::parallel::Node::getInstance().shutdown();
-  #endif
 }
 
 
