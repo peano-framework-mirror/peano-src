@@ -55,7 +55,7 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVer
         tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid
       );
     _touchVertexFirstTimeLoopBody.setLevel(level);
-    peano::datatraversal::dForLoop<TouchVertexFirstTimeLoopBody>( NumberOfVertices, _touchVertexFirstTimeLoopBody, sharedMemoryGrainSize, false );
+    peano::datatraversal::dForLoop<TouchVertexFirstTimeLoopBody>( NumberOfVertices, _touchVertexFirstTimeLoopBody, sharedMemoryGrainSize );
     if (_eventHandle.touchVertexFirstTimeSpecification().multithreading) {
       peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid);
     }
@@ -133,18 +133,32 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::operator
   tarch::multicore::BooleanSemaphore::continueWithTask();
   #endif
 
-  for (int level=0; level<=_treeDepth; level++) {
-    if (level==_treeDepth) {
-      enterCells( level );
-    }
-    else if (level==0) {
-      touchVerticesFirstTime( level+1 );
-      descend(level+1);
-    }
-    else {
-      enterCells( level );
-      touchVerticesFirstTime( level+1 );
-      descend(level+1);
+
+  const bool skipCoarseLevelsCompletely =
+    (_eventHandle.touchVertexFirstTimeSpecification().manipulates != peano::MappingSpecification::WHOLE_TREE) &&
+    (_eventHandle.enterCellSpecification().manipulates            != peano::MappingSpecification::WHOLE_TREE) &&
+    (_eventHandle.descendSpecification().manipulates              != peano::MappingSpecification::WHOLE_TREE);
+
+
+  if (skipCoarseLevelsCompletely) {
+    touchVerticesFirstTime(_treeDepth);
+    descend(_treeDepth);
+    enterCells(_treeDepth);
+  }
+  else {
+    for (int level=0; level<=_treeDepth; level++) {
+      if (level==_treeDepth) {
+        enterCells( level );
+      }
+      else if (level==0) {
+        touchVerticesFirstTime( level+1 );
+        descend(level+1);
+      }
+      else {
+        enterCells( level );
+        touchVerticesFirstTime( level+1 );
+        descend(level+1);
+      }
     }
   }
 }
