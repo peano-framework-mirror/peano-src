@@ -228,7 +228,7 @@ tarch::parallel::Node::Node(const parallel::Node& node):
 }
 #else
 tarch::parallel::Node::Node(const parallel::Node& node):
-  _rank(-1),
+  _rank(0),
   _numberOfProcessors(-1),
   _communicator(-1) {
 }
@@ -319,12 +319,10 @@ bool tarch::parallel::Node::init(int* argc, char*** argv) {
 
 
 int tarch::parallel::Node::getRank() const {
-#ifdef Parallel
+  #ifdef Parallel
   assertion(_initIsCalled);
+  #endif
   return _rank;
-#else
-  return 0;
-#endif
 }
 
 
