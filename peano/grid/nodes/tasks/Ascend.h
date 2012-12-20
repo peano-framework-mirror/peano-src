@@ -48,6 +48,7 @@ class peano::grid::nodes::tasks::Ascend {
     EventHandle&           _eventHandle;
     RegularGridContainer&  _gridContainer;
     bool                   _treeRemainsStatic;
+    bool                   _calledTouchVertexLastTime;
 
     TouchVertexLastTimeLoopBody  _touchVertexLastTimeLoopBody;
     LeaveCellLoopBody            _leaveCellLoopBody;

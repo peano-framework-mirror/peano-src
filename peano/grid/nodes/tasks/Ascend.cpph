@@ -19,6 +19,7 @@ peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
   _eventHandle( eventHandle ),
   _gridContainer( gridContainer ),
   _treeRemainsStatic( true ),
+  _calledTouchVertexLastTime(false),
   _touchVertexLastTimeLoopBody( _treeDepth, _eventHandle, _gridContainer, _treeRemainsStatic ),
   _leaveCellLoopBody( _eventHandle, _gridContainer ),
   _ascendLoopBody(_eventHandle, _gridContainer ) {
@@ -28,21 +29,24 @@ peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::Ascend(
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::touchVerticesLastTime(int level) {
-  bool invokeEvent =
+  bool runOperation =
     (_eventHandle.touchVertexLastTimeSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
     (_eventHandle.touchVertexLastTimeSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && level == _treeDepth);
 
-  const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
-  const int                               sharedMemoryGrainSize =
-    !_eventHandle.touchVertexLastTimeSpecification().multithreading ? 0 :
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-      tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid
-    );
-  _touchVertexLastTimeLoopBody.setLevel( level, invokeEvent );
-  peano::datatraversal::dForLoop<TouchVertexLastTimeLoopBody>( NumberOfVertices, _touchVertexLastTimeLoopBody, sharedMemoryGrainSize );
+  if (runOperation) {
+    const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
+    const int                               sharedMemoryGrainSize =
+      !_eventHandle.touchVertexLastTimeSpecification().multithreading ? 0 :
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+        tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid
+      );
+    _touchVertexLastTimeLoopBody.setLevel( level );
+    peano::datatraversal::dForLoop<TouchVertexLastTimeLoopBody>( NumberOfVertices, _touchVertexLastTimeLoopBody, sharedMemoryGrainSize );
 
-  if (_eventHandle.touchVertexLastTimeSpecification().multithreading) {
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid);
+    if (_eventHandle.touchVertexLastTimeSpecification().multithreading) {
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchLastTimeOnRegularStationaryGrid);
+    }
+    _calledTouchVertexLastTime = true;
   }
 
   _gridContainer.haveCalledAllEventsOnThisLevel(level);
@@ -125,11 +129,19 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator(
     }
   }
 
+  if (!_calledTouchVertexLastTime) {
+    for (int level=_treeDepth; level>=1; level--) {
+      const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
+      for (int i=0; i<tarch::la::volume(NumberOfCells); i++) {
+        Vertex&   currentVertex  = _gridContainer.getVertex(level,i);
+        _touchVertexLastTimeLoopBody.performVertexTransition(currentVertex,level);
+      }
+    }
+  }
 
-  // If vertices are refined/erased in level 2 of the regular subtree, the local copy
-  // of _treeRemainsStatic ist not copied back to _treeRemainsStatic. Thus, we need to
-  // do this operation manually here to ensure the invalidation below is done also in
-  // this case.
+  // The original loop body is not destroyed yet, i.e. has not merged. Furthermore,
+  // if _calledTouchVertexLastTime does not hold, this is the only body that has any
+  // static information.
   _treeRemainsStatic &= _touchVertexLastTimeLoopBody.getLocalTreeRemainsStatic();
 
   if (_treeRemainsStatic) {
