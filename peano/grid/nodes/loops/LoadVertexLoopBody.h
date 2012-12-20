@@ -152,6 +152,14 @@ class peano::grid::nodes::loops::LoadVertexLoopBody {
      * !!! Parallelisation
      *
      * See remarks for updateGeometry() for further information.
+     *
+     * !!! Optimisation
+     *
+     * Peano's mapping specifications would allow to skip this statement for
+     * refined vertices if the marker is set to false. However, we observed
+     * that the evaluation of the statement on most architectures is more
+     * expensive than the actual savings in runtime. Thus, this operation
+     * calls touchVertexFirstTime() always.
      */
     void invokeLoadVertexEvents(int positionInArray, const tarch::la::Vector<DIMENSIONS,int>& positionInLocalCell);
 

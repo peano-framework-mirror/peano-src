@@ -66,13 +66,13 @@ class peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefined
     UnrolledLevelEnumerator  _fineGridEnumerator;
     UnrolledLevelEnumerator  _coarseGridEnumerator;
 
-    /**
-     * If this flag is false, the operation checks exclusively whether the grid is stationary.
-     * Otherwise, it also invokes touch last time.
-     */
-    bool                     _invokeTouchLastTimeEvent;
-
   public:
+    /**
+     * Study refinement state of vertex. If the vertex does not change, the
+     * operation sets the height of the adjacent
+     */
+    void performVertexTransition( Vertex& vertex, int level );
+
     CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch(
       const int                                        treeDepth,
       EventHandle&                                     eventHandle,
@@ -91,7 +91,7 @@ class peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefined
      */
     ~CallTouchVertexLastTimeLoopBodyOnRegularRefinedPatch();
 
-    void setLevel(int value, bool invokeTouchVertexLastTime);
+    void setLevel(int value);
     int getLevel() const;
 
     /**
