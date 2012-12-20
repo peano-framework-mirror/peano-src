@@ -35,7 +35,7 @@
    worker. That implies that M is not responsible for this cell. 
  - M continues to invoke leaveCell() for Cell 2.  
    
- Once a restriction for cell data is available, this restriction hence has to 
+ Once a restriction for cell data is available, this restriction hence has to be 
  invoked twice: On the one hand, we call it in leaveCell(). That is the operation 
  working on a MPI rank. On the other hand, we call it in mergeWithMaster passing 
  it the received copies of Cell 4 and Cell 1. That is the operation entering 
