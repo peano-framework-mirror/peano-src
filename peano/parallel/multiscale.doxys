@@ -14,7 +14,7 @@
  description. In Peano, no such global numbers are available. In the domain of 
  node M, Cell 3 and all its children are deployed to W.  
   
- @image png Multiscale.png
+ @image html Multiscale.png
  
  The event flow then is as follows:
  
