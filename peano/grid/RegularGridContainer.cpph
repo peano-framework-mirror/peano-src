@@ -631,7 +631,7 @@ void peano::grid::RegularGridContainer<Vertex,Cell>::copyRootNodeDataFromRegular
 
 
 template < class Vertex, class Cell >
-bool peano::grid::RegularGridContainer<Vertex,Cell>::isParentCellAtPatchBoundaryWithinRegularSubtree(
+bool peano::grid::RegularGridContainer<Vertex,Cell>::isCellAtPatchBoundaryWithinRegularSubtree(
   const tarch::la::Vector<DIMENSIONS,int>&  offsetWithinPatch,
   const int                                 currentLevel
 ) const {

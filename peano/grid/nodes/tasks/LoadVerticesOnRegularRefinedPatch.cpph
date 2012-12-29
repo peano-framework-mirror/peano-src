@@ -250,7 +250,8 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
       _regularGridContainer.getVertex(currentLevel,positionInArray).clearCounterOfAdjacentRefinedCells();
       _regularGridContainer.getVertex(currentLevel,positionInArray).saveAndClearAdjacentCellsInformation();
       _regularGridContainer.setIsReadFromTemporaryStack(currentLevel,positionInArray,false);
-      _regularGridContainer.setIsToBeWrittenToTemporaryStack(currentLevel,positionInArray,false);
+      // wird unten eh ueberschrieben
+//      _regularGridContainer.setIsToBeWrittenToTemporaryStack(currentLevel,positionInArray,false);
     }
     else if (CaseTakeFromTempStacks) {
       _regularGridContainer.setVertex(currentLevel,positionInArray,_vertexStack.pop(actionFlag));
@@ -409,16 +410,12 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
   const UnrolledLevelEnumerator& coarseGridEnumerator      = _regularGridContainer.getVertexEnumerator(currentLevelOfCoarseCell);
   const Cell&                    coarseGridCell            = _regularGridContainer.getCell(currentLevelOfCoarseCell,coarseGridEnumerator.lineariseCellIndex(currentCoarseCellPositionWithinUnrolledPatch));
 
-  peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
-  peano::utils::LoopDirection    loopDirection2 = loopDirection1;
-
-  const bool callLoadOperationsForBoundaryLayer = _regularGridContainer.isParentCellAtPatchBoundaryWithinRegularSubtree(currentCoarseCellPositionWithinUnrolledPatch,currentLevelOfCoarseCell);
-
   #if defined(SharedMemoryParallelisation)
-  const int ExpectedNumberOfLoadsFromInputStack = coarseGridCell.getNumberOfLoadsFromInputStack();
+  const int  ExpectedNumberOfLoadsFromInputStack = coarseGridCell.getNumberOfLoadsFromInputStack();
+  const bool coarseCellIsAtBoundary              = _regularGridContainer.isCellAtPatchBoundaryWithinRegularSubtree(currentCoarseCellPositionWithinUnrolledPatch,currentLevelOfCoarseCell);
 
   if ( mayForkLoadOrStoreVertexTaskOnRegularSubtree(
-    currentLevelOfCoarseCell,callLoadOperationsForBoundaryLayer,_maxLevelToFork, _coarsestLevelOfThisTask, ExpectedNumberOfLoadsFromInputStack
+    currentLevelOfCoarseCell,coarseCellIsAtBoundary,_maxLevelToFork, _coarsestLevelOfThisTask, ExpectedNumberOfLoadsFromInputStack
   )) {
     #ifdef Dim2
     assertion4(
@@ -473,6 +470,7 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
       currentCoarseCellPositionWithinUnrolledPatch,
       _stackView.isEmpty() ? _vertexStack.popBlockFromInputStack(ExpectedNumberOfLoadsFromInputStack) : _stackView.popBlockFromInputStack(ExpectedNumberOfLoadsFromInputStack)
     );
+    std::cout << "x";
     peano::datatraversal::TaskSet spawnTaskAsynchronously(forkedTask);
 
     logTraceOutWith2Arguments( "loadSubVerticesWithCellsFromGridContainer(...)", "forked", ExpectedNumberOfLoadsFromInputStack );
@@ -482,6 +480,9 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
     logDebug( "loadSubVerticesWithCellsFromGridContainer(...)", "this task may not be forked" );
   }
   #endif
+
+  peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
+  peano::utils::LoopDirection    loopDirection2 = loopDirection1;
 
   const int  cellsPerAxisOnFineGrid             = coarseGridEnumerator.getCellsPerAxis()*3;
   const int  currentFineGridLevel               = currentLevelOfCoarseCell+1;
@@ -498,6 +499,11 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
     const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k + currentCoarseCellPositionWithinUnrolledPatch*3;
     const int                                currentFineCellIndex    = peano::utils::dLinearisedWithoutLookup(currentFineCellPosition,cellsPerAxisOnFineGrid);
     const Cell&                              currentFineGridCell     = _regularGridContainer.getCell(currentFineGridLevel,currentFineCellIndex);
+
+    const bool callLoadOperationsForBoundaryLayer = _regularGridContainer.isCellAtPatchBoundaryWithinRegularSubtree(
+      currentFineCellPosition,
+      currentFineGridLevel
+    );
 
     if (callLoadOperationsForBoundaryLayer) {
       loadVerticesOfOneCellAtBoundaryofSubtree(

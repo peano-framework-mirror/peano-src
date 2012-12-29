@@ -282,7 +282,7 @@ class peano::grid::RegularGridContainer {
 
     std::string toString() const;
 
-    bool isParentCellAtPatchBoundaryWithinRegularSubtree(
+    bool isCellAtPatchBoundaryWithinRegularSubtree(
       const tarch::la::Vector<DIMENSIONS,int>&  offsetWithinPatch,
       const int                                 level
     ) const;

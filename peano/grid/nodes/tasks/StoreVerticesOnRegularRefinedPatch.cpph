@@ -277,16 +277,12 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
   const UnrolledLevelEnumerator& coarseGridEnumerator      = _regularGridContainer.getVertexEnumerator(currentLevelOfCoarseCell);
   const Cell&                    coarseGridCell            = _regularGridContainer.getCell(currentLevelOfCoarseCell,coarseGridEnumerator.lineariseCellIndex(currentCoarseCellPositionWithinUnrolledPatch));
 
-  peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
-  peano::utils::LoopDirection    loopDirection2 = loopDirection1;
-
-  const bool callStoreOperationsForBoundaryLayer = _regularGridContainer.isParentCellAtPatchBoundaryWithinRegularSubtree(currentCoarseCellPositionWithinUnrolledPatch,currentLevelOfCoarseCell);
-
   #if defined(SharedMemoryParallelisation)
-  const int ExpectedNumberOfStoresToOutputStack = coarseGridCell.getNumberOfStoresToOutputStack();
+  const int  ExpectedNumberOfStoresToOutputStack = coarseGridCell.getNumberOfStoresToOutputStack();
+  const bool isCoarseCellAtDomainBoundary        = _regularGridContainer.isCellAtPatchBoundaryWithinRegularSubtree(currentCoarseCellPositionWithinUnrolledPatch,currentLevelOfCoarseCell);
 
   if ( mayForkLoadOrStoreVertexTaskOnRegularSubtree(
-    currentLevelOfCoarseCell,callStoreOperationsForBoundaryLayer,_maxLevelToFork, _coarsestLevelOfThisTask, ExpectedNumberOfStoresToOutputStack
+    currentLevelOfCoarseCell,isCoarseCellAtDomainBoundary,_maxLevelToFork, _coarsestLevelOfThisTask, ExpectedNumberOfStoresToOutputStack
     )
   ) {
     #ifdef Dim2
@@ -352,6 +348,9 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
   }
   #endif
 
+  peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
+  peano::utils::LoopDirection    loopDirection2 = loopDirection1;
+
   const int  cellsPerAxisOnFineGrid             = coarseGridEnumerator.getCellsPerAxis()*3;
   const int  currentFineGridLevel               = currentLevelOfCoarseCell+1;
 
@@ -388,6 +387,11 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
     const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k + currentCoarseCellPositionWithinUnrolledPatch*3;
     const int                                currentFineCellIndex    = peano::utils::dLinearisedWithoutLookup(currentFineCellPosition,cellsPerAxisOnFineGrid);
     const Cell&                              currentFineGridCell     = _regularGridContainer.getCell(currentFineGridLevel,currentFineCellIndex);
+
+    const bool callStoreOperationsForBoundaryLayer = _regularGridContainer.isCellAtPatchBoundaryWithinRegularSubtree(
+      currentFineCellPosition,
+      currentFineGridLevel
+    );
 
     if (callStoreOperationsForBoundaryLayer) {
       storeVerticesOfOneCellAtBoundaryofSubtree(
