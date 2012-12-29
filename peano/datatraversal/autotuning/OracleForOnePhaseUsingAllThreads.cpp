@@ -7,11 +7,11 @@
 tarch::logging::Log  peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::_log( "peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads" );
 
 
-peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::OracleForOnePhaseUsingAllThreads(int numberOfThreads, bool allowTreeSplits, bool pipelinePatchProcessing, const MethodTrace& methodTrace):
+peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::OracleForOnePhaseUsingAllThreads(int numberOfThreads, int splitTheTree, bool pipelinePatchProcessing, const MethodTrace& methodTrace):
   _numberOfThreads(numberOfThreads),
   _executionTime(1.0),
   _methodTrace(methodTrace),
-  _allowTreeSplits(allowTreeSplits),
+  _splitTheTree(splitTheTree),
   _pipelinePatchProcessing(pipelinePatchProcessing) {
   assertion( _numberOfThreads>=1 );
 }
@@ -38,7 +38,8 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
       _methodTrace==SplitLoadVerticesTaskOnRegularStationaryGrid
       ||
       _methodTrace==SplitStoreVerticesTaskOnRegularStationaryGrid
-    )
+    ) &&
+    _splitTheTree !=2
   )
     {
     const int divisor   = 2 << _numberOfThreads;
@@ -46,7 +47,7 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
     return std::pair<int,bool>(grainSize<1 ? 1 : grainSize,true);
   }
   else if (
-    _allowTreeSplits &&
+    _splitTheTree > 0  &&
     (
       _methodTrace == SplitLoadVerticesTaskOnRegularStationaryGrid
       ||
@@ -91,7 +92,7 @@ peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::~OracleForOn
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::createNewOracle(int adapterNumber, const MethodTrace& methodTrace) const {
-  return new OracleForOnePhaseUsingAllThreads(_numberOfThreads,_allowTreeSplits,_pipelinePatchProcessing,methodTrace);
+  return new OracleForOnePhaseUsingAllThreads(_numberOfThreads,_splitTheTree,_pipelinePatchProcessing,methodTrace);
 }
 
 
