@@ -172,6 +172,16 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
           _regularGridContainer.areAllEventsOnThisLevelCalled(currentLevel)
         );
 
+        assertion6(
+          !_regularGridContainer.getVertex(currentLevel,positionInArray).isHangingNode(),
+          _regularGridContainer.getVertex(currentLevel,positionInArray).toString(),
+          _regularGridContainer.getVertexEnumerator(0).toString(),
+          currentLevel,
+          positionInArray,
+          _coarsestCellsOffset,
+          _coarsestLevelOfThisTask
+        );
+
         if (_stackView.isOpen()) {
           _stackView.push(_regularGridContainer.getVertex(currentLevel,positionInArray).getRecords() );
         }
@@ -245,6 +255,16 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
           _regularGridContainer.areAllEventsOnThisLevelCalled(currentLevel),
           CaseStorePersistentVertex,
           CaseWriteToTempStacks
+        );
+
+        assertion6(
+          !_regularGridContainer.getVertex(currentLevel,positionInArray).isHangingNode(),
+          _regularGridContainer.getVertex(currentLevel,positionInArray).toString(),
+          _regularGridContainer.getVertexEnumerator(0).toString(),
+          currentLevel,
+          positionInArray,
+          _coarsestCellsOffset,
+          _coarsestLevelOfThisTask
         );
 
         if (_stackView.isOpen()) {
