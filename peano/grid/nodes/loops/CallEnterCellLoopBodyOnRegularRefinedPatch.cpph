@@ -58,7 +58,7 @@ peano::grid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch<Vertex,Cel
 
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::loops::CallEnterCellLoopBodyOnRegularRefinedPatch<Vertex,Cell,State,EventHandle>::operator() (const tarch::la::Vector<DIMENSIONS, int>& i) {
-  logDebug( "operator(...)", "study vertex at " << i._cartesianPosition << " on level " << _level );
+  logDebug( "operator(...)", "study vertex at " << i << " on level " << _level );
 
   tarch::la::Vector<DIMENSIONS,int> offsetOfCoarseGridEnumerator;
   tarch::la::Vector<DIMENSIONS,int> positionWithinNextCoarserCell;
