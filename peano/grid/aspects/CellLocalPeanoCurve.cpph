@@ -5,6 +5,14 @@
 #include <map>
 
 
+template <class Cell>
+bool peano::grid::aspects::CellLocalPeanoCurve::isFaceTouched(const Cell& cell, int faceNumber, bool isTraversalInverted) {
+  assertion3( faceNumber>=0, cell.toString(), faceNumber, isTraversalInverted );
+  assertion3( faceNumber<2*DIMENSIONS, cell.toString(), faceNumber, isTraversalInverted );
+  return (cell._cellData.getAccessNumber(faceNumber) < 0) ^ isTraversalInverted;
+}
+
+
 #if defined(CacheActionSets)
 template <class Cell>
 const peano::datatraversal::ActionSetTraversal& peano::grid::aspects::CellLocalPeanoCurve::getWriteVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible ) {

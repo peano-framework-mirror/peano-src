@@ -92,6 +92,17 @@ class peano::grid::aspects::CellLocalPeanoCurve {
     template <class Cell>
     static peano::datatraversal::ActionSetTraversal getWriteVertexSequence( const Cell& cell, bool isTraversalInverted, bool parallelIfPossible);
     #endif
+
+    /**
+     * Has a cell face been touched before
+     *
+     * Has a cell face been touched before, i.e. has the curve visited the cell
+     * that is connected to this cell via face faceNumber been traversed
+     * before. The cell faces are enumerated along the coordinate axis with the
+     * d faces closer to the coordinate system's origin coming first.
+     */
+    template <class Cell>
+    static bool isFaceTouched(const Cell& cell, int faceNumber, bool isTraversalInverted);
 };
 
 
