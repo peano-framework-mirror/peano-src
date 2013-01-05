@@ -94,13 +94,9 @@ peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::dForLoopI
 
 template <class LoopBody>
 void peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::operator() (const dForRange& range) {
-  logTraceInWith1Argument( "dForLoopInstance::operator()", range.toString() );
-
   dfor(i,range.getRange()) {
     _loopBody(i*2 + range.getOffset() + _offset );
   }
-
-  logTraceOutWith1Argument( "dForLoopInstance::operator()", range.toString() );
 }
 
 
