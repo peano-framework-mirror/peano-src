@@ -207,6 +207,7 @@ bool peano::grid::UnrolledLevelEnumerator::isVertexAtPatchBoundaryWithinRegularS
   bool result = false;
   for (int d=0; d<DIMENSIONS; d++) {
     result |= localVertexNumber(d)+_discreteOffset(d) == 0;
+    assertionEquals(getCellsPerAxis(), getVerticesPerAxis()-1);
     result |= localVertexNumber(d)+_discreteOffset(d) == getCellsPerAxis();
   }
   return result;
