@@ -131,8 +131,14 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator(
 
   if (!_calledTouchVertexLastTime) {
     for (int level=_treeDepth; level>=1; level--) {
-      const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
-      for (int i=0; i<tarch::la::volume(NumberOfCells); i++) {
+//      const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
+//      for (int i=0; i<tarch::la::volume(NumberOfCells); i++) {
+//        Vertex&   currentVertex  = _gridContainer.getVertex(level,i);
+//        _touchVertexLastTimeLoopBody.performVertexTransition(currentVertex,level);
+//      }
+
+      const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
+      for (int i=0; i<tarch::la::volume(NumberOfVertices); i++) {
         Vertex&   currentVertex  = _gridContainer.getVertex(level,i);
         _touchVertexLastTimeLoopBody.performVertexTransition(currentVertex,level);
       }
