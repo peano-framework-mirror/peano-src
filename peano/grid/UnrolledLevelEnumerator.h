@@ -73,6 +73,7 @@ class peano::grid::UnrolledLevelEnumerator: public peano::grid::VertexEnumerator
     virtual ~UnrolledLevelEnumerator();
 
     void setOffset(const LocalVertexIntegerIndex&  gridPointOffset);
+    LocalVertexIntegerIndex getOffset() const;
 
     virtual int operator() (int localVertexNumber) const;
     virtual int operator() (const LocalVertexIntegerIndex&  localVertexNumber ) const;
@@ -108,6 +109,7 @@ class peano::grid::UnrolledLevelEnumerator: public peano::grid::VertexEnumerator
     int getVerticesPerAxis() const;
 
     bool isVertexAtPatchBoundaryWithinRegularSubtree(const LocalVertexIntegerIndex& localVertexNumber) const;
+
     virtual int cell(const LocalVertexIntegerIndex& localVertexNumber) const;
 };
 

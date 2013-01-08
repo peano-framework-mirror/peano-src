@@ -95,6 +95,12 @@ void peano::grid::UnrolledLevelEnumerator::setOffset(const LocalVertexIntegerInd
 }
 
 
+
+peano::grid::VertexEnumerator::LocalVertexIntegerIndex peano::grid::UnrolledLevelEnumerator::getOffset() const {
+  return _discreteOffset;
+}
+
+
 int peano::grid::UnrolledLevelEnumerator::operator() (int localVertexNumber) const {
   logTraceInWith1Argument( "operator()(int)", localVertexNumber );
   peano::grid::UnrolledLevelEnumerator::LocalVertexIntegerIndex localOffset;
