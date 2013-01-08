@@ -72,16 +72,18 @@ void peano::grid::nodes::loops::CallTouchVertexLastTimeLoopBodyOnRegularRefinedP
   const int coarseGridCellIndex = _coarseGridEnumerator.lineariseCellIndex(offsetOfCoarseGridEnumerator);
 
   Vertex& currentVertex = _regularGridContainer.getVertex(_level,fineGridVertexIndex);
-  if (!currentVertex.isOutside() && !_regularGridContainer.isToBeWrittenToTemporaryStack(_level,fineGridVertexIndex) ) {
-    _threadLocalEventHandle.touchVertexLastTime(
-      currentVertex,
-      _fineGridEnumerator.getVertexPosition(),
-      _fineGridEnumerator.getCellSize(),
-      _regularGridContainer.getVertex(_level-1),
-      _coarseGridEnumerator,
-      _regularGridContainer.getCell(_level-1,coarseGridCellIndex),
-      positionWithinNextCoarserCell
-    );
+  if (!_regularGridContainer.isToBeWrittenToTemporaryStack(_level,fineGridVertexIndex) ) {
+    if (!currentVertex.isOutside()) {
+      _threadLocalEventHandle.touchVertexLastTime(
+        currentVertex,
+        _fineGridEnumerator.getVertexPosition(),
+        _fineGridEnumerator.getCellSize(),
+        _regularGridContainer.getVertex(_level-1),
+        _coarseGridEnumerator,
+        _regularGridContainer.getCell(_level-1,coarseGridCellIndex),
+        positionWithinNextCoarserCell
+      );
+    }
 
      performVertexTransition(currentVertex,_level);
   }
