@@ -222,8 +222,24 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
       const tarch::la::Vector<DIMENSIONS,int> currentVertex   = writeVertexSequence.getActionSet(currentStepInPath).getAction(j)._cartesianPosition;
       const int                               positionInArray = cellsVertexEnumerator(currentVertex);
 
-      _regularGridContainer.getCounter(currentLevel,positionInArray)--;
-      assertion(_regularGridContainer.getCounter(currentLevel,positionInArray)>=CounterPersistentNode);
+      if (cellsVertexEnumerator.isVertexAtPatchBoundaryWithinRegularSubtree(currentVertex)) {
+//        if (cellsVertexEnumerator.isVertexAtLevel1DecompositionBoundaryWithinRegularSubtree(currentVertex)) {
+//          tarch::multicore::Lock lock(_vertexCounterSemaphore);
+//          _regularGridContainer.getCounter(currentLevel,positionInArray)--;
+//          assertion(_regularGridContainer.getCounter(currentLevel,positionInArray)>=CounterPersistentNode);
+//        }
+//        else {
+          _regularGridContainer.getCounter(currentLevel,positionInArray)--;
+          assertion5(
+            _regularGridContainer.getCounter(currentLevel,positionInArray)>=CounterPersistentNode,
+            _regularGridContainer.getCounter(currentLevel,positionInArray),
+            currentLevel,
+            positionInArray,
+            currentVertex,
+            cellsPositionWithinUnrolledTreeLevel
+          );
+//        }
+      }
 
       const bool CaseStorePersistentVertex =
            _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode

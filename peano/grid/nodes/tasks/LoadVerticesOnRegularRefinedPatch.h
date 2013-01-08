@@ -4,8 +4,14 @@
 #define _PEANO_GRID_NODES_TASKS_LOAD_VERTICES_ON_REGULAR_REFINED_PATCH_H_
 
 
-#include "peano/utils/Globals.h"
 #include "tarch/logging/Log.h"
+#include "tarch/multicore/BooleanSemaphore.h"
+
+#include "peano/utils/Globals.h"
+#include "peano/grid/UnrolledLevelEnumerator.h"
+#include "peano/grid/RegularGridContainer.h"
+
+#include <bitset>
 
 
 namespace peano {
@@ -14,6 +20,19 @@ namespace peano {
       namespace tasks {
         template <class Vertex, class Cell, class VertexStack>
         class LoadVerticesOnRegularRefinedPatch;
+
+        /**
+         * Can be true if and only
+         *
+         * - if vertexPosition is at patch boundary and
+         * - if a fork has happened,
+         * - i.e. if the vertex is located at an untouched face.
+         */
+        bool isVertexOnLevel1DataDecompositionBoundaryInRegularTree(
+          tarch::la::Vector<DIMENSIONS,int>             vertexPosition,
+          const peano::grid::UnrolledLevelEnumerator&   cellsVertexEnumerator,
+          const std::bitset<THREE_POWER_D>              forkedSubtrees
+        );
       }
     }
   }
@@ -56,8 +75,10 @@ class peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch {
   private:
     static tarch::logging::Log  _log;
 
+    static tarch::multicore::BooleanSemaphore                         _vertexCounterSemaphore;
+
     const bool                                                        _isTraversalInverted;
-    peano::grid::RegularGridContainer<Vertex,Cell>&  _regularGridContainer;
+    peano::grid::RegularGridContainer<Vertex,Cell>&                   _regularGridContainer;
     VertexStack&                                                      _vertexStack;
 
     const bool                                                        _loadProcessRunsInParallelToOtherTasks;
@@ -84,6 +105,12 @@ class peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch {
      * on each level have been handled by this task.
      */
     std::vector<int>                                                  _trackNumberOfReadsPerLevel;
+
+    /**
+     * Mark all the subtrees on level 1 that are handled by other threads. The
+     * subtrees are enumerated lexicographically.
+     */
+    std::bitset<THREE_POWER_D>                                        _forkedSubtree;
 
     /**
      * Load Vertices and Get Where-to-load-from Information from On-the-fly Generated Cells
@@ -191,9 +218,9 @@ class peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch {
       int                                                               maxLevelToFork,
       const int                                                         currentLevel,
       const tarch::la::Vector<DIMENSIONS,int>&                          offsetWithinPatch,
-      typename VertexStack::PopBlockVertexStackView                     stackView
+      typename VertexStack::PopBlockVertexStackView                     stackView,
+      const std::bitset<THREE_POWER_D>&                                 forkedSubtree
    );
-
   public:
     /**
      *

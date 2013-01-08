@@ -20,6 +20,7 @@ class peano::grid::tests::RegularRefinedTest: public tarch::tests::TestCase {
   private:
     void test2DComputePositionRelativeToNextCoarserLevelFromFineGridVertexPosition();
     void test2DComputePositionRelativeToNextCoarserLevelFromFineGridCellPosition();
+    void testIsVertexOnLevel1DataDecompositionBoundaryAlgorithm();
   public:
     RegularRefinedTest();
 
