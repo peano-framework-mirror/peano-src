@@ -15,6 +15,8 @@ peano::grid::Cell<CellData>::Cell():
   _cellData() {
   _cellData.setIsInside(false);
   _cellData.setState( CellData::Leaf );
+  _cellData.setNumberOfLoadsFromInputStream(0);
+  _cellData.setNumberOfStoresToOutputStream(0);
 
   #ifdef Parallel
   _cellData.setResponsibleRank(tarch::parallel::Node::getInstance().getRank());
