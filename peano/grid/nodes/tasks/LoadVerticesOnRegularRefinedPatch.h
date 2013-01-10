@@ -27,6 +27,13 @@ namespace peano {
          * - if vertexPosition is at patch boundary and
          * - if a fork has happened,
          * - i.e. if the vertex is located at an untouched face.
+         *
+         * For the example below, we can fork four subtrees: (0,0), (1,0),
+         * (0,1), and (1,1). Those do not read any data from temporary stacks
+         * and thus can be ran in parallel on stack views.
+         *
+         * @image html RegularRefined.png
+         *
          */
         bool isVertexOnLevel1DataDecompositionBoundaryInRegularTree(
           tarch::la::Vector<DIMENSIONS,int>             vertexPosition,
@@ -195,6 +202,40 @@ class peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch {
     );
 
 
+    /**
+     * !!! Counters
+     *
+     * The counters are of relevance only at the subpatch boundary.
+     *
+     * @image html RegularRefined.png
+     *
+     * For inner vertices (green), we do not maintain any counters - those
+     * vertices travel directly from the input stack to the output stack
+     * from a patch point of view. Hence, I load them when the grammar says
+     * in, and I stream them to the output stack, when the grammar says out.
+     * If the grammar yields a temporary stack number, I ignore that one
+     * (see loadVerticesOfOneCellWithinRegularSubtree()).
+     *
+     * For patch boundary vertices (red, yellow, and blue), I however need the
+     * counters. If we study the cell right of the blue counter and the one
+     * left of the yellow counter: These cells both say 'take from temporary
+     * stack' and both have to skip the read as the vertex already is loaded in
+     * the cell before. So here, I have to check the counter value.
+     *
+     * The story is more complicated for the red vertex. As the left and the
+     * bottom face are untouched, the code may fork the four subtrees left and
+     * at the bottom. Then, we could have a race condition, i.e. the cell above
+     * the red vertex reads the vertex from a temporary stack though it was the
+     * job of the cell below to read it from the input stream. For worker
+     * threads, a decision is easy: Those read vertices only from the input
+     * stack (as otherwise there may not be any worker threads). For the master
+     * thread, we have to mask the access due to a check whether another thread
+     * is forked. The counter access for this vertex has to be protected by a
+     * semaphore anyway.
+     *
+     * A comparison of _coarsestLevelOfThisTask with 0 tells teh code whether
+     * it is the master thread.
+     */
     void loadVerticesOfOneCellAtBoundaryofSubtree(
       const Cell&                               currentCell,
       const tarch::la::Vector<DIMENSIONS,int>&  cellsPositionWithinUnrolledTreeLevel,

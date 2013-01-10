@@ -247,21 +247,17 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
     }
 
     const bool CaseLoadPersistentVertex  = actionFlag == peano::stacks::Constants::InOutStack;
-//       && _coarsestLevelOfThisTask==0   //  @todo Documentation
-//       && _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode;
 
     #if !defined(SharedMemoryParallelisation)
     assertion( !CaseLoadPersistentVertex || _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode);
     #endif
 
-    // This can only happen for vertices along a touched face. Here, race
-    // conditions might occur if the code ran in parallel which is one
-    // reason why we sequentialise along such patch boundaries.
+
     const bool CaseTakeFromTempStacks    =
            cellsVertexEnumerator.isVertexAtPatchBoundaryWithinRegularSubtree(currentVertex)
         && actionFlag != peano::stacks::Constants::InOutStack
       #if defined(SharedMemoryParallelisation)
-        && _coarsestLevelOfThisTask==0   //  @todo Documentation
+        && _coarsestLevelOfThisTask==0
         && !isVertexOnLevel1DataDecompositionBoundaryInRegularTree(currentVertex,cellsVertexEnumerator,_forkedSubtree)
       #endif
         && _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode;
@@ -368,7 +364,6 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
       }
     }
 
-    // @todo muss man nur ganz am Rande ueberhaupt machen -> das in Doku
     if (cellsVertexEnumerator.isVertexAtPatchBoundaryWithinRegularSubtree(currentVertex)) {
       if (isVertexOnLevel1DataDecompositionBoundaryInRegularTree(currentVertex,cellsVertexEnumerator,_forkedSubtree)) {
         tarch::multicore::Lock lock(_vertexCounterSemaphore);
@@ -395,7 +390,6 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
   peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
   peano::utils::LoopDirection    loopDirection2 = loopDirection1;
 
-  // We never handle any boundary
   assertion( !_stackView.isEmpty() );
 
   #if !defined(SharedMemoryParallelisation)
