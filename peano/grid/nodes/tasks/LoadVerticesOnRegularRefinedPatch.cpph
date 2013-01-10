@@ -411,11 +411,25 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
     const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k + currentCoarseCellPositionWithinUnrolledPatch*3;
     const Cell&                              currentFineGridCell     = fineGridCells[ peano::utils::dLinearised(k,3) ];
 
-    loadVerticesOfOneCellWithinRegularSubtree(
-      currentFineGridCell,
+    const bool callLoadOperationsForBoundaryLayer = _regularGridContainer.isCellAtPatchBoundaryWithinRegularSubtree(
       currentFineCellPosition,
       currentFineGridLevel
     );
+
+    if (callLoadOperationsForBoundaryLayer) {
+      loadVerticesOfOneCellAtBoundaryofSubtree(
+        currentFineGridCell,
+        currentFineCellPosition,
+        currentFineGridLevel
+      );
+    }
+    else {
+      loadVerticesOfOneCellWithinRegularSubtree(
+        currentFineGridCell,
+        currentFineCellPosition,
+        currentFineGridLevel
+      );
+    }
   endzfor
 
   if (_loadProcessRunsInParallelToOtherTasks) {
@@ -711,6 +725,7 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
     const UnrolledLevelEnumerator& coarseGridEnumerator = _regularGridContainer.getVertexEnumerator(_coarsestLevelOfThisTask);
     Cell                           copyOfCoarseCell     = _regularGridContainer.getCell(_coarsestLevelOfThisTask,coarseGridEnumerator.lineariseCellIndex(_coarsestCellsOffset));
     copyOfCoarseCell.switchToLeaf();
+
     loadVerticesWithOnTheFlyCellReconstruction(
       copyOfCoarseCell,
       _coarsestLevelOfThisTask,
