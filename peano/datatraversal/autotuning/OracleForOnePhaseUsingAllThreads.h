@@ -33,14 +33,15 @@ class peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads: public
     tarch::timing::Measurement  _executionTime;
     const MethodTrace           _methodTrace;
     const int                   _splitTheTree;
-    const bool                  _pipelinePatchProcessing;
+    const bool                  _pipelineDescendProcessing;
+    const bool                  _pipelineAscendProcessing;
   public:
     /**
      * Use a fixed number of threads.
      *
      * @param splitTheTree (0=no, 1=yes and parallelise, 2=yes, but do not parallelise any events on the regular subgrid
      */
-    OracleForOnePhaseUsingAllThreads(int numberOfThreads, int splitTheTree = 1, bool pipelinePatchProcessing = false, const MethodTrace& methodTrace = NumberOfDifferentMethodsCalling);
+    OracleForOnePhaseUsingAllThreads(int numberOfThreads, int splitTheTree = 1, bool pipelineDescendProcessing = false, bool pipelineAscendProcessing = false, const MethodTrace& methodTrace = NumberOfDifferentMethodsCalling);
 
     virtual ~OracleForOnePhaseUsingAllThreads();
 

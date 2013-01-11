@@ -7,12 +7,19 @@
 tarch::logging::Log  peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::_log( "peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads" );
 
 
-peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::OracleForOnePhaseUsingAllThreads(int numberOfThreads, int splitTheTree, bool pipelinePatchProcessing, const MethodTrace& methodTrace):
+peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::OracleForOnePhaseUsingAllThreads(
+  int numberOfThreads,
+  int splitTheTree,
+  bool pipelineDescendProcessing,
+  bool pipelineAscendProcessing,
+  const MethodTrace& methodTrace
+):
   _numberOfThreads(numberOfThreads),
   _executionTime(1.0),
   _methodTrace(methodTrace),
   _splitTheTree(splitTheTree),
-  _pipelinePatchProcessing(pipelinePatchProcessing) {
+  _pipelineDescendProcessing(pipelineDescendProcessing),
+  _pipelineAscendProcessing(pipelineAscendProcessing) {
   assertion( _numberOfThreads>=1 );
 }
 
@@ -34,10 +41,6 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
       _methodTrace==AscendOnRegularStationaryGrid
       ||
       _methodTrace==DescendOnRegularStationaryGrid
-      ||
-      _methodTrace==SplitLoadVerticesTaskOnRegularStationaryGrid
-      ||
-      _methodTrace==SplitStoreVerticesTaskOnRegularStationaryGrid
     ) &&
     _splitTheTree !=2
   )
@@ -57,14 +60,10 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
     const int grainSize = problemSize / _numberOfThreads;
     return std::pair<int,bool>(grainSize<1 ? 1 : grainSize,true);
   }
-  else if (
-    _pipelinePatchProcessing &&
-    (
-      _methodTrace == PipelineAscendTask
-      ||
-      _methodTrace == PipelineDescendTask
-    )
-  ) {
+  else if ( _pipelineAscendProcessing && _methodTrace == PipelineAscendTask ) {
+    return std::pair<int,bool>(1,true);
+  }
+  else if ( _pipelineDescendProcessing && _methodTrace == PipelineDescendTask ) {
     return std::pair<int,bool>(1,true);
   }
   else {
@@ -92,7 +91,7 @@ peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::~OracleForOn
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::createNewOracle(int adapterNumber, const MethodTrace& methodTrace) const {
-  return new OracleForOnePhaseUsingAllThreads(_numberOfThreads,_splitTheTree,_pipelinePatchProcessing,methodTrace);
+  return new OracleForOnePhaseUsingAllThreads(_numberOfThreads,_splitTheTree,_pipelineDescendProcessing, _pipelineAscendProcessing,methodTrace);
 }
 
 
