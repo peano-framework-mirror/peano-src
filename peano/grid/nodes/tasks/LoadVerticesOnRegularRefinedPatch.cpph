@@ -420,8 +420,6 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
   peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
   peano::utils::LoopDirection    loopDirection2 = loopDirection1;
 
-  assertion( !_stackView.isEmpty() );
-
   #if !defined(SharedMemoryParallelisation)
   assertionMsg( false, "should only be used if shared memory parallelisation is switched on." );
   #endif
