@@ -32,7 +32,8 @@ peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,Vertex
   _maxLevelToFork(maxLevelToFork),
   _stackView(),
   _coarsestLevelOfThisTask(0),
-  _coarsestCellsOffset(0) {
+  _coarsestCellsOffset(0),
+  _forkedSubtree(0) {
   #ifdef Asserts
   _haveWrittenToOutputStack = false;
   #endif
@@ -53,7 +54,8 @@ peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,Vertex
   _maxLevelToFork( copy._maxLevelToFork ),
   _stackView( copy._stackView ),
   _coarsestLevelOfThisTask( copy._coarsestLevelOfThisTask ),
-  _coarsestCellsOffset( copy._coarsestCellsOffset ) {
+  _coarsestCellsOffset( copy._coarsestCellsOffset ),
+  _forkedSubtree(copy._forkedSubtree) {
   #ifdef Asserts
   _haveWrittenToOutputStack = copy._haveWrittenToOutputStack;
   #endif
@@ -69,7 +71,8 @@ peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,Vertex
   int                                                               maxLevelToFork,
   const int                                                         currentLevel,
   const tarch::la::Vector<DIMENSIONS,int>&                          offsetWithinPatch,
-  typename VertexStack::PushBlockVertexStackView                    stackView
+  typename VertexStack::PushBlockVertexStackView                    stackView,
+  const std::bitset<THREE_POWER_D>&                                 forkedSubtree
 ):
   _isTraversalInverted(isTraversalInverted),
   _regularGridContainer(regularGridContainer),
@@ -78,7 +81,8 @@ peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,Vertex
   _maxLevelToFork(maxLevelToFork),
   _stackView(stackView),
   _coarsestLevelOfThisTask(currentLevel),
-  _coarsestCellsOffset(offsetWithinPatch) {
+  _coarsestCellsOffset(offsetWithinPatch),
+  _forkedSubtree(forkedSubtree) {
   logTraceInWith3Arguments( "StoreVerticesOnRegularRefinedPatch()", _coarsestLevelOfThisTask, _coarsestCellsOffset, _stackView.getTotalViewSize() );
 
   #ifdef Asserts
@@ -150,6 +154,7 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
       const tarch::la::Vector<DIMENSIONS,int> currentVertex   = writeVertexSequence.getActionSet(currentStepInPath).getAction(j)._cartesianPosition;
       const int                               positionInArray = cellsVertexEnumerator(currentVertex);
 
+      // @todo das kann ich auch abfragen, da brauch ich gar keine Grammatik mehr
       const bool CaseStorePersistentVertex = actionFlag==peano::stacks::Constants::InOutStack;
       if ( CaseStorePersistentVertex ) {
         _regularGridContainer.getVertex(currentLevel,positionInArray).updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack();
@@ -223,12 +228,12 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
       const int                               positionInArray = cellsVertexEnumerator(currentVertex);
 
       if (cellsVertexEnumerator.isVertexAtPatchBoundaryWithinRegularSubtree(currentVertex)) {
-//        if (cellsVertexEnumerator.isVertexAtLevel1DecompositionBoundaryWithinRegularSubtree(currentVertex)) {
-//          tarch::multicore::Lock lock(_vertexCounterSemaphore);
-//          _regularGridContainer.getCounter(currentLevel,positionInArray)--;
-//          assertion(_regularGridContainer.getCounter(currentLevel,positionInArray)>=CounterPersistentNode);
-//        }
-//        else {
+        if (isVertexOnLevel1DataDecompositionBoundaryInRegularTree(currentVertex,cellsVertexEnumerator,_forkedSubtree)) {
+          tarch::multicore::Lock lock(_semaphore);
+          _regularGridContainer.getCounter(currentLevel,positionInArray)--;
+          assertion(_regularGridContainer.getCounter(currentLevel,positionInArray)>=CounterPersistentNode);
+        }
+        else {
           _regularGridContainer.getCounter(currentLevel,positionInArray)--;
           assertion5(
             _regularGridContainer.getCounter(currentLevel,positionInArray)>=CounterPersistentNode,
@@ -238,17 +243,24 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
             currentVertex,
             cellsPositionWithinUnrolledTreeLevel
           );
-//        }
+        }
       }
 
-      const bool CaseStorePersistentVertex =
-           _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode
-        && actionFlag==peano::stacks::Constants::InOutStack;
+      const bool CaseStorePersistentVertex = actionFlag==peano::stacks::Constants::InOutStack;
 
+      #if !defined(SharedMemoryParallelisation)
+      assertion( !CaseStorePersistentVertex || _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode);
+      #endif
+
+// @todo ueberdenken
       const bool CaseWriteToTempStacks     =
            cellsVertexEnumerator.isVertexAtPatchBoundaryWithinRegularSubtree(currentVertex)
-        && _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode
-        && actionFlag!=peano::stacks::Constants::InOutStack;
+           && actionFlag!=peano::stacks::Constants::InOutStack
+        #if defined(SharedMemoryParallelisation)
+           && _coarsestLevelOfThisTask==0
+           && !isVertexOnLevel1DataDecompositionBoundaryInRegularTree(currentVertex,cellsVertexEnumerator,_forkedSubtree)
+        #endif
+           && _regularGridContainer.getCounter(currentLevel,positionInArray)==CounterPersistentNode;
 
       if ( CaseStorePersistentVertex ) {
         _regularGridContainer.getVertex(currentLevel,positionInArray).updateTransientRefinementFlagsBeforeVertexIsStoredToOutputStack();
@@ -261,7 +273,7 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
           positionInArray,
           _regularGridContainer.getVertex(currentLevel,positionInArray).toString()
         );
-        // weiss nicht, ob die stimmt
+        // @todo weiss nicht, ob die stimmt Ansonsten Kommentar raus
         assertion7(
           _regularGridContainer.getVertex(currentLevel,positionInArray).getCurrentAdjacentCellsHeight()< peano::grid::Undefined,
           currentLevel,
@@ -301,6 +313,7 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
 
   logTraceOut( "storeVerticesOfOneCellAtBoundaryofSubtree(...)" );
 }
+
 
 
 template <class Vertex, class Cell, class VertexStack>
@@ -372,7 +385,8 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
       _maxLevelToFork,
       currentLevelOfCoarseCell,
       currentCoarseCellPositionWithinUnrolledPatch,
-      _stackView.isOpen() ? _stackView.pushBlockOnOutputStack(ExpectedNumberOfStoresToOutputStack) : _vertexStack.pushBlockOnOutputStack(ExpectedNumberOfStoresToOutputStack)
+      _stackView.isOpen() ? _stackView.pushBlockOnOutputStack(ExpectedNumberOfStoresToOutputStack) : _vertexStack.pushBlockOnOutputStack(ExpectedNumberOfStoresToOutputStack),
+      _forkedSubtree
     );
     peano::datatraversal::TaskSet spawnTaskAsynchronously(forkedTask);
 
@@ -464,81 +478,57 @@ void peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch<Vertex,Cell,V
   const int  cellsPerAxisOnFineGrid             = coarseGridEnumerator.getCellsPerAxis()*3;
   const int  currentFineGridLevel               = 1;
 
-  const int NumberOfCentralCell = THREE_POWER_D/2;
+  assertion( cellsPerAxisOnFineGrid==3 );
 
-  int sizeOfStackViewBeforeWeCanFork = 0;
-  int numberOfCellsHandled           = 0;
+  typename VertexStack::PushBlockVertexStackView topLevelStackView[THREE_POWER_D];
   zfor3(k,loopDirection1)
     const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k;
     const int                                currentFineCellIndex    = peano::utils::dLinearisedWithoutLookup(currentFineCellPosition,cellsPerAxisOnFineGrid);
     const Cell&                              currentFineGridCell     = _regularGridContainer.getCell(currentFineGridLevel,currentFineCellIndex);
 
-    if (numberOfCellsHandled<NumberOfCentralCell) {
-      sizeOfStackViewBeforeWeCanFork += currentFineGridCell.getNumberOfStoresToOutputStack();
+    topLevelStackView[currentFineCellIndex] = _vertexStack.pushBlockOnOutputStack(currentFineGridCell.getNumberOfStoresToOutputStack());
+    bool bitsetValue = true;
+    for (int d=0; d<DIMENSIONS; d++) {
+    // @todo anders als drueben -> Negation entfaellt Das in Doku aufnehmen
+      bitsetValue &= (currentFineCellPosition(d)!=0 || peano::grid::aspects::CellLocalPeanoCurve::isFaceTouched(coarseGridCell,d,_isTraversalInverted));
+      bitsetValue &= (currentFineCellPosition(d)!=2 || peano::grid::aspects::CellLocalPeanoCurve::isFaceTouched(coarseGridCell,d+DIMENSIONS,_isTraversalInverted));
     }
-    numberOfCellsHandled++;
+    _forkedSubtree[currentFineCellIndex] = bitsetValue;
+
+    assertion( currentFineCellIndex!=THREE_POWER_D/2 || _forkedSubtree[currentFineCellIndex]);
+
+    if (_forkedSubtree[currentFineCellIndex]) {
+      typedef StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>  ForkedTask;
+      ForkedTask forkedTask(
+        _isTraversalInverted,
+         _regularGridContainer,
+         _vertexStack,
+         _storeProcessRunsInParallelToOtherTasks,
+         _maxLevelToFork,
+         1,                       //  currentLevelOfCoarseCell,
+         k,                       //  currentCoarseCellPositionWithinUnrolledPatch,
+         topLevelStackView[currentFineCellIndex],
+         _forkedSubtree
+      );
+      peano::datatraversal::TaskSet spawnTaskAsynchronously(forkedTask);
+    }
   endzfor
 
-  _stackView = _vertexStack.pushBlockOnOutputStack(sizeOfStackViewBeforeWeCanFork);
+  logDebug( "storeSubVerticesWithCellsOnFirstLevelInSharedMemoryMode(...)", "forked: " << _forkedSubtree );
 
-  typename VertexStack::PushBlockVertexStackView  deployedTasksStackView = _vertexStack.pushBlockOnOutputStack(
-    _regularGridContainer.getCell(1,NumberOfCentralCell).getNumberOfStoresToOutputStack()
-  );
-  assertionEquals( deployedTasksStackView.getTotalViewSize(), _regularGridContainer.getCell(1,NumberOfCentralCell).getNumberOfStoresToOutputStack() );
-  assertionEquals( deployedTasksStackView.getTotalViewSize(), deployedTasksStackView.size() );
-  assertion3( deployedTasksStackView.isOpen(), NumberOfCentralCell, _regularGridContainer.getCell(1,NumberOfCentralCell).toString(), _regularGridContainer.getVertexEnumerator(0).getCellFlags() );
 
-  typedef StoreVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>  ForkedTask;
-  ForkedTask forkedTask(
-    _isTraversalInverted,
-    _regularGridContainer,
-    _vertexStack,
-    _storeProcessRunsInParallelToOtherTasks,
-    _maxLevelToFork,
-    1,                       //  currentLevelOfCoarseCell,
-    1,                       //  currentCoarseCellPositionWithinUnrolledPatch,
-    deployedTasksStackView
-  );
-  peano::datatraversal::TaskSet spawnTaskAsynchronously(forkedTask);
-  logDebug(
-    "storeSubVerticesWithCellsOnFirstLevelInSharedMemoryMode(...)",
-    "spawned task with " << _regularGridContainer.getCell(1,NumberOfCentralCell).getNumberOfStoresToOutputStack()
-    << " vertices; local stack view: " << _stackView.getTotalViewSize()
-  );
-
-  numberOfCellsHandled = 0;
   zfor3(k,loopDirection2)
-    if (numberOfCellsHandled!=NumberOfCentralCell) {
+    const int  currentFineCellIndex = peano::utils::dLinearisedWithoutLookup(k,cellsPerAxisOnFineGrid);
+    if (!_forkedSubtree[currentFineCellIndex]) {
       const tarch::la::Vector<DIMENSIONS,int>  currentFineCellPosition = k;
+
+      _stackView = topLevelStackView[currentFineCellIndex];
 
       storeSubVerticesWithCellsFromGridContainer(
         currentFineGridLevel,
         currentFineCellPosition
       );
     }
-    numberOfCellsHandled++;
-
-    #ifdef Debug
-    if (numberOfCellsHandled<NumberOfCentralCell) {
-      assertion3( _stackView.isOpen(),
-        _stackView.size(),
-        _stackView.getTotalViewSize(),
-        _regularGridContainer.getCell(0,0).toString()
-      );
-    }
-    if (numberOfCellsHandled>NumberOfCentralCell) {
-      assertion8( !_stackView.isOpen(),
-        _stackView.size(),
-        _stackView.getTotalViewSize(),
-        _regularGridContainer.getCell(0,0).toString(),
-        _regularGridContainer.getCell(1,0).toString(),
-        _regularGridContainer.getCell(1,1).toString(),
-        _regularGridContainer.getCell(1,2).toString(),
-        _regularGridContainer.getCell(1,3).toString(),
-        _regularGridContainer.getCell(1,4).toString()
-      );
-    }
-    #endif
   endzfor
 
 

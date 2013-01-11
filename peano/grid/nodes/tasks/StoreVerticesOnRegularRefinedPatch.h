@@ -79,6 +79,12 @@ class peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
     #endif
 
     /**
+     * Mark all the subtrees on level 1 that are handled by other threads. The
+     * subtrees are enumerated lexicographically.
+     */
+    std::bitset<THREE_POWER_D>                                        _forkedSubtree;
+
+    /**
      * Store Vertices Of One Cell
      *
      * Different to the load process, there's only one variant of this
@@ -144,7 +150,8 @@ class peano::grid::nodes::tasks::StoreVerticesOnRegularRefinedPatch {
       int                                                               maxLevelToFork,
       const int                                                         currentLevel,
       const tarch::la::Vector<DIMENSIONS,int>&                          offsetWithinPatch,
-      typename VertexStack::PushBlockVertexStackView                    stackView
+      typename VertexStack::PushBlockVertexStackView                    stackView,
+      const std::bitset<THREE_POWER_D>&                                 forkedSubtree
    );
 
   public:
