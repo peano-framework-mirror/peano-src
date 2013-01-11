@@ -387,6 +387,36 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
 ) {
   logTraceInWith2Arguments( "loadVerticesWithOnTheFlyCellReconstruction(...)", currentLevelOfCoarseCell, currentCoarseCellPositionWithinUnrolledPatch );
 
+  #if defined(SharedMemoryParallelisation)
+  const int  ExpectedNumberOfLoadsFromInputStack      = coarseGridCell.getNumberOfLoadsFromInputStack();
+  const bool coarseCellIsAtBoundary                   = _regularGridContainer.isCellAtPatchBoundaryWithinRegularSubtree(currentCoarseCellPositionWithinUnrolledPatch,currentLevelOfCoarseCell);
+
+  if ( mayForkLoadOrStoreVertexTaskOnRegularSubtree(
+    currentLevelOfCoarseCell,coarseCellIsAtBoundary,_maxLevelToFork, _coarsestLevelOfThisTask, ExpectedNumberOfLoadsFromInputStack
+  )) {
+    assertion( !_stackView.isEmpty() );
+    typedef LoadVerticesOnRegularRefinedPatch<Vertex,Cell,VertexStack>  ForkedTask;
+    ForkedTask forkedTask(
+      _isTraversalInverted,
+      _regularGridContainer,
+      _vertexStack,
+      _loadProcessRunsInParallelToOtherTasks,
+      _maxLevelToFork,
+      currentLevelOfCoarseCell,
+      currentCoarseCellPositionWithinUnrolledPatch,
+      _stackView.popBlockFromInputStack(ExpectedNumberOfLoadsFromInputStack),
+      _forkedSubtree
+    );
+    peano::datatraversal::TaskSet spawnTaskAsynchronously(forkedTask);
+
+    logTraceOutWith2Arguments( "loadVerticesWithOnTheFlyCellReconstruction(...)", "forked", ExpectedNumberOfLoadsFromInputStack );
+    return;
+  }
+  else {
+    logDebug( "loadVerticesWithOnTheFlyCellReconstruction(...)", "this task may not be forked" );
+  }
+  #endif
+
   peano::utils::LoopDirection    loopDirection1 = peano::grid::aspects::CellPeanoCurve::getLoopDirection(coarseGridCell,_isTraversalInverted);
   peano::utils::LoopDirection    loopDirection2 = loopDirection1;
 
