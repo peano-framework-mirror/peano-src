@@ -19,7 +19,7 @@ peano::datatraversal::dForRange::dForRange( const tarch::la::Vector<DIMENSIONS,i
   _grainSize(grainSize) {
   logTraceInWith2Arguments( "dForRange(...)", range, grainSize );
   for (int d=0; d<DIMENSIONS; d++) {
-    assertion( range(d)>=1 );
+    assertion3( range(d)>=1, toString(), range, grainSize );
   }
   logTraceOut( "dForRange(...)" );
 }
