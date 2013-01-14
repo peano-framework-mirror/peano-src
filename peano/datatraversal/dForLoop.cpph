@@ -179,9 +179,8 @@ void peano::datatraversal::dForLoop<LoopBody>::dForLoopWithBipartitioning::opera
 
   if (doSplit) {
       dForRange leftRange( _range, dForRange::Split() );
-      LoopBody  copyOfLoopBodyForLeftTask(_loopBody);
       dForLoopWithBipartitioning leftTask(
-        copyOfLoopBodyForLeftTask, true, leftRange
+        _loopBody, true, leftRange
       );
       dForLoopWithBipartitioning rightTask(
         _loopBody, false, _range

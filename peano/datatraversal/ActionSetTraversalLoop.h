@@ -44,12 +44,12 @@ class peano::datatraversal::ActionSetTraversalLoop {
 
     void loopParallel(
       const peano::datatraversal::ActionSetTraversal&  traversal,
-      const LoopBody&                                          loopBody,
-      int                                                      grainSize
+      const LoopBody&                                  loopBody,
+      int                                              grainSize
     );
     void loopSequential(
       const peano::datatraversal::ActionSetTraversal&  traversal,
-      LoopBody&                                                loopBody
+      LoopBody&                                        loopBody
     );
 
     /**
