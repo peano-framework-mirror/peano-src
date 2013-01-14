@@ -79,6 +79,7 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
 void peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::parallelSectionHasTerminated(double elapsedCalendarTime) {
   assertion( _lastProblemSize>0 );
   _executionTime[_lastProblemSize].setValue( elapsedCalendarTime );
+  _executionTime[_lastProblemSize].setAccuracy(1.0e-5);
   _lastProblemSize = -1;
 }
 
