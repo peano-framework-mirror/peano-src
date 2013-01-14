@@ -12,7 +12,7 @@ peano::datatraversal::SingleLevelCellLoop<LoopBody>::SingleLevelCellLoop(
   assertion( tarch::la::volume(range)!=0 );
 
   #if defined(SharedMemoryParallelisation)
-  if (grainSize>0) {
+  if (grainSize>0 && tarch::la::volume(range)>1 ) {
     runParallel(loopBody,range,grainSize);
   }
   else {
@@ -41,16 +41,19 @@ void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
   const tarch::la::Vector<DIMENSIONS,int>&  range,
   int                                       grainSize
 ) {
-  #ifdef UseParallelReduceForCellHandling
+  for (int d=0; d<DIMENSIONS; d++) {
+    assertion2( range(d)>=2, range, grainSize );
+  }
 
+  #ifdef UseParallelReduceForCellHandling
   dfor2(k)
     tarch::la::Vector<DIMENSIONS,int> localRange = range;
     for (int d=0; d<DIMENSIONS; d++) {
-      if (localRange(d)%2==0) {
-        localRange(d) /= 2;
+      if (localRange(d)%2!=0 && k(d)==0) {
+        localRange(d) = localRange(d) / 2 + 1;
       }
       else {
-        localRange(d) = localRange(d) / 2 + 1;
+        localRange(d) /= 2;
       }
     }
     dForLoopInstance loopInstance(loopBody,k);
@@ -89,13 +92,17 @@ template <class LoopBody>
 peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::dForLoopInstance( const dForLoopInstance& instance, SplitFlag ):
   _loopBody(instance._loopBody),
   _offset(instance._offset) {
+  for (int d=0; d<DIMENSIONS; d++) {
+    assertion1( _offset(d)>=0, _offset );
+    assertion1( _offset(d)<=1, _offset );
+  }
 }
 
 
 template <class LoopBody>
 void peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::operator() (const dForRange& range) {
   dfor(i,range.getRange()) {
-    _loopBody(i*2 + range.getOffset() + _offset );
+    _loopBody( (i + range.getOffset())*2 + _offset );
   }
 }
 
