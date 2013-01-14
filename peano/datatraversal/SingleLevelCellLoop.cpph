@@ -63,11 +63,11 @@ void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
   dfor2(k)
     tarch::la::Vector<DIMENSIONS,int> localRange = range;
     for (int d=0; d<DIMENSIONS; d++) {
-      if (localRange(d)%2==0) {
-        localRange(d) /= 2;
+      if (localRange(d)%2!=0 && k(d)==0) {
+        localRange(d) = localRange(d) / 2 + 1;
       }
       else {
-        localRange(d) = localRange(d) / 2 + 1;
+        localRange(d) /= 2;
       }
     }
     dForLoopWithBipartitioning(
@@ -75,7 +75,6 @@ void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
       dForRange( localRange, grainSize )
     );
   enddforx
-
   #endif
 }
 
@@ -133,11 +132,11 @@ void peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopWithBipartitio
       dForLoopWithBipartitioning rightTask(
         _loopBody, false, _range
       );
-      TaskSet::TaskSet(leftTask,rightTask,true);
+      TaskSet::TaskSet(leftTask,rightTask,1);
     }
     else {
       dfor(i,_range.getRange()) {
-        _loopBody(i*2 + _range.getOffset() + _offset );
+        _loopBody( (i + _range.getOffset())*2 + _offset );
       }
     }
 }
