@@ -9,7 +9,6 @@
 
 #include "tarch/timing/Watch.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhase.h"
-//#include "tarch/multicore/BooleanSemaphore.h"
 
 
 namespace peano {
