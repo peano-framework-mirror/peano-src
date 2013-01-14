@@ -10,7 +10,6 @@
 
 
 #include <map>
-#include <vector>
 
 
 namespace peano {
@@ -27,14 +26,16 @@ namespace peano {
  */
 class peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads: public peano::datatraversal::autotuning::OracleForOnePhase {
   private:
-    static tarch::logging::Log  _log;
+    static tarch::logging::Log                 _log;
 
-    int                         _numberOfThreads;
-    tarch::timing::Measurement  _executionTime;
-    const MethodTrace           _methodTrace;
-    const int                   _splitTheTree;
-    const bool                  _pipelineDescendProcessing;
-    const bool                  _pipelineAscendProcessing;
+    int                                        _numberOfThreads;
+    std::map<int, tarch::timing::Measurement>  _executionTime;
+    const MethodTrace                          _methodTrace;
+    const int                                  _splitTheTree;
+    const bool                                 _pipelineDescendProcessing;
+    const bool                                 _pipelineAscendProcessing;
+
+    int                                        _lastProblemSize;
   public:
     /**
      * Use a fixed number of threads.

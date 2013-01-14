@@ -15,18 +15,21 @@ peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::OracleForOne
   const MethodTrace& methodTrace
 ):
   _numberOfThreads(numberOfThreads),
-  _executionTime(1.0),
+  _executionTime(),
   _methodTrace(methodTrace),
   _splitTheTree(splitTheTree),
   _pipelineDescendProcessing(pipelineDescendProcessing),
-  _pipelineAscendProcessing(pipelineAscendProcessing) {
+  _pipelineAscendProcessing(pipelineAscendProcessing),
+  _lastProblemSize(-1) {
   assertion( _numberOfThreads>=1 );
 }
 
 
 std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::parallelise(int problemSize) {
+  assertionEquals1( _lastProblemSize, -1, toString(_methodTrace) );
+  _lastProblemSize = problemSize;
   if (_numberOfThreads==1) {
-    return std::pair<int,bool>(0,false);
+    return std::pair<int,bool>(0,true);
   }
   else if (
     (
@@ -67,22 +70,30 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
     return std::pair<int,bool>(1,true);
   }
   else {
+    _lastProblemSize = -1;
     return std::pair<int,bool>(0,false);
   }
 }
 
 
 void peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::parallelSectionHasTerminated(double elapsedCalendarTime) {
-  _executionTime.setValue( elapsedCalendarTime );
+  assertion( _lastProblemSize>0 );
+  _executionTime[_lastProblemSize].setValue( elapsedCalendarTime );
+  _lastProblemSize = -1;
 }
 
 
 void peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::plotStatistics() const {
-  logInfo(
-    "plotRuntimes()",
-    "averaged runtime for " << _numberOfThreads << " thread(s) in phase " << toString(_methodTrace) << ": " <<
-    _executionTime.toString()
-  );
+  for (std::map<int, tarch::timing::Measurement>::const_iterator p=_executionTime.begin(); p!=_executionTime.end(); p++) {
+    if (p->second.getNumberOfMeasurements()>0) {
+      logInfo(
+        "plotRuntimes()",
+        "averaged runtime for " << _numberOfThreads << " thread(s) in phase " << toString(_methodTrace)
+        << " for problem size " << p->first << ": " <<
+        p->second.toString()
+      );
+    }
+  }
 }
 
 
