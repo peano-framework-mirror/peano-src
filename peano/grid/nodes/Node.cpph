@@ -61,7 +61,7 @@ VertexStack& peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,Ev
 
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
 void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::validatePositionOfVertices(
-  Vertex                                                 fineGridVertices[FOUR_POWER_D],
+  Vertex                                fineGridVertices[FOUR_POWER_D],
   const peano::grid::VertexEnumerator&  fineGridVerticesEnumerator
 ) {
   logTraceIn( "validatePositionOfVertices(...)" );
