@@ -107,6 +107,15 @@ class peano::datatraversal::TaskSet {
      * idea to have all the operations using the autotuning's oracle use the
      * same (integer) semantics.
      *
+     * !!! Copying policy
+     *
+     * The TBB implementation wraps the two functions with GenericTask, i.e.
+     * with an additional type holding a reference to the original object.
+     * As these wrappers do hold a reference, the functor is not copied. If
+     * your functor requires copying, you have to do this manually. See
+     * peano::datatraversal::SingleLevelCellLoop::dForLoopWithBipartitioning::operator()
+     * for an example if UseParallelReduceForCellHandling is switched on.
+     *
      * @param parallelise             Either 0 or 1.
      */
     template <class Functor0, class Functor1>
@@ -121,6 +130,10 @@ class peano::datatraversal::TaskSet {
      *
      * See other constructor for a detailed description. Is the same thing but
      * handles three parallel tasks.
+     *
+     * !!! Copying policy
+     *
+     * See constructor with three arguments.
      *
      * @param parallelise             Either 0 or 1.
      */
