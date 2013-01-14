@@ -40,10 +40,11 @@ peano::datatraversal::dForLoop<LoopBody>::dForLoop(
   		  loopInstance
   		);
       #else
-	  	dForLoopWithBipartitioning(
+	  	dForLoopWithBipartitioning task(
     	  body, false,
         dForRange( range, grainSize )
 	  	);
+	  	task();
       #endif
     #elif SharedOMP
 	  	logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "omp" );

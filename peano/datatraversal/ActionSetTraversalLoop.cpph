@@ -189,9 +189,8 @@ void peano::datatraversal::ActionSetTraversalLoop<LoopBody>::ActionSetTraversalL
   if (doSplit) {
     const int split = (_right+_left)/2;
     logDebug( "operator()", "split: ("  << _left << "," << _right << ")->(" << _left << "," << split << ")+(" << split << "," << _right << ")" );
-    LoopBody  copyOfLoopBodyForLeftTask(_loopBody);
     ActionSetTraversalLoopWithBiPartitioning leftTask(
-      copyOfLoopBodyForLeftTask, _actionSet,
+      _loopBody, _actionSet,
       true, _left, split, _grainSize
     );
     ActionSetTraversalLoopWithBiPartitioning rightTask(

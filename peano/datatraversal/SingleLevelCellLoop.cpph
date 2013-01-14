@@ -70,10 +70,11 @@ void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
         localRange(d) /= 2;
       }
     }
-    dForLoopWithBipartitioning(
+    dForLoopWithBipartitioning task(
       loopBody, k, false,
       dForRange( localRange, grainSize )
     );
+    task();
   enddforx
   #endif
 }
