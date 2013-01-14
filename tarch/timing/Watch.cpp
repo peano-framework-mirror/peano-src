@@ -88,10 +88,10 @@ void tarch::timing::Watch::stopTimer() {
   _startTime = (double)mts.tv_sec + (double)mts.tv_nsec * 1e-09;
   #elif defined(CompilerHasTimespec)
   _elapsedTime         = ((double)ts.tv_sec + (double)ts.tv_nsec * 1e-09)-_startTime;
-  //difftime ( std::time(NULL), _startTime );
   #else
-  _elapsedClockTicks   = clock() - _startClockTicks;
+  _elapsedTime = -1;
   #endif
+  _elapsedClockTicks   = clock() - _startClockTicks;
   _calledStopManually  = true;
 }
 
