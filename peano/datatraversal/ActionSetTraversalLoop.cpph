@@ -197,7 +197,7 @@ void peano::datatraversal::ActionSetTraversalLoop<LoopBody>::ActionSetTraversalL
       _loopBody, _actionSet,
       false, split, _right, _grainSize
     );
-    TaskSet::TaskSet(leftTask,rightTask,true);
+    TaskSet::TaskSet(leftTask,rightTask,1);
   }
   else {
     for (int i=_left; i!=_right; i++) {
