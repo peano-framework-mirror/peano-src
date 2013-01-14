@@ -6,6 +6,8 @@
 
 #include <tbb/task_scheduler_init.h>
 
+#include "tarch/logging/Log.h"
+
 namespace tarch {
   namespace multicore {
     namespace tbb {
@@ -25,6 +27,8 @@ namespace tarch {
 class tarch::multicore::tbb::Core {
   private:
     Core();
+
+    static tarch::logging::Log  _log;
 
     int                         _numberOfThreads;
     ::tbb::task_scheduler_init  _task_scheduler_init;

@@ -3,6 +3,8 @@
 #include "tarch/Assertions.h"
 
 
+tarch::logging::Log  tarch::multicore::tbb::Core::_log( "tarch::multicore::tbb::Core" );
+
 const int tarch::multicore::tbb::Core::UseDefaultNumberOfThreads = 0;
 
 
@@ -35,13 +37,13 @@ void tarch::multicore::tbb::Core::configure( int numberOfThreads ) {
   }
 
   if (numberOfThreads==UseDefaultNumberOfThreads) {
-    _numberOfThreads = ::tbb::task_scheduler_init::default_num_threads();
+    _task_scheduler_init.initialize();
   }
   else {
-    _numberOfThreads = numberOfThreads;
-  }
+    _task_scheduler_init.initialize( _numberOfThreads );
 
-  _task_scheduler_init.initialize( _numberOfThreads );
+    logWarning( "configure(int)", "manually set of thread number not supported on all machines" );
+  }
 }
 
 
