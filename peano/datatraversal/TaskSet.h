@@ -116,9 +116,7 @@ class peano::datatraversal::TaskSet {
      * The TBB implementation wraps the two functions with GenericTask, i.e.
      * with an additional type holding a reference to the original object.
      * As these wrappers do hold a reference, the functor is not copied. If
-     * your functor requires copying, you have to do this manually. See
-     * peano::datatraversal::SingleLevelCellLoop::dForLoopWithBipartitioning::operator()
-     * for an example if UseParallelReduceForCellHandling is switched on.
+     * your functor requires copying, you have to do this manually.
      *
      * @param parallelise             Either 0 or 1.
      */
