@@ -96,22 +96,4 @@
 #endif
 
 
-
-/**
- * There are two different variants to call enterCell() and leaveCell() in
- * parallel with TBBs on regular subtrees. Peano either can use parallel_reduce
- * or a manual unbalanced partitioning. See ActionSetTraversalLoop::ActionSetTraversalLoopWithBiPartitioning
- * for explanations. In general, Peano's manual traversal concept seems to
- * outperform parallel_reduce, so it is a good choice not to switch on this
- * flag.
- */
-//#define UseParallelReduceForCellHandling
-
-/**
- * Counterpart of UseParallelReduceForCellHandling. While most test cases
- * result in the fact that UseParallelReduceForCellHandling should be switched
- * off, Peano in most cases is faster, if this flag is turned on.
- */
-#define UseParallelReduceForVertexHandling
-
 #endif
