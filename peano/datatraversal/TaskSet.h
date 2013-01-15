@@ -81,6 +81,8 @@ class peano::datatraversal::TaskSet {
      * and the asynchronous task then tries to invoke it. This would result in
      * a seg fault.
      *
+     * This operation does not work for recursive tasks.
+     *
      * !!! TBB
      *
      * I do not use the spawn command of TBB here but the enqueue. In
@@ -107,6 +109,8 @@ class peano::datatraversal::TaskSet {
      * idea to have all the operations using the autotuning's oracle use the
      * same (integer) semantics.
      *
+     * This operation does not work for recursive tasks.
+     *
      * !!! Copying policy
      *
      * The TBB implementation wraps the two functions with GenericTask, i.e.
@@ -130,6 +134,8 @@ class peano::datatraversal::TaskSet {
      *
      * See other constructor for a detailed description. Is the same thing but
      * handles three parallel tasks.
+     *
+     * This operation does not work for recursive tasks.
      *
      * !!! Copying policy
      *
