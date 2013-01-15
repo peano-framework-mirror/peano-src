@@ -110,23 +110,6 @@ class peano::datatraversal::dForLoop {
       int                                       grainSize
     );
 
-    /**
-     * @see ActionSetTraversalLoop::ActionSetTraversalLoopWithBiPartitioning
-     */
-    class dForLoopWithBipartitioning {
-      private:
-        LoopBody     _loopBody;
-        const bool   _isLeftTask;
-        dForRange    _range;
-      public:
-        dForLoopWithBipartitioning( const LoopBody& loopBody, bool isLeftTask, dForRange range );
-
-        /**
-         * Process range
-         */
-        void operator() ();
-    };
-
     class dForLoopInstance {
       private:
         LoopBody  _loopBody;

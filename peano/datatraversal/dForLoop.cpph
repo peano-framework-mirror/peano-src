@@ -7,9 +7,6 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "peano/datatraversal/TaskSet.h"
-
-
 #ifdef SharedTBB
 #include "tbb/parallel_reduce.h"
 #endif
@@ -33,19 +30,11 @@ peano::datatraversal::dForLoop<LoopBody>::dForLoop(
 	if (grainSize>0) {
     #ifdef SharedTBB
       logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "tbb" );
-      #ifdef UseParallelReduceForVertexHandling
       dForLoopInstance loopInstance(body);
 	  	tbb::parallel_reduce(
   		  dForRange( range, grainSize ),
   		  loopInstance
   		);
-      #else
-	  	dForLoopWithBipartitioning task(
-    	  body, false,
-        dForRange( range, grainSize )
-	  	);
-	  	task();
-      #endif
     #elif SharedOMP
 	  	logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "omp" );
 		
@@ -163,34 +152,4 @@ void peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::operator() (con
 
 template <class LoopBody>
 void peano::datatraversal::dForLoop<LoopBody>::dForLoopInstance::join(const dForLoopInstance&  with) {
-}
-
-
-template <class LoopBody>
-peano::datatraversal::dForLoop<LoopBody>::dForLoopWithBipartitioning::dForLoopWithBipartitioning(const LoopBody& loopBody, bool isLeftTask, dForRange range):
-  _loopBody(loopBody),
-  _isLeftTask(isLeftTask),
-  _range(range) {
-}
-
-
-template <class LoopBody>
-void peano::datatraversal::dForLoop<LoopBody>::dForLoopWithBipartitioning::operator()() {
-  const bool doSplit = !_isLeftTask && _range.is_divisible();
-
-  if (doSplit) {
-      dForRange leftRange( _range, dForRange::Split() );
-      dForLoopWithBipartitioning leftTask(
-        _loopBody, true, leftRange
-      );
-      dForLoopWithBipartitioning rightTask(
-        _loopBody, false, _range
-      );
-      TaskSet::TaskSet(leftTask,rightTask,true);
-    }
-    else {
-      dfor(i,_range.getRange()) {
-        _loopBody(i + _range.getOffset());
-      }
-    }
 }

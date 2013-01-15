@@ -52,42 +52,6 @@ class peano::datatraversal::ActionSetTraversalLoop {
       LoopBody&                                        loopBody
     );
 
-    /**
-     * Alternative implementation of parallel_reduce
-     *
-     * This operation provides an alternative implementation of the
-     * parallel_reduce. It is based upon a modified bipartitioning on a
-     * strongly imbalanced tree: The algorithm recursively splits up the
-     * iteration space into two parts. One part of each splitting (left)
-     * is handled as a whole and not split further. The other part (right)
-     * is split if the grain size allows to split. The result is an extremely
-     * unbalanced task tree.
-     *
-     * This splitting outperforms parallel_reduce by a factor of two.
-     */
-    class ActionSetTraversalLoopWithBiPartitioning {
-      private:
-        LoopBody                                _loopBody;
-        const peano::datatraversal::ActionSet&  _actionSet;
-        const bool                              _isLeftTask;
-        const int                               _left;
-        const int                               _right;
-        const int                               _grainSize;
-
-      public:
-        ActionSetTraversalLoopWithBiPartitioning(
-          const LoopBody&                         loopBody,
-          const peano::datatraversal::ActionSet&  actionSet,
-          const bool                              isLeftTask,
-          const int                               left,
-          const int                               right,
-          const int                               grainSize
-        );
-
-        void operator() ();
-    };
-
-
     #ifdef SharedTBB
     class ActionSetTraversalLoopInstance {
       private:
