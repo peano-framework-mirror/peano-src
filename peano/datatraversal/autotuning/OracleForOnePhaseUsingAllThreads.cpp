@@ -28,6 +28,19 @@ peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::OracleForOne
 std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllThreads::parallelise(int problemSize) {
   assertionEquals1( _lastProblemSize, -1, toString(_methodTrace) );
   _lastProblemSize = problemSize;
+
+  #ifdef Dim2
+  const int ThresholdForSplits       = (3*3*3*3)*(3*3*3*3);  // 7624
+  const int ThresholdForVertexEvents = (3*3*3)*(3*3*3);      // 900
+  const int ThresholdForCellEvents   = (3*3*3)*(3*3*3);
+  #elif Dim3
+  #error xxxx
+  #else
+  const int ThresholdForSplits       = 1;
+  const int ThresholdForVertexEvents = 1;
+  const int ThresholdForCellEvents   = 1;
+  #endif
+
   if (_numberOfThreads==1) {
     return std::pair<int,bool>(0,true);
   }
@@ -37,17 +50,26 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
       ||
       _methodTrace==CallLeaveCellOnRegularStationaryGrid
       ||
-      _methodTrace==CallTouchFirstTimeOnRegularStationaryGrid
-      ||
-      _methodTrace==CallTouchLastTimeOnRegularStationaryGrid
-      ||
       _methodTrace==AscendOnRegularStationaryGrid
       ||
       _methodTrace==DescendOnRegularStationaryGrid
     ) &&
-    _splitTheTree !=2
-  )
-    {
+    _splitTheTree !=2 &&
+    problemSize >= ThresholdForCellEvents
+  ) {
+    const int divisor   = 2 << _numberOfThreads;
+    const int grainSize = problemSize / divisor;
+    return std::pair<int,bool>(grainSize<1 ? 1 : grainSize,true);
+  }
+  else if (
+    (
+      _methodTrace==CallTouchFirstTimeOnRegularStationaryGrid
+      ||
+      _methodTrace==CallTouchLastTimeOnRegularStationaryGrid
+    ) &&
+    _splitTheTree !=2 &&
+    problemSize >= ThresholdForVertexEvents
+  ) {
     const int divisor   = 2 << _numberOfThreads;
     const int grainSize = problemSize / divisor;
     return std::pair<int,bool>(grainSize<1 ? 1 : grainSize,true);
@@ -58,7 +80,8 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
       _methodTrace == SplitLoadVerticesTaskOnRegularStationaryGrid
       ||
       _methodTrace == SplitStoreVerticesTaskOnRegularStationaryGrid
-    )
+    ) &&
+    problemSize >= ThresholdForSplits
   ) {
     const int grainSize = problemSize / _numberOfThreads;
     return std::pair<int,bool>(grainSize<1 ? 1 : grainSize,true);
@@ -70,8 +93,7 @@ std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseUsingAllT
     return std::pair<int,bool>(1,true);
   }
   else {
-    _lastProblemSize = -1;
-    return std::pair<int,bool>(0,false);
+    return std::pair<int,bool>(0,true);
   }
 }
 
