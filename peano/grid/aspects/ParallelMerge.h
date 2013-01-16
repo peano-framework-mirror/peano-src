@@ -103,7 +103,8 @@ class peano::grid::aspects::ParallelMerge {
     template <class Vertex>
     static MergeVertexDueToJoinEffect mergeWithJoinedVertexFromWorker(
       Vertex&        localVertex,
-      const Vertex&  workerVertex
+      const Vertex&  workerVertex,
+      int            workerRank
     );
 
     /**

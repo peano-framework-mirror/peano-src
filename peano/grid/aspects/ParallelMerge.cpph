@@ -57,7 +57,8 @@ template <class Vertex>
 peano::grid::aspects::ParallelMerge::MergeVertexDueToJoinEffect
 peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
   Vertex&        localVertex,
-  const Vertex&  workerVertex
+  const Vertex&  workerVertex,
+  int            workerRank
 ) {
   logTraceInWith2Arguments( "mergeWithJoinedVertexFromWorker(...)", localVertex, workerVertex );
 
@@ -101,15 +102,15 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
       result = CreateBoundaryVertexOnMaster;
     }
 
-    // @todo In P2 uebertragen
-    // @todo Dokumentation (Bilder) von Rolands Tafel
+// @todo Docu
     for (int i=0; i<TWO_POWER_D; i++) {
       const bool entriesAreEqual  = localVertex._vertexData.getAdjacentRanks(i)  == workerVertex._vertexData.getAdjacentRanks(i);
-
-      // @todo Dokumentation von Rolands Tafel
       const bool workersEntryIsMe = workerVertex._vertexData.getAdjacentRanks(i) == tarch::parallel::Node::getInstance().getRank();
       if ( !entriesAreEqual && !workersEntryIsMe) {
         localVertex._vertexData.setAdjacentRanks( i, workerVertex._vertexData.getAdjacentRanks(i) );
+      }
+      else if (!entriesAreEqual) {
+        localVertex._vertexData.setAdjacentRanks( i, workerRank );
       }
     }
   }
