@@ -101,8 +101,17 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
       result = CreateBoundaryVertexOnMaster;
     }
 
-   // @todo Wieder in P2 zurueck migrieren
-    localVertex._vertexData.setAdjacentRanks( workerVertex._vertexData.getAdjacentRanks() );
+    // @todo In P2 uebertragen
+    // @todo Dokumentation (Bilder) von Rolands Tafel
+    for (int i=0; i<TWO_POWER_D; i++) {
+      const bool entriesAreEqual  = localVertex._vertexData.getAdjacentRanks(i)  == workerVertex._vertexData.getAdjacentRanks(i);
+
+      // @todo Dokumentation von Rolands Tafel
+      const bool workersEntryIsMe = workerVertex._vertexData.getAdjacentRanks(i) == tarch::parallel::Node::getInstance().getRank();
+      if ( !entriesAreEqual && !workersEntryIsMe) {
+        localVertex._vertexData.setAdjacentRanks( i, workerVertex._vertexData.getAdjacentRanks(i) );
+      }
+    }
   }
   else {
     assertionEquals2( localVertex._vertexData.getInsideOutsideDomain(), workerVertex._vertexData.getInsideOutsideDomain(), localVertex.toString(), workerVertex.toString() );
