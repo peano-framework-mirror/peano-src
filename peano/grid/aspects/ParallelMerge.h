@@ -66,6 +66,10 @@ class peano::grid::aspects::ParallelMerge {
      * If the master node is hanging, the local node should be hanging as
      * well. If the nodes are hanging, their adjacent cells height flag has
      * no semantics.
+     *
+     * If the master currently is erasing but the remote vertex is refined, we
+     * overwrite the erase process. According to Vertex::erase(), the
+     * refinement process has higher priority.
      */
     template <class Vertex>
     static void mergeWithForkedVertexFromMaster(

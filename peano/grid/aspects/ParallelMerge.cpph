@@ -144,13 +144,13 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
     localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
   );
 
-  // @todo Das ist der Fehler, den Bart beschrieben hat; denke ich
-  // If the master does not hold the local rank, it should not be merged
   assertion2( masterVertex.isAdjacentToDomainOf(tarch::parallel::Node::getInstance().getRank()), masterVertex.toString(), localVertex.toString() );
 
   const bool                                          masterIsRefinedLocalVertexIsNot  = masterVertex.getRefinementControl()==Vertex::Records::Refined && localVertex.getRefinementControl()!=Vertex::Records::Refined;
   const bool                                          workerIsRefiningOrTriggeredRefinementWhileMasterVertexIsUnrefined  =
-    (localVertex.getRefinementControl()==Vertex::Records::Refining || localVertex.getRefinementControl()==Vertex::Records::RefinementTriggered) && masterVertex.getRefinementControl()==Vertex::Records::Unrefined;
+    (localVertex.getRefinementControl()==Vertex::Records::Refining || localVertex.getRefinementControl()==Vertex::Records::RefinementTriggered) &&
+    (masterVertex.getRefinementControl()==Vertex::Records::Unrefined || masterVertex.getRefinementControl()==Vertex::Records::Erasing);
+
   const typename Vertex::Records::InsideOutsideDomain insideOutsideDomainOfLocalVertex = localVertex._vertexData.getInsideOutsideDomain();
 
   assertion3(
