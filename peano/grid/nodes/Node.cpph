@@ -447,7 +447,8 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
             const peano::grid::aspects::ParallelMerge::MergeVertexDueToJoinEffect modifyVertex =
               peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
                 fineGridVertices[fineGridVerticesEnumerator(k)],
-                receivedVertex
+                receivedVertex,
+                *p
               );
             switch (modifyVertex) {
               case peano::grid::aspects::ParallelMerge::CreateBoundaryVertexOnMaster:
