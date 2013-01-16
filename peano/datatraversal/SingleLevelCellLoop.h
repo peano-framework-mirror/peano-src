@@ -82,12 +82,20 @@ class peano::datatraversal::SingleLevelCellLoop {
           * Empty Join
           *
           * Instead, we use the destructor. See remarks on TBB realisation for
-          * encapsulating class.
+          * encapsulating class. If you do not use TBB's parallel_reduce, we can
+          * throw away this operation.
           */
          void join(const dForLoopInstance&  with);
      };
 
   public:
+    /**
+     * Run in Red-black Manner Through All Cells of One Level
+     *
+     * Please note that the actual problem size of a single level cell
+     * traversal is only @f$ 2^{-d} @f$ of the whole problem size as we are 
+     * using red-black colouring.
+     */
     SingleLevelCellLoop(
       const tarch::la::Vector<DIMENSIONS,int>&  range,
       LoopBody&                                 loopBody,
