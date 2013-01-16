@@ -100,6 +100,9 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
     if (workerVertex.isBoundary() && localVertex.isOutside()) {
       result = CreateBoundaryVertexOnMaster;
     }
+
+   // @todo Wieder in P2 zurueck migrieren
+    localVertex._vertexData.setAdjacentRanks( workerVertex._vertexData.getAdjacentRanks() );
   }
   else {
     assertionEquals2( localVertex._vertexData.getInsideOutsideDomain(), workerVertex._vertexData.getInsideOutsideDomain(), localVertex.toString(), workerVertex.toString() );
