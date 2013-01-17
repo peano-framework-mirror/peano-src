@@ -58,7 +58,7 @@ void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
     dForLoopInstance loopInstance(loopBody,k);
     #ifdef SharedTBB
     tbb::parallel_reduce( dForRange( localRange, grainSize ), loopInstance );
-    #elif SharedMemoryParallelisation
+    #elif defined(SharedMemoryParallelisation)
     #error not implemented yet
     #endif
   enddforx
