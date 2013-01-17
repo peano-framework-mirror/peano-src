@@ -74,7 +74,7 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCel
     const int                               sharedMemoryGrainSize =
       !_eventHandle.enterCellSpecification().multithreading ? 0 :
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-        tarch::la::volume(NumberOfCells),peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid
+        tarch::la::volume(NumberOfCells) / TWO_POWER_D, peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid
       );
     _enterCellLoopBody.setLevel(level);
     peano::datatraversal::SingleLevelCellLoop<EnterCellLoopBody> loop(
@@ -100,7 +100,7 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::descend(
     const int                               sharedMemoryGrainSize   =
       !_eventHandle.descendSpecification().multithreading ? 0 :
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-        tarch::la::volume(NumberOfCoarseGridCells),peano::datatraversal::autotuning::DescendOnRegularStationaryGrid
+        tarch::la::volume(NumberOfCoarseGridCells) / TWO_POWER_D, peano::datatraversal::autotuning::DescendOnRegularStationaryGrid 
       );
 
     _descendLoopBody.setCoarseGridLevel(fineGridLevel-1);
