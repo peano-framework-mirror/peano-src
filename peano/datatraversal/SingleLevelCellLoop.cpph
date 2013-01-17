@@ -1,5 +1,4 @@
 #include "peano/datatraversal/ActionSetTraversalLoop.h"
-//#include "peano/datatraversal/ParallelReduce.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 #include "peano/utils/PeanoOptimisations.h"
 
@@ -58,9 +57,9 @@ void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
     }
     dForLoopInstance loopInstance(loopBody,k);
     #ifdef SharedTBB
-    // @todo Protect
     tbb::parallel_reduce( dForRange( localRange, grainSize ), loopInstance );
-//    peano::datatraversal::parallel_reduce( dForRange( localRange, grainSize ), loopInstance );
+    #elif SharedMemoryParallelisation
+    #error not implemented yet
     #endif
   enddforx
 }

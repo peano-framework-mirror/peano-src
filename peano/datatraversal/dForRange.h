@@ -15,9 +15,9 @@
 #endif
 
 namespace peano {
-    namespace datatraversal {
-      class dForRange;
-    }
+  namespace datatraversal {
+    class dForRange;
+  }
 }
 
 
@@ -58,7 +58,7 @@ class peano::datatraversal::dForRange {
     tarch::la::Vector<DIMENSIONS,int>  _offset;
     tarch::la::Vector<DIMENSIONS,int>  _range;
     int                                _grainSize;
-    bool                               _handleBoundaryOfDomainSequential;
+
   public:
     #ifdef SharedTBB
     typedef tbb::split Split;
@@ -81,9 +81,8 @@ class peano::datatraversal::dForRange {
      * passed argument is the valid state from which the new range is to be
      * constructed.
      *
-     * If we have to treat the boundary separately and as a whole, the new
-     * object becomes the boundary object. The argument range becomes a standard
-     * range that we might be allowed to split further.
+     * Please note that the local range always is as equal as the forked new range
+     * or smaller.
      *
      * @param range Original range
      */
@@ -107,8 +106,6 @@ class peano::datatraversal::dForRange {
     tarch::la::Vector<DIMENSIONS,int> getRange() const;
 
     std::string toString() const;
-
-    bool isSequentialBoundaryRange() const;
 };
 
 

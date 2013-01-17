@@ -9,6 +9,7 @@ peano::datatraversal::dForRange::dForRange(const dForRange& range):
   _range( range._range ),
   _grainSize( range._grainSize ) {
   logTraceInWith1Argument( "dForRange(dForRange)", range.toString() );
+  assertion3( _grainSize>0, _offset, _range, _grainSize );
   logTraceOut( "dForRange(dForRange)" );
 }
 
@@ -22,11 +23,6 @@ peano::datatraversal::dForRange::dForRange( const tarch::la::Vector<DIMENSIONS,i
     assertion3( range(d)>=1, toString(), range, grainSize );
   }
   logTraceOut( "dForRange(...)" );
-}
-
-
-bool peano::datatraversal::dForRange::isSequentialBoundaryRange() const {
-  return _handleBoundaryOfDomainSequential;
 }
 
 
