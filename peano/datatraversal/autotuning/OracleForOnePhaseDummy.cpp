@@ -84,9 +84,6 @@ peano::datatraversal::autotuning::OracleForOnePhaseDummy::OracleForOnePhaseDummy
   else if ( _pipelineDescendProcessing && _methodTrace == PipelineDescendTask ) {
     _smallestGrainSize = 1;
   }
-
-  // Status: Mit 0/yes/none bei 1.23346316797
-  // Status: Mit 1/yes/none bei 1.31
 }
 
 
