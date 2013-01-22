@@ -1,6 +1,7 @@
 #include "peano/grid/nodes/Constants.h"
 #include "peano/stacks/Stacks.h"
 #include "peano/geometry/GeometryHelper.h"
+#include "peano/parallel/AdjacencyList.h"
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class EventHandle, int CellFlagsFromEnumerator >
@@ -119,7 +120,7 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
             copy.replaceAdjancyEntriesOfLocalRankWithMaster();
           }
 
-          logDebug("operator()", "vertex at position " << positionInLocalCell << " belongs to parallel boundary. Send to rank " << *p );
+          logDebug("exchangeVerticesDueToParallelisation(...)", "vertex at position " << positionInLocalCell << " belongs to parallel boundary. Send to rank " << *p );
           peano::parallel::SendReceiveBufferPool::getInstance().sendVertex(copy,*p,peano::parallel::SendReceiveBufferPool::LIFO);
         }
       }
@@ -143,15 +144,10 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
         _hasTriggeredEraseForNextIteration = true;
       }
 
-      if (
-        _state.isNewWorkerDueToForkOfExistingDomain()
-      ) {
-        _fineGridVertices[positionInVertexArray].setAdjacentRanks( tarch::la::Vector<TWO_POWER_D,int>(
-          tarch::parallel::NodePool::getInstance().getMasterRank()
-        ) );
-      }
+      // @todo P2
+      _fineGridVertices[positionInVertexArray].eliminateAllAdjacencyInformationThatIdentifiesNeitherWorkerNorMaster();
 
-      logDebug("operator()", "coarsed vertex as it is remote and deleted all adjacency information: " << _fineGridVertices[positionInVertexArray].toString() );
+      logDebug("exchangeVerticesDueToParallelisation(...)", "coarsed vertex as it is remote and deleted all adjacency information: " << _fineGridVertices[positionInVertexArray].toString() );
     }
   }
   #endif
