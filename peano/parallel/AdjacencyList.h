@@ -16,6 +16,11 @@
 namespace peano {
     namespace parallel {
       /**
+       * I use this flag to identify neighbours that are unknown
+       */
+      const int UndefinedNeighbour = -1;
+
+      /**
        * Merge adjacency list of local vertex with neighbour's adjacency list
        *
        * This operation merges the adjacency list of a local vertex with the
