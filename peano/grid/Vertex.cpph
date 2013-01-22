@@ -436,7 +436,6 @@ void peano::grid::Vertex<VertexData>::receive(int source, int tag, bool exchange
 template <class VertexData>
 void peano::grid::Vertex<VertexData>::setAdjacentRanks( const tarch::la::Vector<TWO_POWER_D,int>& ranks ) {
   for(int i=0; i<TWO_POWER_D; i++) {
-    // @todo P2
     assertion2(ranks(i)>=peano::parallel::UndefinedNeighbour, ranks, toString() );
   }
   _vertexData.setAdjacentRanks( ranks );
