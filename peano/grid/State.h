@@ -72,14 +72,7 @@ class peano::grid::State {
     static tarch::logging::Log  _log;
 
     #ifdef Parallel
-    /**
-     * The regular grid holds one integer storing the rank of the
-     * forking/joining/triggering rank, and this integer is not
-     * parallelised. For the spacetree grid, such a solution is not
-     * possible, as there might be several forking and joining ranks.
-     * I consequently do not model the sequence of ranks as DaStGen
-     * attribute but make it a vector here.
-     *
+    /*
      * So, this flag either holds all the joining ranks or all the
      * forking ranks.
      */
