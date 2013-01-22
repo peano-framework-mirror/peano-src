@@ -89,16 +89,18 @@ peano::datatraversal::autotuning::OracleForOnePhaseDummy::OracleForOnePhaseDummy
 
 std::pair<int,bool> peano::datatraversal::autotuning::OracleForOnePhaseDummy::parallelise(int problemSize) {
   assertionEquals1( _lastProblemSize, -1, toString(_methodTrace) );
-  _lastProblemSize = problemSize;
   if (_useMulticore) {
     if (problemSize < _smallestGrainSize) {
+      if (_measureAlsoSerialProgramParts) _lastProblemSize = problemSize;
       return std::pair<int,bool>(0,_measureAlsoSerialProgramParts);
     }
     else {
+      _lastProblemSize = problemSize;
       return std::pair<int,bool>(_smallestGrainSize,true);
     }
   }
   else {
+    if (_measureAlsoSerialProgramParts) _lastProblemSize = problemSize;
     return std::pair<int,bool>(0,_measureAlsoSerialProgramParts);
   }
 }
