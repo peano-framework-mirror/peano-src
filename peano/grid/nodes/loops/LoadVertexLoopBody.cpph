@@ -182,7 +182,8 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
 
   assertion(!_fineGridVertices[positionInVertexArray].isHangingNode() );
 
-  if (counterIsDelete) {
+  // @todo P2
+  if (counterIsDelete && _fineGridVertices[positionInVertexArray].getRefinementControl()==Vertex::Records::Refined ) {
     _fineGridVertices[positionInVertexArray].erase();
     _hasErased = true;
     logDebug( "updateRefinementFlagsOfVertexAfterLoad()", "made vertex coarsening as parent is coarsening: " << _fineGridVertices[positionInVertexArray].toString() );
@@ -470,6 +471,13 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
     << ", CaseCreateHangingNode=" << CaseCreateHangingNode
     << ", CaseCreateNewNode=" << CaseCreateNewNode
     << ", CaseTakeFromTempStacks=" <<  CaseTakeFromTempStacks
+  );
+
+  assertion1(
+    !(CaseLoadPersistentVertex || CaseLoadOfDeleteVertex) ||
+    !StaticGridWithParallelBoundary ||
+    _fineGridVertices[positionInArray].getRefinementControl() != Vertex::Records::EraseTriggered,
+    _fineGridVertices[positionInArray].toString()
   );
 
   if ( CaseLoadPersistentVertex || CaseLoadOfDeleteVertex ) {
