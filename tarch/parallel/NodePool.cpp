@@ -225,9 +225,11 @@ tarch::parallel::NodePool::JobRequestMessageAnswer tarch::parallel::NodePool::wa
 
 
 void tarch::parallel::NodePool::terminate() {
+  #ifdef Parallel
+  assertion1WithExplanation( _strategy!=0, Node::getInstance().getRank(), "node pool restart missing?" );
   assertion1( Node::getInstance().isGlobalMaster(), Node::getInstance().getRank() );
-  assertion1( _strategy!=0, Node::getInstance().getRank() );
   assertion1( _isAlive, Node::getInstance().getRank() );
+  #endif
 
   logTraceIn("terminate()" );
 
