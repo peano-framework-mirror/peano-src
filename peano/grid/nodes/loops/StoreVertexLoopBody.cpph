@@ -144,7 +144,6 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
         _hasTriggeredEraseForNextIteration = true;
       }
 
-      // @todo P2
       _fineGridVertices[positionInVertexArray].eliminateAllAdjacencyInformationThatIdentifiesNeitherWorkerNorMaster();
 
       logDebug("exchangeVerticesDueToParallelisation(...)", "coarsed vertex as it is remote and deleted all adjacency information: " << _fineGridVertices[positionInVertexArray].toString() );
