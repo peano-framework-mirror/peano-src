@@ -26,9 +26,6 @@ namespace peano {
  */
 class peano::geometry::Geometry {
   public:
-    Geometry(const int& geometryType): _geometryType(geometryType){}
-    Geometry(): _geometryType(UNKNOWN_GEOMETRY){}
-
     virtual ~Geometry(){}
 
     /**
@@ -120,22 +117,6 @@ class peano::geometry::Geometry {
      * the implementation to refine and to resolve all characteristic scales.
      */
     virtual bool refineOuterCellWithExclusivelyOuterVerticesAsItIntersectsDomain( const tarch::la::Vector<DIMENSIONS,double>& x, const tarch::la::Vector<DIMENSIONS,double> &resolution ) const = 0;
-
-    int getGeometryType() const { return _geometryType;}
-    enum GeometryTypes{
-      INTERSECTION=0,
-      BUILTIN_CUTTING_PLANE=1,
-      BUILTIN_DRIFT_RATCHET=2,
-      BUILTIN_HEXAHEDRON=3,
-      BUILTIN_SPHERE=4,
-      BUILTIN_TUBE=5,
-      BUILTIN_UNION=6,
-      PRECICE_GEOMETRY=7,
-      GEOMETRY_ENLARGEMENT=8,
-      UNKNOWN_GEOMETRY=9
-    };
-  private:
-    const int _geometryType;
 };
 
 #endif
