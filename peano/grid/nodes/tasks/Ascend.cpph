@@ -112,7 +112,6 @@ template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator() () {
   _treeRemainsStatic = true;
 
-  // @todo P2: Schleifen Reihenfolge invertieren
   if (_eventHandle.touchVertexLastTimeSpecification().manipulates != peano::MappingSpecification::ONLY_LEAVES) {
     const int                                level            = _treeDepth;
     const tarch::la::Vector<DIMENSIONS,int>  NumberOfVertices = _gridContainer.getNumberOfVertices(level);
