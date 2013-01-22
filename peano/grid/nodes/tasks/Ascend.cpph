@@ -112,6 +112,21 @@ template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator() () {
   _treeRemainsStatic = true;
 
+  for (int level=_treeDepth+1; level>=1; level--) {
+    if (level==1) {
+      touchVerticesLastTime( level );
+      ascend(level);
+    }
+    else if (level==_treeDepth+1) {
+      leaveCells(level-1);
+    }
+    else {
+      touchVerticesLastTime( level );
+      ascend(level);
+      leaveCells(level-1);
+    }
+  }
+
   if (_eventHandle.touchVertexLastTimeSpecification().manipulates != peano::MappingSpecification::ONLY_LEAVES) {
     const int                                level            = _treeDepth;
     const tarch::la::Vector<DIMENSIONS,int>  NumberOfVertices = _gridContainer.getNumberOfVertices(level);
@@ -132,21 +147,6 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::operator(
           _touchVertexLastTimeLoopBody.performVertexTransition(currentVertex,level);
         }
       }
-    }
-  }
-
-  for (int level=_treeDepth+1; level>=1; level--) {
-    if (level==1) {
-      touchVerticesLastTime( level );
-      ascend(level);
-    }
-    else if (level==_treeDepth+1) {
-      leaveCells(level-1);
-    }
-    else {
-      touchVerticesLastTime( level );
-      ascend(level);
-      leaveCells(level-1);
     }
   }
 
