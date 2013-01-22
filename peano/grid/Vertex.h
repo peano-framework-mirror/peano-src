@@ -430,6 +430,9 @@ class peano::grid::Vertex {
       const peano::grid::VertexEnumerator&  enumerator,
       const Vertex* const                   vertices
     );
+
+    // @todo P2
+    void eliminateAllAdjacencyInformationThatIdentifiesNeitherWorkerNorMaster();
     #endif
 };
 
