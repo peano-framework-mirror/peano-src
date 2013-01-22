@@ -1,5 +1,5 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
-#include "peano/datatraversal/autotuning/OracleForOnePhaseUsingAllThreads.h"
+#include "peano/datatraversal/autotuning/OracleForOnePhaseDummy.h"
 #include "tarch/Assertions.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
@@ -87,7 +87,7 @@ void peano::datatraversal::autotuning::Oracle::createOracles() {
 
   if (_oraclePrototype==0) {
 	  logWarning( "createOracles(int)", "no oracle type configured. Perhaps forgot to call peano::datatraversal::autotuning::Oracle::setOracle(). Peano uses default oracle" );
-	  _oraclePrototype = new OracleForOnePhaseUsingAllThreads(2);
+	  _oraclePrototype = new OracleForOnePhaseDummy(true);
   }
   else {
     assertion( _oracles==0 );
