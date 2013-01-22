@@ -344,11 +344,14 @@ class tarch::parallel::NodePool: public tarch::services::Service {
     void restart();
 
     /**
+     * Shut down node pool
+     *
      * Tells the node pool to shut down. There is a slight difference between
      * terminate() and shutdown(). The counterpart of shutdown() is init() and
      * both operations are called once throughout the whole application
      * lifetime. In contrast, terminate() and restart() are called several
-     * times.
+     * times, i.e. shutdown() typically is called by Peano's
+     * shutdownParallelEnvironment() in the outer block and not by any runner.
      */
     void shutdown();
 
