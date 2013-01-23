@@ -9,12 +9,6 @@
 namespace peano {
   namespace geometry {
     class Geometry;
-
-    /** currently each geometry object is identical with the overall geometry interface.
-     *  However, a single geometry object might obtain more properties in future implementations,
-     *  still keeping all characteristics of Geometry (GeometryObject inherits from Geometry).
-     */
-    typedef Geometry GeometryObject;
   }
 }
 
@@ -22,7 +16,19 @@ namespace peano {
 /**
  * Interface for builtin or other geometry descriptions
  *
- * @author Philipp Neumann, Tobias Weinzierl, Tobias Neckel
+ * When you create a repository, you have to pass an instance of a class
+ * implementing Geometry. This object is responsible to control the geometry,
+ * i.e. you can do things such as switchToOutside() in your mapping, but it is
+ * tricky. Instead, we recommend to control the shape of the computational
+ * domain due to a subclass of this interface. If this geometry decides to
+ * change, Peano should automatically identify this and call destruction and
+ * creation events automatically. It is some kind of indirect control.
+ *
+ * I tried to make the geometry interface minimal, i.e. to provide only
+ * operations absolutely necessary. Please browse through the method
+ * descriptions to get an idea on the semantics of the class.
+ *
+ * @author Tobias Weinzierl
  */
 class peano::geometry::Geometry {
   public:
@@ -46,12 +52,10 @@ class peano::geometry::Geometry {
      * isCompletelyOutside() returns true iff the intersection of the inner /
      * outer domain with the open surrounding box is the box itself.
      *
-     * @image html ../kernel/gridinterface/geometry-vertex-inside-outside.png
-     * @image html ../kernel/gridinterface/geometry-cell-inside-outside.png
+     * @image html ../grid/geometry-vertex-inside-outside.png
+     * @image html ../grid/geometry-cell-inside-outside.png
      *
-     * The query is not const anymore, as PeGSI might want to change the
-     * underlying spacetree structure.
-     *
+     * The query is not const anymore, as you might want to cache requests, e.g.
      */
      virtual bool isCompletelyOutside( const tarch::la::Vector<DIMENSIONS,double>& x, const tarch::la::Vector<DIMENSIONS,double> &resolution ) = 0;
 
@@ -73,11 +77,8 @@ class peano::geometry::Geometry {
      * isCompletelyOutside() returns true iff the intersection of the inner /
      * outer domain with the open surrounding box is the box itself.
      *
-     * @image html ../kernel/gridinterface/geometry-vertex-inside-outside.png
-     * @image html ../kernel/gridinterface/geometry-cell-inside-outside.png
-     *
-     * The query is not const anymore, as PeGSI might want to change the
-     * underlying spacetree structure.
+     * @image html ../grid/geometry-vertex-inside-outside.png
+     * @image html ../grid/geometry-cell-inside-outside.png
      *
      */
     virtual bool isCompletelyInside( const tarch::la::Vector<DIMENSIONS,double>& x, const tarch::la::Vector<DIMENSIONS,double> &resolution ) = 0;
