@@ -24,6 +24,29 @@ namespace peano {
  * change, Peano should automatically identify this and call destruction and
  * creation events automatically. It is some kind of indirect control.
  *
+ * !!! Changing Geometries in Peano
+ *
+ * Peano's handling of changing geometries relies on a callback pattern. If you
+ * implement a changing geometry, you have to do two things:
+ *
+ * - Modify your geometry and
+ * - ensure that domainHasChanged() returns true for the subdomain that has
+ *   changed.
+ *
+ * Peano will in the subsequent traversal evalutuate domainHasChanged() on the
+ * tree and check whether new vertices have to be created or grid elements have
+ * to be destroyed. You'll receive the corresponding events, i.e. ensure your
+ * mapping implements the create and destroy operations.
+ *
+ * Typically, geometry updates thus are distributed among two classes:
+ *
+ * - The geometry ensures that the geometry has changed and that Peano can find
+ *   out which subdomains have changed. The geometry handles the where.
+ * - The mapping's create and destroy operations update the grid, i.e. the
+ *   mapping implements the how to update the geometry.
+ *
+ * !!! Design Rationale
+ *
  * I tried to make the geometry interface minimal, i.e. to provide only
  * operations absolutely necessary. Please browse through the method
  * descriptions to get an idea on the semantics of the class.
