@@ -43,6 +43,7 @@ void peano::grid::aspects::ParallelMerge::mergeOnDomainBoundary(
     assertion2(
          (localVertex._vertexData.getRefinementControl()==neighbourVertex._vertexData.getRefinementControl())
       || (localVertex._vertexData.getRefinementControl()==Vertex::Records::Refined && neighbourVertex._vertexData.getRefinementControl()==Vertex::Records::Refining)
+      || (localVertex._vertexData.getRefinementControl()==Vertex::Records::Unrefined && neighbourVertex._vertexData.getRefinementControl()==Vertex::Records::Erasing)
       , localVertex.toString(), neighbourVertex.toString()
     );
   }
