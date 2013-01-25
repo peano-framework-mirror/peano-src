@@ -33,6 +33,11 @@ int tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter::VertexWriter
 
 int tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter::VertexWriter::plotVertex(const tarch::la::Vector<3,double>& position) {
   assertion( _currentVertexNumber>=0 );
+
+  assertion1( position(0)==position(0), position );
+  assertion1( position(1)==position(1), position );
+  assertion1( position(2)==position(2), position );
+
   _currentVertexNumber++;
   _out << position(0) << "  "
        << position(1) << "  "
