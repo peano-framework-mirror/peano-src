@@ -339,6 +339,17 @@ class peano::grid::nodes::Node {
        const tarch::la::Vector<DIMENSIONS,int>&  fineGridPositionOfCell
      ) const;
 
+     void updateCellsParallelStateAfterLoadIfNodeIsJoiningWithMaster(
+       State&                                    state,
+       Cell&                                     fineGridCell,
+       Vertex                                    fineGridVertices[FOUR_POWER_D],
+       const SingleLevelEnumerator&              fineGridVerticesEnumerator,
+       Cell&                                     coarseGridCell,
+       Vertex                                    coarseGridVertices[FOUR_POWER_D],
+       const SingleLevelEnumerator&              coarseGridVerticesEnumerator,
+       const tarch::la::Vector<DIMENSIONS,int>&  fineGridPositionOfCell
+     ) const;
+
      void updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(
        State&                                    state,
        Cell&                                     fineGridCell,
