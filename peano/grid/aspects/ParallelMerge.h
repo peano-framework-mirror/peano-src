@@ -99,6 +99,81 @@ class peano::grid::aspects::ParallelMerge {
          if (LocalNodeHasNotBeenResponsibleBefore) {
          assertion2(localVertex.isOutside(),localVertex.toString(),workerVertex.toString());
        \endcode
+     *
+     * !!! Refinement update
+     *
+     * Besides in/out checks, the operation also validates weather the worker's
+     * grid has been refined and the local grid is not refined. In this case, it
+     * triggers a refinement on the local grid, i.e. it manually sets the
+     * vertex state to refining. Please not that this relation is asymmetric. A
+     * join always extends the local grid (see remarks on erasing rollbacks
+     * below).
+     *
+     * If the local vertex was refined but the worker's vertex was not,
+     * this means usually that the worker vertex was outside the worker's domain,
+     * i.e. in this case we have nothing to change locally. Such vertices by the
+     * way are not exchanged throughout the joins anyway, i.e. we don't have to
+     * check for this case.
+     *
+     * Please note that joined vertices never can hold refinement-triggered or
+     * erase-triggered. The triggered can be set by the mappings only. In the
+     * join traversal, no mappings are invoked on the worker. On the master (and
+     * new responsible node for the grid entities), the mappings are invoked
+     * after the join, i.e. after this operation has been called. So the only
+     * way to have a triggered on a vertex is that a mapping has triggered a
+     * grid modification in the traversal before. This 'triggered' however then
+     * has been set to refining or erasing right after the pop from the input
+     * container and before the vertex has been sent to the worker or merged
+     * with the worker data, respectively.
+     *
+     * !!! Erasing rollback
+     *
+     * Merging subdomains becomes tricky if the worker tries to erase right in the
+     * iteration when it joins its data into its master:
+     *
+     * @image html EraseRolback.png
+     *
+     * In the example abover, we study two nodes. Node 1 holds the grey cells. Node
+     * 2 holds the green cells and the blue one. The later is subject of our study.
+     *
+     * Let node 1 merge the green partition (holding the blue one as well) into its
+     * grid. In the blue cell, node 2 has marked one vertex refining, the other one
+     * is erasing. They are not at the domain boundary, i.e. the corresponding
+     * vertices on node 1 all are unrefined (or don't even exist before the join).
+     *
+     * The refining vertex on node 2 triggers node 1 to make the vertex at this
+     * location refining as well. This vertex does not cause any problems or demands
+     * for special attention.
+     *
+     * The erasing vertex on level 2 however has to trigger a refinement on node 1.
+     * Otherwise, the two grids are inconsistent. If we set the vertex to refining
+     * on node 1, we however loose that information that this vertex should be
+     * coarsened. A solution to this issue would be to introduce a new state
+     * 'vertex now shall be refined and should be erased immediately in the next
+     * traversal'. This makes the state automaton more complicated, so I decided
+     * not to introduce such a flag. As a consequence, erase commands are lost in
+     * this special case, i.e. the erase is rollbacked due to the join.
+     *
+     * !!! Update of adjacency list entries
+     *
+     * If a vertex is not adjacent to the local partition anymore, the node
+     * is not informed about changes of the vertex anymore. Load rebalancing
+     * info is not communicated globally. If we join with worker data, the
+     * worker typically has information that is up-to-date, while the master
+     * might not be up-to-date anymore.
+     *
+     * As a consequence, we typically copy the worker's adjacency information
+     * into the local node if two entries in the adjacency list are not equal.
+     * The only exception is if the worker claims that the master is reponsible
+     * for an entry while the master says that it is another node. In this case,
+     * the worker anticipates the join. We set the responsibility manually to
+     * teh worker, well-aware that this is switched back to the master at the
+     * end of the iteration anyway.
+     *
+     * Some illustration that led to the identification of this bug:
+     *
+     * @image html ParallelMergeJoin00.jpg
+     * @image html ParallelMergeJoin01.jpg
      */
     template <class Vertex>
     static MergeVertexDueToJoinEffect mergeWithJoinedVertexFromWorker(
