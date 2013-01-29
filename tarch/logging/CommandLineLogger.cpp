@@ -24,7 +24,7 @@ std::string::size_type tarch::logging::CommandLineLogger::_indent = 0;
 const std::string::size_type tarch::logging::CommandLineLogger::NumberOfIndentSpaces             = 2;
 const std::string::size_type tarch::logging::CommandLineLogger::NumberOfTraceColumnSpaces        = 55;
 const std::string::size_type tarch::logging::CommandLineLogger::NumberOfStandardColumnSpaces     = 12;
-const int                    tarch::logging::CommandLineLogger::DigitsInFilenamesIterationNumer  = 3;
+const int                    tarch::logging::CommandLineLogger::DigitsInFilenamesIterationNumer  = 5;
 
 
 const int tarch::logging::CommandLineLogger::FilterListEntry::AnyRank = -1;
