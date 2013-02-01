@@ -25,6 +25,16 @@ namespace peano {
 }
 
 
+/**
+ * Set Counter on @f$ 4^d @f$ Integer Array
+ *
+ * This operation set the counters on the array. Their value depends on the father
+ * vertices. Usually the counters are incremented up to @f$ 2^d @f$ times (once per
+ * adjacent cell) and then decremented again. However, some variants in
+ * LoadVertexLoopBody do manually reset the counters.
+ *
+ * @author Tobias Weinzierl
+ */
 template <class Vertex>
 class peano::grid::nodes::loops::SetCounterLoopBody {
   private:
@@ -66,6 +76,7 @@ class peano::grid::nodes::loops::SetCounterLoopBody {
       bool&                                      oneFatherCarriesDeleteFlag,
       bool&                                      oneFatherCarriesRefiningFlag,
       bool&                                      oneFatherCarriesRefinedFlag,
+      bool&                                      oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag,
       int                                        dimension
     );
 
@@ -75,7 +86,8 @@ class peano::grid::nodes::loops::SetCounterLoopBody {
     static int analyseFineGridVertex(
       bool   oneFatherCarriesDeleteFlag,
       bool   oneFatherCarriesRefiningFlag,
-      bool   oneFatherCarriesRefinedFlag
+      bool   oneFatherCarriesRefinedFlag,
+      bool   oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag
     );
   public:
     SetCounterLoopBody(
