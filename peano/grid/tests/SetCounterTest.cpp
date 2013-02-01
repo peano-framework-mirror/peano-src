@@ -29,6 +29,8 @@ void peano::grid::tests::SetCounterTest::run() {
   testMethod( isOnBoundaryTest );
   testMethod( testAPosterioriRefinement2d );
   testMethod( testOptimisedAnalysis );
+  testMethod( testRefinementDueToJoinThoughWorkerIsAlreadyErasing0 );
+  testMethod( testRefinementDueToJoinThoughWorkerIsAlreadyErasing1 );
 }
 
 
@@ -36,46 +38,233 @@ void peano::grid::tests::SetCounterTest::setUp() {
 }
 
 
+void peano::grid::tests::SetCounterTest::testRefinementDueToJoinThoughWorkerIsAlreadyErasing0() {
+  #ifdef Dim2
+  TestVertex                                            coarseGridVertices[FOUR_POWER_D];
+  peano::grid::SingleLevelEnumerator   coarseGridVerticesEnumerator(
+    peano::grid::SingleLevelEnumerator::Vector( 3.0),
+    peano::grid::SingleLevelEnumerator::Vector(-1.0),
+    0
+  );
+  int                                                   fineGridCounter[FOUR_POWER_D];
+
+  coarseGridVertices[0].switchToNonhangingNode();
+  coarseGridVertices[0]._vertexData.setRefinementControl( TestVertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing);
+
+  coarseGridVertices[1].switchToNonhangingNode();
+  coarseGridVertices[1]._vertexData.setRefinementControl( TestVertex::Records::Unrefined);
+
+  coarseGridVertices[4].switchToNonhangingNode();
+  coarseGridVertices[4]._vertexData.setRefinementControl( TestVertex::Records::Unrefined);
+
+  coarseGridVertices[5].switchToNonhangingNode();
+  coarseGridVertices[5]._vertexData.setRefinementControl( TestVertex::Records::Unrefined);
+
+  peano::grid::nodes::loops::SetCounterLoopBody<TestVertex> loopBody(coarseGridVertices,coarseGridVerticesEnumerator,fineGridCounter);
+
+  tarch::la::Vector<2,int> vertex;
+
+  vertex = 0,0;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 0], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 0]), fineGridCounter[ 0] );
+
+  vertex = 1,0;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 1], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 1]), fineGridCounter[ 1] );
+
+  vertex = 2,0;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 2], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 2]), fineGridCounter[ 2] );
+
+  vertex = 3,0;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 3], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[ 3]), fineGridCounter[ 3] );
+
+  vertex = 0,1;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 4], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 4]), fineGridCounter[ 4] );
+
+  vertex = 1,1;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 5], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 5]), fineGridCounter[ 5] );
+
+  vertex = 2,1;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 6], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 6]), fineGridCounter[ 6] );
+
+  vertex = 3,1;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 7], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[ 7]), fineGridCounter[ 7] );
+
+  vertex = 0,2;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 8], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 8]), fineGridCounter[ 8] );
+
+  vertex = 1,2;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 9], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 9]), fineGridCounter[ 9] );
+
+  vertex = 2,2;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[10], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[10]), fineGridCounter[10] );
+
+  vertex = 3,2;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[11], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[11]), fineGridCounter[11] );
+
+  vertex = 0,3;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[12], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[12]), fineGridCounter[12] );
+
+  vertex = 1,3;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[13], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[13]), fineGridCounter[13] );
+
+  vertex = 2,3;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[14], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[14]), fineGridCounter[14] );
+
+  vertex = 3,3;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[15], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[15]), fineGridCounter[15] );
+  #endif
+}
+
+
+void peano::grid::tests::SetCounterTest::testRefinementDueToJoinThoughWorkerIsAlreadyErasing1() {
+  #ifdef Dim2
+  TestVertex                                            coarseGridVertices[FOUR_POWER_D];
+  peano::grid::SingleLevelEnumerator   coarseGridVerticesEnumerator(
+    peano::grid::SingleLevelEnumerator::Vector( 3.0),
+    peano::grid::SingleLevelEnumerator::Vector(-1.0),
+    0
+  );
+  int                                                   fineGridCounter[FOUR_POWER_D];
+
+  coarseGridVertices[0].switchToNonhangingNode();
+  coarseGridVertices[0]._vertexData.setRefinementControl( TestVertex::Records::Unrefined);
+
+  coarseGridVertices[1].switchToNonhangingNode();
+  coarseGridVertices[1]._vertexData.setRefinementControl( TestVertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing);
+
+  coarseGridVertices[4].switchToNonhangingNode();
+  coarseGridVertices[4]._vertexData.setRefinementControl( TestVertex::Records::Unrefined);
+
+  coarseGridVertices[5].switchToNonhangingNode();
+  coarseGridVertices[5]._vertexData.setRefinementControl( TestVertex::Records::Unrefined);
+
+  peano::grid::nodes::loops::SetCounterLoopBody<TestVertex> loopBody(coarseGridVertices,coarseGridVerticesEnumerator,fineGridCounter);
+
+  tarch::la::Vector<2,int> vertex;
+
+  vertex = 0,0;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 0], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[ 0]), fineGridCounter[ 0] );
+
+  vertex = 1,0;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 1], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 1]), fineGridCounter[ 1] );
+
+  vertex = 2,0;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 2], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 2]), fineGridCounter[ 2] );
+
+  vertex = 3,0;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 3], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 3]), fineGridCounter[ 3] );
+
+  vertex = 0,1;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 4], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[ 4]), fineGridCounter[ 4] );
+
+  vertex = 1,1;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 5], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 5]), fineGridCounter[ 5] );
+
+  vertex = 2,1;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 6], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 6]), fineGridCounter[ 6] );
+
+  vertex = 3,1;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 7], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 7]), fineGridCounter[ 7] );
+
+  vertex = 0,2;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 8], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[ 8]), fineGridCounter[ 8] );
+
+  vertex = 1,2;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[ 9], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[ 9]), fineGridCounter[ 9] );
+
+  vertex = 2,2;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[10], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[10]), fineGridCounter[10] );
+
+  vertex = 3,2;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[11], peano::grid::nodes::CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing, peano::grid::nodes::counterToString(fineGridCounter[11]), fineGridCounter[11] );
+
+  vertex = 0,3;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[12], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[12]), fineGridCounter[12] );
+
+  vertex = 1,3;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[13], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[13]), fineGridCounter[13] );
+
+  vertex = 2,3;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[14], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[14]), fineGridCounter[14] );
+
+  vertex = 3,3;
+  loopBody(vertex);
+  validateEqualsWithParams2( fineGridCounter[15], peano::grid::nodes::CounterHangingNode,                                        peano::grid::nodes::counterToString(fineGridCounter[15]), fineGridCounter[15] );
+  #endif
+}
+
+
 void peano::grid::tests::SetCounterTest::testOptimisedAnalysis() {
-  bool oneFatherCarriesDeleteFlag   = false;
-  bool oneFatherCarriesRefiningFlag = false;
-  bool oneFatherCarriesRefinedFlag  = false;
-  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
-
-  oneFatherCarriesDeleteFlag   = true;
-  oneFatherCarriesRefiningFlag = false;
-  oneFatherCarriesRefinedFlag  = false;
-  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
-
-  oneFatherCarriesDeleteFlag   = false;
-  oneFatherCarriesRefiningFlag = true;
-  oneFatherCarriesRefinedFlag  = false;
-  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
-
-  oneFatherCarriesDeleteFlag   = true;
-  oneFatherCarriesRefiningFlag = true;
-  oneFatherCarriesRefinedFlag  = false;
-  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
-
-  oneFatherCarriesDeleteFlag   = false;
-  oneFatherCarriesRefiningFlag = false;
-  oneFatherCarriesRefinedFlag  = true;
-  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
-
-  oneFatherCarriesDeleteFlag   = true;
-  oneFatherCarriesRefiningFlag = false;
-  oneFatherCarriesRefinedFlag  = true;
-  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
-
-  oneFatherCarriesDeleteFlag   = false;
-  oneFatherCarriesRefiningFlag = true;
-  oneFatherCarriesRefinedFlag  = true;
-  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
-
-  oneFatherCarriesDeleteFlag   = true;
-  oneFatherCarriesRefiningFlag = true;
-  oneFatherCarriesRefinedFlag  = true;
-  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
+//  bool oneFatherCarriesDeleteFlag   = false;
+//  bool oneFatherCarriesRefiningFlag = false;
+//  bool oneFatherCarriesRefinedFlag  = false;
+//  bool oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag  = false;
+//  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag) );
+//
+//  oneFatherCarriesDeleteFlag   = true;
+//  oneFatherCarriesRefiningFlag = false;
+//  oneFatherCarriesRefinedFlag  = false;
+//  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
+//
+//  oneFatherCarriesDeleteFlag   = false;
+//  oneFatherCarriesRefiningFlag = true;
+//  oneFatherCarriesRefinedFlag  = false;
+//  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
+//
+//  oneFatherCarriesDeleteFlag   = true;
+//  oneFatherCarriesRefiningFlag = true;
+//  oneFatherCarriesRefinedFlag  = false;
+//  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
+//
+//  oneFatherCarriesDeleteFlag   = false;
+//  oneFatherCarriesRefiningFlag = false;
+//  oneFatherCarriesRefinedFlag  = true;
+//  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
+//
+//  oneFatherCarriesDeleteFlag   = true;
+//  oneFatherCarriesRefiningFlag = false;
+//  oneFatherCarriesRefinedFlag  = true;
+//  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
+//
+//  oneFatherCarriesDeleteFlag   = false;
+//  oneFatherCarriesRefiningFlag = true;
+//  oneFatherCarriesRefinedFlag  = true;
+//  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
+//
+//  oneFatherCarriesDeleteFlag   = true;
+//  oneFatherCarriesRefiningFlag = true;
+//  oneFatherCarriesRefinedFlag  = true;
+//  validateEquals( peano::grid::nodes::loops::SetCounterLoopBody<TestVertex>::analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) , analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag) );
 }
 
 

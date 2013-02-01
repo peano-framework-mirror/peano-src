@@ -49,6 +49,9 @@ class peano::grid::tests::SetCounterTest: public tarch::tests::TestCase {
     ) const;
 
     void testOptimisedAnalysis();
+
+    void testRefinementDueToJoinThoughWorkerIsAlreadyErasing0();
+    void testRefinementDueToJoinThoughWorkerIsAlreadyErasing1();
   public:
     SetCounterTest();
 
