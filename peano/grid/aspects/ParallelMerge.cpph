@@ -70,7 +70,6 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
 
   MergeVertexDueToJoinEffect result = MasterVertexStateRemainsUnaltered;
 
-  #if defined(Parallel)
   const bool LocalNodeHasNotBeenResponsibleBefore = !localVertex.isAdjacentToDomainOf( tarch::parallel::Node::getInstance().getRank() );
 
   assertionVectorNumericalEquals2( localVertex._vertexData.getX(), workerVertex._vertexData.getX(),     localVertex.toString(), workerVertex.toString() );
@@ -165,7 +164,6 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
   }
 
   localVertex.invalidateAdjacentCellInformation();
-  #endif
 
   logTraceOutWith2Arguments( "mergeWithJoinedVertexFromWorker(...)", localVertex, result );
   return result;
@@ -179,12 +177,11 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
 ) {
   logTraceInWith2Arguments( "mergeWithForkedVertexFromMaster(...)", localVertex, masterVertex );
 
-  #if defined(Parallel)
   const bool MasterIsNotResponsibleAnymore = !masterVertex.isAdjacentToDomainOf( tarch::parallel::NodePool::getInstance().getMasterRank() );
 
   #ifdef Debug // if we are not in debug mode, these values are not available.
-  assertionVectorNumericalEquals2( localVertex._vertexData.getX(),                        masterVertex._vertexData.getX(),                                      localVertex.toString(), masterVertex.toString() );
-  assertionEquals2( localVertex._vertexData.getLevel(),                                   masterVertex._vertexData.getLevel(),                                  localVertex.toString(), masterVertex.toString() );
+  assertionVectorNumericalEquals2( localVertex._vertexData.getX(),     masterVertex._vertexData.getX(),     localVertex.toString(), masterVertex.toString() );
+  assertionEquals2(                localVertex._vertexData.getLevel(), masterVertex._vertexData.getLevel(), localVertex.toString(), masterVertex.toString() );
   #endif
 
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2,  localVertex.toString(), masterVertex.toString() );
@@ -196,6 +193,18 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
   assertion4(
     MasterIsNotResponsibleAnymore ||
     localVertex._vertexData.getInsideOutsideDomain() == masterVertex._vertexData.getInsideOutsideDomain(),
+    localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
+  );
+  assertion4(
+    localVertex.getRefinementControl() == Vertex::Records::Unrefined ||
+    localVertex.getRefinementControl() == Vertex::Records::Refining ||
+    localVertex.getRefinementControl() == Vertex::Records::RefinementTriggered,
+    localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
+  );
+  assertion4(
+    masterVertex.getRefinementControl() != Vertex::Records::Erasing &&
+    masterVertex.getRefinementControl() == Vertex::Records::EraseTriggered &&
+    masterVertex.getRefinementControl() == Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing,
     localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
   );
 
@@ -247,7 +256,6 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
   }
 
   localVertex.invalidateAdjacentCellInformation();
-  #endif
 
   logTraceOutWith1Argument( "mergeWithForkedVertexFromMaster(...)", localVertex );
 }
