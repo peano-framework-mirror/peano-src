@@ -69,6 +69,11 @@
 #endif
 
 
+#ifndef noDistinguishStationaryAndInstationarySubtrees
+#define DistinguishStationaryAndInstationarySubtrees
+#endif
+
+
 /**
  * @see ActionSetTraversal
  */
