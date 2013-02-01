@@ -46,8 +46,10 @@ template <class Vertex>
 void peano::stacks::VertexSTDStack<Vertex>::push( int stackNumber, const Vertex& vertex ) {
   logTraceInWith2Arguments( "push(int,Vertex)", stackNumber, vertex );
   if (stackNumber==peano::stacks::Constants::InOutStack) {
+    // @todo Join3
     assertion1( vertex.getRefinementControl() != Vertex::Records::Refining, vertex );
     assertion1( vertex.getRefinementControl() != Vertex::Records::Erasing, vertex );
+    assertion1( vertex.getRefinementControl() != Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing, vertex );
     _inputOutputStack[1-_currentInputStack].push(vertex.getRecords());
   }
   else {
