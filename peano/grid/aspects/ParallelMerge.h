@@ -126,7 +126,7 @@ class peano::grid::aspects::ParallelMerge {
      * container and before the vertex has been sent to the worker or merged
      * with the worker data, respectively.
      *
-     * !!! Erasing rollback
+     * !!! Erasing rollback?
      *
      * Merging subdomains becomes tricky if the worker tries to erase right in the
      * iteration when it joins its data into its master:
@@ -148,11 +148,9 @@ class peano::grid::aspects::ParallelMerge {
      * The erasing vertex on level 2 however has to trigger a refinement on node 1.
      * Otherwise, the two grids are inconsistent. If we set the vertex to refining
      * on node 1, we however loose that information that this vertex should be
-     * coarsened. A solution to this issue would be to introduce a new state
+     * coarsened. One solution to this issue is to introduce a new state
      * 'vertex now shall be refined and should be erased immediately in the next
-     * traversal'. This makes the state automaton more complicated, so I decided
-     * not to introduce such a flag. As a consequence, erase commands are lost in
-     * this special case, i.e. the erase is rollbacked due to the join.
+     * traversal'.
      *
      * !!! Update of adjacency list entries
      *
