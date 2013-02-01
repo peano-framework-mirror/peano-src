@@ -37,6 +37,8 @@ namespace peano {
          */
         static const int CounterNodeWithoutLifecycle = 4*TWO_POWER_D;
 
+        static const int CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing = 5*TWO_POWER_D;
+
         std::string counterToString( int counter );
       }
   }

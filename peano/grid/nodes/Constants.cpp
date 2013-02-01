@@ -35,5 +35,11 @@ std::string peano::grid::nodes::counterToString( int counter ) {
   if (counter<CounterNodeWithoutLifecycle+TWO_POWER_D) {
     return "node-without-lifecycle(already-updated-in-4powd-pattern)";
   }
+  if (counter==CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing) {
+    return "new-node-due-to-join-though-worker-is-already-erasing";
+  }
+  if (counter<CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing+TWO_POWER_D) {
+    return "new-node-due-to-join-though-worker-is-already-erasing(already-updated-in-4powd-pattern)";
+  }
   return "undef";
 }
