@@ -35,9 +35,9 @@ namespace peano {
     * 		   2007-2009 Wolfgang Eckhardt
     * 		   2012      Tobias Weinzierl
     *
-    * 		   build date: 17-10-2012 11:27
+    * 		   build date: 29-11-2012 08:46
     *
-    * @date   14/11/2012 22:20
+    * @date   30/01/2013 12:34
     */
    class peano::grid::tests::records::TestState { 
       
@@ -493,9 +493,9 @@ namespace peano {
        * 		   2007-2009 Wolfgang Eckhardt
        * 		   2012      Tobias Weinzierl
        *
-       * 		   build date: 17-10-2012 11:27
+       * 		   build date: 29-11-2012 08:46
        *
-       * @date   14/11/2012 22:20
+       * @date   30/01/2013 12:34
        */
       class peano::grid::tests::records::TestStatePacked { 
          
@@ -961,9 +961,9 @@ namespace peano {
           * 		   2007-2009 Wolfgang Eckhardt
           * 		   2012      Tobias Weinzierl
           *
-          * 		   build date: 17-10-2012 11:27
+          * 		   build date: 29-11-2012 08:46
           *
-          * @date   14/11/2012 22:20
+          * @date   30/01/2013 12:34
           */
          class peano::grid::tests::records::TestState { 
             
@@ -1347,9 +1347,9 @@ namespace peano {
              * 		   2007-2009 Wolfgang Eckhardt
              * 		   2012      Tobias Weinzierl
              *
-             * 		   build date: 17-10-2012 11:27
+             * 		   build date: 29-11-2012 08:46
              *
-             * @date   14/11/2012 22:20
+             * @date   30/01/2013 12:34
              */
             class peano::grid::tests::records::TestStatePacked { 
                

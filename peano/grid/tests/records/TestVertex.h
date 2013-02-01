@@ -35,9 +35,9 @@ namespace peano {
     * 		   2007-2009 Wolfgang Eckhardt
     * 		   2012      Tobias Weinzierl
     *
-    * 		   build date: 17-10-2012 11:27
+    * 		   build date: 29-11-2012 08:46
     *
-    * @date   14/11/2012 22:20
+    * @date   30/01/2013 13:01
     */
    class peano::grid::tests::records::TestVertex { 
       
@@ -50,7 +50,7 @@ namespace peano {
          };
          
          enum RefinementControl {
-            Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5
+            Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5, RefineDueToJoinThoughWorkerIsAlreadyErasing = 6
          };
          
          struct PersistentRecords {
@@ -329,9 +329,9 @@ namespace peano {
        * 		   2007-2009 Wolfgang Eckhardt
        * 		   2012      Tobias Weinzierl
        *
-       * 		   build date: 17-10-2012 11:27
+       * 		   build date: 29-11-2012 08:46
        *
-       * @date   14/11/2012 22:20
+       * @date   30/01/2013 13:01
        */
       class peano::grid::tests::records::TestVertexPacked { 
          
@@ -625,9 +625,9 @@ namespace peano {
           * 		   2007-2009 Wolfgang Eckhardt
           * 		   2012      Tobias Weinzierl
           *
-          * 		   build date: 17-10-2012 11:27
+          * 		   build date: 29-11-2012 08:46
           *
-          * @date   14/11/2012 22:20
+          * @date   30/01/2013 13:01
           */
          class peano::grid::tests::records::TestVertex { 
             
@@ -640,7 +640,7 @@ namespace peano {
                };
                
                enum RefinementControl {
-                  Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5
+                  Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5, RefineDueToJoinThoughWorkerIsAlreadyErasing = 6
                };
                
                struct PersistentRecords {
@@ -872,9 +872,9 @@ namespace peano {
              * 		   2007-2009 Wolfgang Eckhardt
              * 		   2012      Tobias Weinzierl
              *
-             * 		   build date: 17-10-2012 11:27
+             * 		   build date: 29-11-2012 08:46
              *
-             * @date   14/11/2012 22:20
+             * @date   30/01/2013 13:01
              */
             class peano::grid::tests::records::TestVertexPacked { 
                
@@ -1122,9 +1122,9 @@ namespace peano {
              * 		   2007-2009 Wolfgang Eckhardt
              * 		   2012      Tobias Weinzierl
              *
-             * 		   build date: 17-10-2012 11:27
+             * 		   build date: 29-11-2012 08:46
              *
-             * @date   14/11/2012 22:20
+             * @date   30/01/2013 13:01
              */
             class peano::grid::tests::records::TestVertex { 
                
@@ -1137,7 +1137,7 @@ namespace peano {
                   };
                   
                   enum RefinementControl {
-                     Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5
+                     Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5, RefineDueToJoinThoughWorkerIsAlreadyErasing = 6
                   };
                   
                   struct PersistentRecords {
@@ -1403,9 +1403,9 @@ namespace peano {
                 * 		   2007-2009 Wolfgang Eckhardt
                 * 		   2012      Tobias Weinzierl
                 *
-                * 		   build date: 17-10-2012 11:27
+                * 		   build date: 29-11-2012 08:46
                 *
-                * @date   14/11/2012 22:20
+                * @date   30/01/2013 13:01
                 */
                class peano::grid::tests::records::TestVertexPacked { 
                   
@@ -1687,9 +1687,9 @@ namespace peano {
                 * 		   2007-2009 Wolfgang Eckhardt
                 * 		   2012      Tobias Weinzierl
                 *
-                * 		   build date: 17-10-2012 11:27
+                * 		   build date: 29-11-2012 08:46
                 *
-                * @date   14/11/2012 22:20
+                * @date   30/01/2013 13:01
                 */
                class peano::grid::tests::records::TestVertex { 
                   
@@ -1702,7 +1702,7 @@ namespace peano {
                      };
                      
                      enum RefinementControl {
-                        Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5
+                        Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5, RefineDueToJoinThoughWorkerIsAlreadyErasing = 6
                      };
                      
                      struct PersistentRecords {
@@ -1947,9 +1947,9 @@ namespace peano {
                    * 		   2007-2009 Wolfgang Eckhardt
                    * 		   2012      Tobias Weinzierl
                    *
-                   * 		   build date: 17-10-2012 11:27
+                   * 		   build date: 29-11-2012 08:46
                    *
-                   * @date   14/11/2012 22:20
+                   * @date   30/01/2013 13:01
                    */
                   class peano::grid::tests::records::TestVertexPacked { 
                      

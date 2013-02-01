@@ -290,12 +290,13 @@
          case Refining: return "Refining";
          case EraseTriggered: return "EraseTriggered";
          case Erasing: return "Erasing";
+         case RefineDueToJoinThoughWorkerIsAlreadyErasing: return "RefineDueToJoinThoughWorkerIsAlreadyErasing";
       }
       return "undefined";
    }
    
    std::string peano::grid::tests::records::TestVertex::getRefinementControlMapping() {
-      return "RefinementControl(Unrefined=0,Refined=1,RefinementTriggered=2,Refining=3,EraseTriggered=4,Erasing=5)";
+      return "RefinementControl(Unrefined=0,Refined=1,RefinementTriggered=2,Refining=3,EraseTriggered=4,Erasing=5,RefineDueToJoinThoughWorkerIsAlreadyErasing=6)";
    }
    
    
@@ -707,14 +708,14 @@
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 6));
    return (RefinementControl) tmp;
    }
    
    
    
     void peano::grid::tests::records::TestVertexPacked::PersistentRecords::setRefinementControl(const RefinementControl& refinementControl)  {
-      assertion((refinementControl >= 0 && refinementControl <= 5));
+      assertion((refinementControl >= 0 && refinementControl <= 6));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
@@ -841,14 +842,14 @@
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 6));
    return (RefinementControl) tmp;
    }
    
    
    
     void peano::grid::tests::records::TestVertexPacked::setRefinementControl(const RefinementControl& refinementControl)  {
-      assertion((refinementControl >= 0 && refinementControl <= 5));
+      assertion((refinementControl >= 0 && refinementControl <= 6));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
@@ -1540,12 +1541,13 @@
          case Refining: return "Refining";
          case EraseTriggered: return "EraseTriggered";
          case Erasing: return "Erasing";
+         case RefineDueToJoinThoughWorkerIsAlreadyErasing: return "RefineDueToJoinThoughWorkerIsAlreadyErasing";
       }
       return "undefined";
    }
    
    std::string peano::grid::tests::records::TestVertex::getRefinementControlMapping() {
-      return "RefinementControl(Unrefined=0,Refined=1,RefinementTriggered=2,Refining=3,EraseTriggered=4,Erasing=5)";
+      return "RefinementControl(Unrefined=0,Refined=1,RefinementTriggered=2,Refining=3,EraseTriggered=4,Erasing=5,RefineDueToJoinThoughWorkerIsAlreadyErasing=6)";
    }
    
    
@@ -1916,14 +1918,14 @@
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 6));
    return (RefinementControl) tmp;
    }
    
    
    
     void peano::grid::tests::records::TestVertexPacked::PersistentRecords::setRefinementControl(const RefinementControl& refinementControl)  {
-      assertion((refinementControl >= 0 && refinementControl <= 5));
+      assertion((refinementControl >= 0 && refinementControl <= 6));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
@@ -2014,14 +2016,14 @@
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 6));
    return (RefinementControl) tmp;
    }
    
    
    
     void peano::grid::tests::records::TestVertexPacked::setRefinementControl(const RefinementControl& refinementControl)  {
-      assertion((refinementControl >= 0 && refinementControl <= 5));
+      assertion((refinementControl >= 0 && refinementControl <= 6));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
@@ -2675,12 +2677,13 @@ std::string peano::grid::tests::records::TestVertex::toString(const RefinementCo
       case Refining: return "Refining";
       case EraseTriggered: return "EraseTriggered";
       case Erasing: return "Erasing";
+      case RefineDueToJoinThoughWorkerIsAlreadyErasing: return "RefineDueToJoinThoughWorkerIsAlreadyErasing";
    }
    return "undefined";
 }
 
 std::string peano::grid::tests::records::TestVertex::getRefinementControlMapping() {
-   return "RefinementControl(Unrefined=0,Refined=1,RefinementTriggered=2,Refining=3,EraseTriggered=4,Erasing=5)";
+   return "RefinementControl(Unrefined=0,Refined=1,RefinementTriggered=2,Refining=3,EraseTriggered=4,Erasing=5,RefineDueToJoinThoughWorkerIsAlreadyErasing=6)";
 }
 
 
@@ -3078,14 +3081,14 @@ _level(level) {
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 6));
    return (RefinementControl) tmp;
 }
 
 
 
  void peano::grid::tests::records::TestVertexPacked::PersistentRecords::setRefinementControl(const RefinementControl& refinementControl)  {
-   assertion((refinementControl >= 0 && refinementControl <= 5));
+   assertion((refinementControl >= 0 && refinementControl <= 6));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
@@ -3200,14 +3203,14 @@ peano::grid::tests::records::TestVertexPacked::~TestVertexPacked() { }
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 6));
    return (RefinementControl) tmp;
 }
 
 
 
  void peano::grid::tests::records::TestVertexPacked::setRefinementControl(const RefinementControl& refinementControl)  {
-   assertion((refinementControl >= 0 && refinementControl <= 5));
+   assertion((refinementControl >= 0 && refinementControl <= 6));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
@@ -3900,12 +3903,13 @@ switch (param) {
    case Refining: return "Refining";
    case EraseTriggered: return "EraseTriggered";
    case Erasing: return "Erasing";
+   case RefineDueToJoinThoughWorkerIsAlreadyErasing: return "RefineDueToJoinThoughWorkerIsAlreadyErasing";
 }
 return "undefined";
 }
 
 std::string peano::grid::tests::records::TestVertex::getRefinementControlMapping() {
-return "RefinementControl(Unrefined=0,Refined=1,RefinementTriggered=2,Refining=3,EraseTriggered=4,Erasing=5)";
+return "RefinementControl(Unrefined=0,Refined=1,RefinementTriggered=2,Refining=3,EraseTriggered=4,Erasing=5,RefineDueToJoinThoughWorkerIsAlreadyErasing=6)";
 }
 
 
@@ -4290,14 +4294,14 @@ int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 6));
    return (RefinementControl) tmp;
 }
 
 
 
  void peano::grid::tests::records::TestVertexPacked::PersistentRecords::setRefinementControl(const RefinementControl& refinementControl)  {
-assertion((refinementControl >= 0 && refinementControl <= 5));
+assertion((refinementControl >= 0 && refinementControl <= 6));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
@@ -4400,14 +4404,14 @@ int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 6));
    return (RefinementControl) tmp;
 }
 
 
 
  void peano::grid::tests::records::TestVertexPacked::setRefinementControl(const RefinementControl& refinementControl)  {
-assertion((refinementControl >= 0 && refinementControl <= 5));
+assertion((refinementControl >= 0 && refinementControl <= 6));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
