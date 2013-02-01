@@ -203,8 +203,8 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
   );
   assertion4(
     masterVertex.getRefinementControl() != Vertex::Records::Erasing &&
-    masterVertex.getRefinementControl() == Vertex::Records::EraseTriggered &&
-    masterVertex.getRefinementControl() == Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing,
+    masterVertex.getRefinementControl() != Vertex::Records::EraseTriggered &&
+    masterVertex.getRefinementControl() != Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing,
     localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
   );
 
