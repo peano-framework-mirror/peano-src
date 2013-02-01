@@ -169,7 +169,14 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     Base::_eventHandle
   );
 
-  if (peano::grid::aspects::VertexStateAnalysis::doesOneVertexCarryRefinementFlag(fineGridVertices,fineGridVerticesEnumerator,Vertex::Records::Refining)) {
+  #ifdef Parallel
+  const bool refineLeaf =
+       (peano::grid::aspects::VertexStateAnalysis::doesOneVertexCarryRefinementFlag(fineGridVertices,fineGridVerticesEnumerator,Vertex::Records::Refining))
+    || (peano::grid::aspects::VertexStateAnalysis::doesOneVertexCarryRefinementFlag(fineGridVertices,fineGridVerticesEnumerator,Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing));
+  #else
+  const bool refineLeaf = peano::grid::aspects::VertexStateAnalysis::doesOneVertexCarryRefinementFlag(fineGridVertices,fineGridVerticesEnumerator,Vertex::Records::Refining);
+  #endif
+  if (refineLeaf) {
     assertion5(
      fineGridVerticesEnumerator.getCellFlags() <= peano::grid::NotStationary,
       fineGridVerticesEnumerator.toString(),
@@ -191,7 +198,23 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
         newFineGridCells[i].assignToLocalNode();
       }
     }
+
+    const bool elementIsNotErasing =
+      peano::grid::aspects::VertexStateAnalysis::doesOneVertexCarryRefinementFlag(fineGridVertices,fineGridVerticesEnumerator,Vertex::Records::Refining) ||
+      peano::grid::aspects::VertexStateAnalysis::doesOneVertexCarryRefinementFlag(fineGridVertices,fineGridVerticesEnumerator,Vertex::Records::Refined);
+    #else
+    const bool elementIsNotErasing = true;
     #endif
+
+    logDebug(
+      "traverse(...)",
+      "Refine a leaf. Adjacent vertices are "
+      << fineGridVertices[ fineGridVerticesEnumerator(0) ].toString() << ", "
+      << fineGridVertices[ fineGridVerticesEnumerator(1) ].toString() << ", "
+      << fineGridVertices[ fineGridVerticesEnumerator(2) ].toString() << ", "
+      << fineGridVertices[ fineGridVerticesEnumerator(3) ].toString() << ", enumerator="
+      << fineGridVerticesEnumerator.toString()
+    );
 
     invokeEnterCell();
 
@@ -201,25 +224,41 @@ void peano::grid::nodes::Leaf<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       fineGridVertices,
       fineGridVerticesEnumerator,
       newFineGridCells,
-      false
+      !elementIsNotErasing
     );
 
-    peano::grid::nodes::tasks::StoreSubCells<Cell,CellStack>  storeSubCells(
-      fineGridCell,
-      newFineGridCells,
-      Base::_cellStack,
-      peano::grid::aspects::CellPeanoCurve::getLoopDirection(fineGridCell,state.isTraversalInverted())
-    );
+    if (elementIsNotErasing) {
+      peano::grid::nodes::tasks::StoreSubCells<Cell,CellStack>  storeSubCells(
+        fineGridCell,
+        newFineGridCells,
+        Base::_cellStack,
+        peano::grid::aspects::CellPeanoCurve::getLoopDirection(fineGridCell,state.isTraversalInverted())
+      );
 
-    peano::datatraversal::TaskSet(
-      storeSubCells,
-      invokeLeaveCell,
-      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-        2,
-        peano::datatraversal::autotuning::CallLeaveCellAndStoreSubCellsWithinTraverse
-      )
-    );
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallLeaveCellAndStoreSubCellsWithinTraverse);
+      peano::datatraversal::TaskSet(
+        storeSubCells,
+        invokeLeaveCell,
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+          2,
+          peano::datatraversal::autotuning::CallLeaveCellAndStoreSubCellsWithinTraverse
+        )
+      );
+      peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallLeaveCellAndStoreSubCellsWithinTraverse);
+    }
+    else {
+      logDebug(
+        "traverse(...)",
+        "this cell was temporarily refined and now is destroyed. Adjacent vertices are "
+        << fineGridVertices[ fineGridVerticesEnumerator(0) ].toString() << ", "
+        << fineGridVertices[ fineGridVerticesEnumerator(1) ].toString() << ", "
+        << fineGridVertices[ fineGridVerticesEnumerator(2) ].toString() << ", "
+        << fineGridVertices[ fineGridVerticesEnumerator(3) ].toString() << ", enumerator="
+        << fineGridVerticesEnumerator.toString()
+      );
+
+      fineGridCell.switchToLeaf();
+      invokeLeaveCell();
+    }
   }
   else {
     state.updateInLeaf(fineGridVerticesEnumerator.getLevel(), fineGridVerticesEnumerator.getCellSize() );
