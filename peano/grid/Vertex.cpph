@@ -164,6 +164,7 @@ bool peano::grid::Vertex<VertexData>::switchRefinementTriggeredToRefining() {
 
 template <class VertexData>
 bool peano::grid::Vertex<VertexData>::switchEraseTriggeredToErasing() {
+  assertion1( _vertexData.getRefinementControl()!=VertexData::RefineDueToJoinThoughWorkerIsAlreadyErasing, toString() );
   bool doTransition = _vertexData.getRefinementControl()==VertexData::EraseTriggered;
   if ( doTransition ) {
     _vertexData.setRefinementControl( VertexData::Erasing );
@@ -204,6 +205,11 @@ void peano::grid::Vertex<VertexData>::updateTransientRefinementFlagsBeforeVertex
   else if (_vertexData.getRefinementControl()==VertexData::Erasing) {
     _vertexData.setRefinementControl( VertexData::Unrefined );
   }
+  #ifdef Parallel
+  else if (_vertexData.getRefinementControl()==VertexData::RefineDueToJoinThoughWorkerIsAlreadyErasing) {
+    _vertexData.setRefinementControl( VertexData::Unrefined );
+  }
+  #endif
 }
 
 
