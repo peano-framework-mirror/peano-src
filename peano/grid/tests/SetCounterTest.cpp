@@ -132,7 +132,7 @@ void peano::grid::tests::SetCounterTest::testRefinementDueToJoinThoughWorkerIsAl
 
 
 void peano::grid::tests::SetCounterTest::testRefinementDueToJoinThoughWorkerIsAlreadyErasing1() {
-  #ifdef Dim2
+  #if defined(Dim2) && defined(Parallel)
   TestVertex                                            coarseGridVertices[FOUR_POWER_D];
   peano::grid::SingleLevelEnumerator   coarseGridVerticesEnumerator(
     peano::grid::SingleLevelEnumerator::Vector( 3.0),
