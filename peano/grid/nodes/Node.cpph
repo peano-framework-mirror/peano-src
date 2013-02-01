@@ -438,7 +438,7 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
         _eventHandle.mergeWithRemoteDataDueToForkOrJoin(fineGridCell,receivedCell,*p,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize(),fineGridVerticesEnumerator.getLevel());
         peano::parallel::JoinDataBufferPool::getInstance().removeCellFromStream(*p);
-        logDebug( "updateCellsParallelStateAfterLoadIfNodeIsJoiningWithWorker(...)", "received and merged cell " << fineGridCell.toString()  << " due to join with worker");
+        logDebug( "updateCellsParallelStateAfterLoadIfNodeIsJoiningWithWorker(...)", "received cell " << receivedCell.toString() << " and merged it into " << fineGridCell.toString()  << " due to join with worker");
 
         dfor2(k)
           if (adjacencyBitset[kScalar]) {
