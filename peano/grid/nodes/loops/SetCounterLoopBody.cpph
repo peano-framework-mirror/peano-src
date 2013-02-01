@@ -19,15 +19,50 @@ peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::SetCounterLoopBody(
 
 template <class Vertex>
 int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex(
-  bool oneFatherCarriesDeleteFlag,
-  bool oneFatherCarriesRefiningFlag,
-  bool oneFatherCarriesRefinedFlag
+  bool  oneFatherCarriesDeleteFlag,
+  bool  oneFatherCarriesRefiningFlag,
+  bool  oneFatherCarriesRefinedFlag,
+  bool  oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag
 ) {
   logTraceInWith3Arguments( "analyseFineGridVertex(...)", oneFatherCarriesDeleteFlag, oneFatherCarriesRefiningFlag, oneFatherCarriesRefinedFlag);
 
   // Optimization performed, for furhter details please refer to
   // https://opt-patterns.wiki.tum.de/Conditions+merging
 
+  #ifdef Parallel
+  if(oneFatherCarriesRefinedFlag){
+    logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterPersistentNode" );
+    return CounterPersistentNode;
+  }
+  else {
+    if(!oneFatherCarriesRefiningFlag) {
+      if(!oneFatherCarriesDeleteFlag) {
+          if (!oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag) {
+            logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterHangingNode" );
+            return CounterHangingNode;
+          }
+          else {
+            logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing" );
+            return CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing;
+          }
+      }
+      else {
+        logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterPersistentNodeDelete" );
+        return CounterPersistentNodeDelete;
+      }
+    }
+    else {
+      if(!oneFatherCarriesDeleteFlag) {
+        logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterNewNode"  );
+        return CounterNewNode;
+      }
+      else {
+        logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterPersistentNode"  );
+        return CounterPersistentNode;
+      }
+    }
+  }
+  #else
   if(oneFatherCarriesRefinedFlag){
     logTraceOutWith1Argument( "analyseFineGridVertex(...)", "CounterPersistentNode" );
     return CounterPersistentNode;
@@ -54,6 +89,7 @@ int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex
       }
     }
   }
+  #endif
 
   assertionMsg(false, "all cases handled in the if construct from above");
 
@@ -69,9 +105,10 @@ int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex
   const tarch::la::Vector<DIMENSIONS,int>&   coordinates
 ) {
   logTraceInWith2Arguments( "analyseFineGridVertex(...)", coarseGridVerticesEnumerator.toString(), coordinates );
-  bool oneFatherCarriesDeleteFlag   = false;
-  bool oneFatherCarriesRefiningFlag = false;
-  bool oneFatherCarriesRefinedFlag  = false;
+  bool  oneFatherCarriesDeleteFlag                                             = false;
+  bool  oneFatherCarriesRefiningFlag                                           = false;
+  bool  oneFatherCarriesRefinedFlag                                            = false;
+  bool  oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag = false;
   tarch::la::Vector<DIMENSIONS,int>  parentCoordinates(0);
   analyseFineGridVertex(
     coarseVertices,
@@ -81,9 +118,10 @@ int peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVertex
     oneFatherCarriesDeleteFlag,
     oneFatherCarriesRefiningFlag,
     oneFatherCarriesRefinedFlag,
+    oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag,
     DIMENSIONS-1
   );
-  int result = analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag);
+  int result = analyseFineGridVertex(oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag);
   logTraceOutWith1Argument( "analyseFineGridVertex(...)", result );
   return result;
 }
@@ -100,29 +138,31 @@ void peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVerte
   bool&                                      oneFatherCarriesDeleteFlag,
   bool&                                      oneFatherCarriesRefiningFlag,
   bool&                                      oneFatherCarriesRefinedFlag,
+  bool&                                      oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag,
   int                                        dimension
 ) {
   assertion(dimension<DIMENSIONS);
 
   if (dimension<0) {
-    oneFatherCarriesDeleteFlag    |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Erasing;
-    oneFatherCarriesRefiningFlag  |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Refining;
-    oneFatherCarriesRefinedFlag   |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Refined;
+    oneFatherCarriesDeleteFlag                                               |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Erasing;
+    oneFatherCarriesRefiningFlag                                             |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Refining;
+    oneFatherCarriesRefinedFlag                                              |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Refined;
+    oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag   |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing;
   }
   else {
     if ( coordinates(dimension)==0 ) {
       parentCoordinates(dimension)=0;
-      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,dimension-1);
+      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag,dimension-1);
     }
     else if ( coordinates(dimension)==3 ) {
       parentCoordinates(dimension)=1;
-      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,dimension-1);
+      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag,dimension-1);
     }
     else {
       parentCoordinates(dimension)=0;
-      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,dimension-1);
+      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag,dimension-1);
       parentCoordinates(dimension)=1;
-      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,dimension-1);
+      analyseFineGridVertex(coarseVertices,coarseGridVerticesEnumerator,coordinates,parentCoordinates,oneFatherCarriesDeleteFlag,oneFatherCarriesRefiningFlag,oneFatherCarriesRefinedFlag,oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag,dimension-1);
     }
   }
 }
@@ -134,5 +174,6 @@ void peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::operator() (const ta
 
   logTraceInWith2Arguments( "operator()", i, indexInCounterArray );
   _fineGridCounter[indexInCounterArray] = analyseFineGridVertex(_coarseGridVertices,_coarseGridVerticesEnumerator,i);
+
   logTraceOutWith1Argument( "operator()",_fineGridCounter[indexInCounterArray] );
 }
