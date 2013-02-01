@@ -108,8 +108,9 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
   );
   #endif
 
-  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Refining,   _fineGridVertices[positionInVertexArray] );
-  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Erasing, _fineGridVertices[positionInVertexArray] );
+  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Refining,                                    _fineGridVertices[positionInVertexArray] );
+  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Erasing,                                     _fineGridVertices[positionInVertexArray] );
+  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing, _fineGridVertices[positionInVertexArray] );
 
   #ifdef Parallel
   if (
@@ -182,8 +183,7 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
 
   assertion(!_fineGridVertices[positionInVertexArray].isHangingNode() );
 
-  // @todo P2
-  if (counterIsDelete && _fineGridVertices[positionInVertexArray].getRefinementControl()==Vertex::Records::Refined ) {
+  if (counterIsDelete && _fineGridVertices[positionInVertexArray].getRefinementControl()==Vertex::Records::Refined) {
     _fineGridVertices[positionInVertexArray].erase();
     _hasErased = true;
     logDebug( "updateRefinementFlagsOfVertexAfterLoad()", "made vertex coarsening as parent is coarsening: " << _fineGridVertices[positionInVertexArray].toString() );
@@ -343,7 +343,9 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
           _fineGridPositionOfCell + positionInLocalCell
         );
         _fineGridVertices[positionInVertexArray].switchToOutside();
-        _fineGridVertices[positionInVertexArray].erase();
+        if (_fineGridVertices[positionInVertexArray].getRefinementControl()!=Vertex::Records::Unrefined) {
+          _fineGridVertices[positionInVertexArray].erase();
+        }
         _hasChangedVertexState = true;
         logDebug( "load_vertices()", "switch vertex to outside. vertex=" << _fineGridVertices[positionInVertexArray] << ",enumerator=" << _fineGridVerticesEnumerator(0) );
         break;
@@ -425,8 +427,9 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
   );
   #endif
 
-  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Refining,   _fineGridVertices[positionInVertexArray] );
-  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Erasing, _fineGridVertices[positionInVertexArray] );
+  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Refining,                                    _fineGridVertices[positionInVertexArray] );
+  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::Erasing,                                     _fineGridVertices[positionInVertexArray] );
+  assertion1( _fineGridVertices[positionInVertexArray].getRefinementControl() != Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing, _fineGridVertices[positionInVertexArray] );
 
   logTraceOutWith1Argument( "createNewVertex(...)", _fineGridVertices[positionInVertexArray].toString() );
 }
@@ -460,9 +463,12 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
   const bool CaseLoadPersistentVertex =                                     (_counter[positionInArray]==CounterPersistentNode && action._id==peano::stacks::Constants::InOutStack);
   const bool CaseLoadOfDeleteVertex   =  !StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterPersistentNodeDelete && action._id==peano::stacks::Constants::InOutStack);
   const bool CaseCreateHangingNode    =  !RegularStaticGrid              && (_counter[positionInArray]==CounterHangingNode);
-  const bool CaseCreateNewNode        =  !StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterNewNode && action._id==peano::stacks::Constants::InOutStack);
+  const bool CaseCreateNewNode            =  !StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterNewNode && action._id==peano::stacks::Constants::InOutStack);
+  #ifdef Parallel
+  const bool CaseCreateNewNodeTemporarily = !StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing && action._id==peano::stacks::Constants::InOutStack);
+  #endif
   const bool CaseTakeFromTempStacks   =  _counter[positionInArray]==CounterPersistentNode ||
-                                         (!StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterNewNode || _counter[positionInArray]==CounterPersistentNodeDelete));
+                                         (!StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterNewNode || _counter[positionInArray]==CounterPersistentNodeDelete  || _counter[positionInArray]==CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing));
 
   logDebug(
     "operator()",
@@ -514,6 +520,18 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
     _counter[positionInArray] = CounterPersistentNode;
     logDebug( "operator()", "vertex at " << positionInArray << " is a new vertex: " << _fineGridVertices[positionInArray].toString() );
   }
+  #ifdef Parallel
+  else if ( CaseCreateNewNodeTemporarily ) {
+    createNewVertex(positionInArray, action._cartesianPosition );
+    updateGeometry(positionInArray,action._cartesianPosition);
+    invokeLoadVertexEvents(positionInArray,action._cartesianPosition);
+    const bool UpdateRefinementFlagsAfterLoadImmediately = !_fineGridVertices[positionInArray].isAdjacentToRemoteRank();
+    if (UpdateRefinementFlagsAfterLoadImmediately) {
+      updateRefinementFlagsOfVertexAfterLoad(positionInArray,false);
+    }
+    logDebug( "operator()", "vertex at " << positionInArray << " is a temporary new vertex due to a join: " << _fineGridVertices[positionInArray].toString() );
+  }
+  #endif
   else if ( CaseTakeFromTempStacks ) {
     _fineGridVertices[positionInArray] = _vertexStack.pop(action._id);
     logDebug( "operator()", "vertex at " << positionInArray << " is a persistent vertex from temporary stacks: " << _fineGridVertices[positionInArray].toString() );
