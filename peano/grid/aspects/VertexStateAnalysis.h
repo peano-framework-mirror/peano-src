@@ -28,23 +28,23 @@ class peano::grid::aspects::VertexStateAnalysis {
   public:
     template <class Vertex>
     static bool doesOneVertexCarryRefinementFlag(
-      Vertex                                                 fineGridVertices[FOUR_POWER_D],
-      const peano::grid::VertexEnumerator&  fineGridVerticesEnumerator,
-      typename Vertex::Records::RefinementControl            whichFlag
+      Vertex                                       fineGridVertices[FOUR_POWER_D],
+      const peano::grid::VertexEnumerator&         fineGridVerticesEnumerator,
+      typename Vertex::Records::RefinementControl  whichFlag
     );
 
     template <class Vertex>
     static bool doesNoVertexCarryRefinementFlag(
-      Vertex                                                 fineGridVertices[FOUR_POWER_D],
-      const peano::grid::VertexEnumerator&  fineGridVerticesEnumerator,
-      typename Vertex::Records::RefinementControl            whichFlag
+      Vertex                                       fineGridVertices[FOUR_POWER_D],
+      const peano::grid::VertexEnumerator&         fineGridVerticesEnumerator,
+      typename Vertex::Records::RefinementControl  whichFlag
     );
 
     template <class Vertex>
     static bool doAllVerticesCarryRefinementFlag(
-      Vertex                                                 fineGridVertices[FOUR_POWER_D],
-      const peano::grid::VertexEnumerator&  fineGridVerticesEnumerator,
-      typename Vertex::Records::RefinementControl            whichFlag
+      Vertex                                       fineGridVertices[FOUR_POWER_D],
+      const peano::grid::VertexEnumerator&         fineGridVerticesEnumerator,
+      typename Vertex::Records::RefinementControl  whichFlag
     );
 
     /**
@@ -57,7 +57,7 @@ class peano::grid::aspects::VertexStateAnalysis {
      */
     template <class Vertex>
     static bool isOneCoarseGridVertexOutsideDomain(
-      Vertex*                                                coarseGridVertices,
+      Vertex*                               coarseGridVertices,
       const peano::grid::VertexEnumerator&  coarseGridVerticesEnumerator
     );
 
@@ -77,22 +77,22 @@ class peano::grid::aspects::VertexStateAnalysis {
      */
     template <class Vertex>
     static std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> whichPersistentVerticesAreAdjacentToRank(
-      int                                                    rank,
-      Vertex*                                                vertices,
+      int                                   rank,
+      Vertex*                               vertices,
       const peano::grid::VertexEnumerator&  verticesEnumerator
     );
     #endif
 
     template <class Vertex>
     static std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> whichVerticesArePersistent(
-      int                                                    rank,
-      Vertex*                                                vertices,
+      int                                   rank,
+      Vertex*                               vertices,
       const peano::grid::VertexEnumerator&  verticesEnumerator
     );
 
     template <class Vertex>
     static bool isOneVertexHanging(
-      Vertex*                                                vertices,
+      Vertex*                               vertices,
       const peano::grid::VertexEnumerator&  verticesEnumerator
     );
 };
