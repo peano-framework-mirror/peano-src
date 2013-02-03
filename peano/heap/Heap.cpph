@@ -11,11 +11,11 @@
 
 
 template <class Data>
-tarch::logging::Log peano::kernel::heap::Heap<Data>::_log("peano::kernel::heap::Heap");
+tarch::logging::Log peano::heap::Heap<Data>::_log("peano::heap::Heap");
 
 
 template <class Data>
-peano::kernel::heap::Heap<Data>::Heap()
+peano::heap::Heap<Data>::Heap()
   : _heapData(), _nextIndex(0)
   #ifdef Parallel
     , _mpiTagForBoundaryDataExchange(tarch::parallel::Node::reserveFreeTag("heap[boundary]"))
@@ -38,12 +38,12 @@ peano::kernel::heap::Heap<Data>::Heap()
   }
   #endif
 
-  tarch::services::ServiceRepository::getInstance().addService( this, "peano::kernel::heap::Heap" );
+  tarch::services::ServiceRepository::getInstance().addService( this, "peano::heap::Heap" );
 }
 
 
 template <class Data>
-peano::kernel::heap::Heap<Data>::~Heap()
+peano::heap::Heap<Data>::~Heap()
 {
   plotStatistics();
   deleteAllData();
@@ -51,7 +51,7 @@ peano::kernel::heap::Heap<Data>::~Heap()
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::deleteAllData() {
+void peano::heap::Heap<Data>::deleteAllData() {
   for(typename std::map<int, std::vector<Data>*>::iterator i = _heapData.begin(); i != _heapData.end(); i++) {
     assertionMsg((*i).second != 0, _name << ": Null-pointer was stored in heap data map.");
     delete (*i).second;
@@ -61,7 +61,7 @@ void peano::kernel::heap::Heap<Data>::deleteAllData() {
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::plotStatistics() {
+void peano::heap::Heap<Data>::plotStatistics() {
   if(_name != "") {
     logInfo("plotStatistics()", "Statistics for " << _name);
   }
@@ -71,14 +71,14 @@ void peano::kernel::heap::Heap<Data>::plotStatistics() {
 
 
 template <class Data>
-peano::kernel::heap::Heap<Data>& peano::kernel::heap::Heap<Data>::getInstance() {
-  static peano::kernel::heap::Heap<Data> instance;
+peano::heap::Heap<Data>& peano::heap::Heap<Data>::getInstance() {
+  static peano::heap::Heap<Data> instance;
   return instance;
 }
 
 
 template <class Data>
-int peano::kernel::heap::Heap<Data>::createData() {
+int peano::heap::Heap<Data>::createData() {
   logTraceIn( "createData()" );
   #if defined(SharedMemoryParallelisation)
   tarch::multicore::Lock lock(_dataSemaphore);
@@ -111,7 +111,7 @@ int peano::kernel::heap::Heap<Data>::createData() {
 
 
 template <class Data>
-std::vector<Data>& peano::kernel::heap::Heap<Data>::getData(int index) {
+std::vector<Data>& peano::heap::Heap<Data>::getData(int index) {
   #ifdef Asserts
   std::string message = "Trying to get heap data for unknown index. Has the index been initialized correctly?";
   #endif
@@ -122,13 +122,23 @@ std::vector<Data>& peano::kernel::heap::Heap<Data>::getData(int index) {
 
 
 template <class Data>
-bool peano::kernel::heap::Heap<Data>::isValidIndex(int index) {
+void peano::heap::Heap<Data>::moveData( int toIndex, int fromIndex ) {
+  assertion4(_heapData.find(toIndex) != _heapData.end(), _name, toIndex, fromIndex, _heapData.size());
+  assertion4(_heapData.find(fromIndex) != _heapData.end(), _name, toIndex, fromIndex, _heapData.size());
+
+  _heapData[toIndex]->insert( _heapData[toIndex]->end(), _heapData[fromIndex]->begin(), _heapData[fromIndex]->end() );
+  _heapData[fromIndex]->clear();
+}
+
+
+template <class Data>
+bool peano::heap::Heap<Data>::isValidIndex(int index) {
     return _heapData.find(index) != _heapData.end();
 }
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::deleteData(int index) {
+void peano::heap::Heap<Data>::deleteData(int index) {
   logTraceInWith2Arguments("deleteData(int)", _name, index);
 
   #if defined(SharedMemoryParallelisation)
@@ -153,39 +163,39 @@ void peano::kernel::heap::Heap<Data>::deleteData(int index) {
 
 
 template <class Data>
-int peano::kernel::heap::Heap<Data>::getNumberOfAllocatedEntries() {
+int peano::heap::Heap<Data>::getNumberOfAllocatedEntries() {
   return _heapData.size();
 }
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::restart() {
+void peano::heap::Heap<Data>::restart() {
   deleteAllData();
 }
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::shutdown() {
+void peano::heap::Heap<Data>::shutdown() {
   deleteAllData();
 }
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::setName(std::string name) {
+void peano::heap::Heap<Data>::setName(std::string name) {
   _name = name;
 }
 
 
 #if !defined(Asserts)
 template <class Data>
-void peano::kernel::heap::Heap<Data>::sendData(int index, int toRank, bool isSentDueToForkOrJoin) {
+void peano::heap::Heap<Data>::sendData(int index, int toRank, bool isSentDueToForkOrJoin) {
   sendData(index, toRank, 0, 0, isSentDueToForkOrJoin);
 }
 #endif
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::sendData(
+void peano::heap::Heap<Data>::sendData(
   int                                           index,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS, double>&  position,
@@ -248,7 +258,7 @@ void peano::kernel::heap::Heap<Data>::sendData(
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::releaseSentMessages(std::vector<SendReceiveTask>& tasks) {
+void peano::heap::Heap<Data>::releaseSentMessages(std::vector<SendReceiveTask>& tasks) {
   #ifdef Parallel
   logTraceInWith1Argument( "releaseSentMessages()", tasks.size() );
 
@@ -270,7 +280,7 @@ void peano::kernel::heap::Heap<Data>::releaseSentMessages(std::vector<SendReceiv
          (!triggeredTimeoutWarning)
       ) {
          tarch::parallel::Node::getInstance().writeTimeOutWarning(
-           "peano::kernel::heap::Heap",
+           "peano::heap::Heap",
            "releaseSentMessages()", i->_rank,-1,i->_metaInformation.getLength()
          );
          triggeredTimeoutWarning = true;
@@ -283,7 +293,7 @@ void peano::kernel::heap::Heap<Data>::releaseSentMessages(std::vector<SendReceiv
          msg << "tag either " << _mpiTagForBoundaryDataExchange
              << " or " << _mpiTagToExchangeJoinForkData;
          tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
-           "peano::kernel::heap::Heap",
+           "peano::heap::Heap",
            "releaseSentMessages()", i->_rank,
            -1,
            i->_metaInformation.getLength(), msg.str()
@@ -300,7 +310,7 @@ void peano::kernel::heap::Heap<Data>::releaseSentMessages(std::vector<SendReceiv
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::releaseSentMessages() {
+void peano::heap::Heap<Data>::releaseSentMessages() {
   #ifdef Parallel
   logTraceInWith2Arguments( "releaseSentMessages()", _asynchronousSendTasks.size(), _synchronousSendTasks.size() );
 
@@ -315,7 +325,7 @@ void peano::kernel::heap::Heap<Data>::releaseSentMessages() {
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages() {
+void peano::heap::Heap<Data>::waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages() {
   logTraceInWith3Arguments( "waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages()", _name, getSizeOfReceiveBuffer(), getSizeOfSendBuffer() );
 
   #ifdef Parallel
@@ -329,7 +339,7 @@ void peano::kernel::heap::Heap<Data>::waitUntilNumberOfReceivedMessagesEqualsNum
        (!triggeredTimeoutWarning)
     ) {
        tarch::parallel::Node::getInstance().writeTimeOutWarning(
-         "peano::kernel::heap::Heap::releaseMessages",
+         "peano::heap::Heap::releaseMessages",
          "waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages()", -1,
          _mpiTagForBoundaryDataExchange, -1
        );
@@ -340,7 +350,7 @@ void peano::kernel::heap::Heap<Data>::waitUntilNumberOfReceivedMessagesEqualsNum
        (clock()>timeOutShutdown)
     ) {
        tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
-         "peano::kernel::heap::Heap::releaseMessages",
+         "peano::heap::Heap::releaseMessages",
          "waitUntilNumberOfReceivedMessagesEqualsNumberOfSentMessages()", -1,
          _mpiTagForBoundaryDataExchange, -1
        );
@@ -355,7 +365,7 @@ void peano::kernel::heap::Heap<Data>::waitUntilNumberOfReceivedMessagesEqualsNum
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::releaseReceivedMessagesRequests() {
+void peano::heap::Heap<Data>::releaseReceivedMessagesRequests() {
   #ifdef Parallel
   // I originally used a plain for loop over the receive buffer, but that does not
   // work, as a receiveDanglingMessages within this for loop might change the
@@ -382,7 +392,7 @@ void peano::kernel::heap::Heap<Data>::releaseReceivedMessagesRequests() {
        (!triggeredTimeoutWarning)
     ) {
        tarch::parallel::Node::getInstance().writeTimeOutWarning(
-         "peano::kernel::heap::Heap",
+         "peano::heap::Heap",
          "releaseReceivedMessagesRequests()", -1,
          _mpiTagForBoundaryDataExchange, -1
        );
@@ -393,7 +403,7 @@ void peano::kernel::heap::Heap<Data>::releaseReceivedMessagesRequests() {
        (clock()>timeOutShutdown)
     ) {
        tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
-         "peano::kernel::heap::Heap",
+         "peano::heap::Heap",
          "releaseReceivedMessagesRequests()", -1,
          _mpiTagForBoundaryDataExchange, -1
        );
@@ -407,14 +417,14 @@ void peano::kernel::heap::Heap<Data>::releaseReceivedMessagesRequests() {
 
 #if !defined(Asserts)
 template <class Data>
-std::vector<Data> peano::kernel::heap::Heap<Data>::receiveData(int fromRank, bool isExchangedSynchronously) {
+std::vector<Data> peano::heap::Heap<Data>::receiveData(int fromRank, bool isExchangedSynchronously) {
   return receiveData(fromRank, 0, 0, isExchangedSynchronously);
 }
 #endif
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::removeMessageFromBuffer(int number, std::vector<SendReceiveTask>& tasks) {
+void peano::heap::Heap<Data>::removeMessageFromBuffer(int number, std::vector<SendReceiveTask>& tasks) {
   assertion( number>=0 );
   assertion( number<static_cast<int>(tasks.size()) );
 
@@ -427,7 +437,7 @@ void peano::kernel::heap::Heap<Data>::removeMessageFromBuffer(int number, std::v
 
 
 template <class Data>
-int peano::kernel::heap::Heap<Data>::findMessageFromRankInDeployBuffer(int ofRank) const {
+int peano::heap::Heap<Data>::findMessageFromRankInDeployBuffer(int ofRank) const {
   const int currentDeployBuffer = 1-_currentReceiveBuffer;
   if (_readDeployBufferInReverseOrder) {
     for (int i=getSizeOfDeployBuffer()-1; i>=0; i--) {
@@ -449,7 +459,7 @@ int peano::kernel::heap::Heap<Data>::findMessageFromRankInDeployBuffer(int ofRan
 
 
 template <class Data>
-int peano::kernel::heap::Heap<Data>::findMessageFromRankInSynchronousBuffer(int ofRank) {
+int peano::heap::Heap<Data>::findMessageFromRankInSynchronousBuffer(int ofRank) {
   #ifdef Parallel
   for (int i=0; i<static_cast<int>(_synchronousReceiveTasks.size()); i++) {
     if (_synchronousReceiveTasks[i]._rank==ofRank ) {
@@ -471,7 +481,7 @@ int peano::kernel::heap::Heap<Data>::findMessageFromRankInSynchronousBuffer(int 
 
 
 template <class Data>
-std::vector< Data > peano::kernel::heap::Heap<Data>::receiveSynchronousData(
+std::vector< Data > peano::heap::Heap<Data>::receiveSynchronousData(
   int                                           fromRank,
   const tarch::la::Vector<DIMENSIONS, double>&  position,
   int                                           level,
@@ -496,7 +506,7 @@ std::vector< Data > peano::kernel::heap::Heap<Data>::receiveSynchronousData(
        (!triggeredTimeoutWarning)
     ) {
        tarch::parallel::Node::getInstance().writeTimeOutWarning(
-         "peano::kernel::heap::Heap",
+         "peano::heap::Heap",
          "receiveSynchronousData()", fromRank,
          _mpiTagToExchangeJoinForkData, -1
        );
@@ -507,7 +517,7 @@ std::vector< Data > peano::kernel::heap::Heap<Data>::receiveSynchronousData(
        (clock()>timeOutShutdown)
     ) {
        tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
-         "peano::kernel::heap::Heap",
+         "peano::heap::Heap",
          "receiveSynchronousData()", fromRank,
          _mpiTagToExchangeJoinForkData, -1
        );
@@ -525,7 +535,7 @@ std::vector< Data > peano::kernel::heap::Heap<Data>::receiveSynchronousData(
 
 
 template <class Data>
-std::vector< Data > peano::kernel::heap::Heap<Data>::extractMessageFromTaskQueue(
+std::vector< Data > peano::heap::Heap<Data>::extractMessageFromTaskQueue(
   int                                           messageNumber,
   std::vector<SendReceiveTask>&                 tasks,
   const tarch::la::Vector<DIMENSIONS, double>&  position,
@@ -570,7 +580,7 @@ std::vector< Data > peano::kernel::heap::Heap<Data>::extractMessageFromTaskQueue
 
 
 template <class Data>
-std::vector< Data > peano::kernel::heap::Heap<Data>::receiveAsynchronousData(
+std::vector< Data > peano::heap::Heap<Data>::receiveAsynchronousData(
   int                                           fromRank,
   const tarch::la::Vector<DIMENSIONS, double>&  position,
   int                                           level,
@@ -597,7 +607,7 @@ std::vector< Data > peano::kernel::heap::Heap<Data>::receiveAsynchronousData(
 
 
 template <class Data>
-std::vector< Data > peano::kernel::heap::Heap<Data>::receiveData(
+std::vector< Data > peano::heap::Heap<Data>::receiveData(
   int                                           fromRank,
   const tarch::la::Vector<DIMENSIONS, double>&  position,
   int                                           level,
@@ -613,7 +623,7 @@ std::vector< Data > peano::kernel::heap::Heap<Data>::receiveData(
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::receiveDanglingMessages(int tag, std::vector<SendReceiveTask>& taskQueue) {
+void peano::heap::Heap<Data>::receiveDanglingMessages(int tag, std::vector<SendReceiveTask>& taskQueue) {
   #ifdef Parallel
   int        flag   = 0;
   MPI_Status status;
@@ -661,7 +671,7 @@ void peano::kernel::heap::Heap<Data>::receiveDanglingMessages(int tag, std::vect
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::receiveDanglingMessages() {
+void peano::heap::Heap<Data>::receiveDanglingMessages() {
   #ifdef Parallel
   receiveDanglingMessages(_mpiTagForBoundaryDataExchange, _receiveDeployTasks[_currentReceiveBuffer]);
   receiveDanglingMessages(_mpiTagToExchangeJoinForkData , _synchronousReceiveTasks );
@@ -670,25 +680,25 @@ void peano::kernel::heap::Heap<Data>::receiveDanglingMessages() {
 
 
 template <class Data>
-int peano::kernel::heap::Heap<Data>::getSizeOfReceiveBuffer() const {
+int peano::heap::Heap<Data>::getSizeOfReceiveBuffer() const {
   return static_cast<int>(_receiveDeployTasks[_currentReceiveBuffer].size());
 }
 
 
 template <class Data>
-int peano::kernel::heap::Heap<Data>::getSizeOfDeployBuffer() const {
+int peano::heap::Heap<Data>::getSizeOfDeployBuffer() const {
   return static_cast<int>(_receiveDeployTasks[1-_currentReceiveBuffer].size());
 }
 
 
 template <class Data>
-int peano::kernel::heap::Heap<Data>::getSizeOfSendBuffer() const {
+int peano::heap::Heap<Data>::getSizeOfSendBuffer() const {
   return static_cast<int>(_asynchronousSendTasks.size());
 }
 
 
 template <class Data>
-std::string peano::kernel::heap::Heap<Data>::toString() const {
+std::string peano::heap::Heap<Data>::toString() const {
   std::ostringstream msg;
 
   msg << "(name=" << _name
@@ -713,7 +723,7 @@ std::string peano::kernel::heap::Heap<Data>::toString() const {
 
 #ifdef Asserts
 template <class Data>
-peano::kernel::heap::Heap<Data>::SendReceiveTask::SendReceiveTask():
+peano::heap::Heap<Data>::SendReceiveTask::SendReceiveTask():
   _rank(-1),
   _data(0) {
 }
@@ -721,7 +731,7 @@ peano::kernel::heap::Heap<Data>::SendReceiveTask::SendReceiveTask():
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::startToSendOrReceiveHeapData(bool isTraversalInverted) {
+void peano::heap::Heap<Data>::startToSendOrReceiveHeapData(bool isTraversalInverted) {
   logTraceInWith5Arguments( "startToSendOrReceiveHeapData()", _name, _asynchronousSendTasks.size(), _currentReceiveBuffer, _receiveDeployTasks[0].size(), _receiveDeployTasks[1].size() );
 
   #ifdef Parallel
@@ -753,7 +763,7 @@ void peano::kernel::heap::Heap<Data>::startToSendOrReceiveHeapData(bool isTraver
 
 
 template <class Data>
-void peano::kernel::heap::Heap<Data>::finishedToSendOrReceiveHeapData() {
+void peano::heap::Heap<Data>::finishedToSendOrReceiveHeapData() {
   logTraceInWith5Arguments( "finishedToSendOrReceiveHeapData()", _name, _asynchronousSendTasks.size(), _currentReceiveBuffer, _receiveDeployTasks[0].size(), _receiveDeployTasks[1].size() );
 
   _heapIsCurrentlySentReceived = false;

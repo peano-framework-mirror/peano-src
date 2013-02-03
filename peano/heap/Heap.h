@@ -424,6 +424,16 @@ class peano::heap::Heap: public tarch::services::Service {
     int getNumberOfAllocatedEntries();
 
     /**
+     * Takes data from fromIndex and reassings it to toIndex.
+     *
+     * If toIndex already points to data, the data from fromIndex is appended
+     * to the original data, i.e. no data is erased at toIndex. The operation
+     * does not remove fromIndex though fromIndex will afterwards identify an
+     * empty data container.
+     */
+    void moveData( int toIndex, int fromIndex );
+
+    /**
      * This method discards all heap data and prepares the HeapData
      * management to handle new data requests. After calling this
      * method all indices retrieved earlier are invalid.
@@ -539,6 +549,6 @@ class peano::heap::Heap: public tarch::services::Service {
 #endif
 
 
-#include "peano/kernel/heap/Heap.cpph"
+#include "peano/heap/Heap.cpph"
 
 #endif
