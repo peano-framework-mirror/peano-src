@@ -96,7 +96,7 @@ void peano::stacks::VertexSTDStack<Vertex>::clear() {
 template <class Vertex>
 void peano::stacks::VertexSTDStack<Vertex>::flipInputAndOutputStack() {
   logTraceInWith1Argument( "flipInputAndOutputStack()", sizeOfOutputStack() );
-  assertion1( isInputStackEmpty(), sizeOfInputStack() );
+  assertion2( isInputStackEmpty(), sizeOfInputStack(), Vertex(_inputOutputStack[_currentInputStack].top()).toString() );
   _currentInputStack = 1-_currentInputStack;
   logTraceOut( "flipInputAndOutputStack()" );
 }

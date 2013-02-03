@@ -261,6 +261,15 @@ class peano::stacks::implementation::STDStack {
       return _container[_currentElement];
     }
 
+    /**
+     * Pop element from stack.
+     */
+    T top() {
+      assertion( !isEmpty() );
+      assertion( _currentElement>=0 );
+      return _container[_currentElement];
+    }
+
 
     PopBlockVertexStackView  popBlockFromInputStack(int numberOfVertices) {
       PopBlockVertexStackView result(numberOfVertices, _currentElement, this);
