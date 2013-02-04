@@ -147,6 +147,7 @@ void peano::grid::nodes::loops::SetCounterLoopBody<Vertex>::analyseFineGridVerte
     oneFatherCarriesDeleteFlag                                               |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Erasing;
     oneFatherCarriesRefiningFlag                                             |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Refining;
     oneFatherCarriesRefinedFlag                                              |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::Refined;
+    oneFatherCarriesRefinedFlag                                              |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::EraseTriggered;
     oneFatherCarriesNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasingFlag   |= coarseVertices[ coarseGridVerticesEnumerator(parentCoordinates) ].getRefinementControl() == Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing;
   }
   else {
