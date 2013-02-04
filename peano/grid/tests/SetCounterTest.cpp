@@ -274,6 +274,7 @@ void peano::grid::tests::SetCounterTest::testOptimisedAnalysis() {
 
 
 void peano::grid::tests::SetCounterTest::isOnBoundaryTest() {
+  logTraceIn ("isOnBoundaryTest()" );
   #ifdef Dim2
   tarch::la::Vector<DIMENSIONS,int>  vertex;
 
@@ -302,10 +303,12 @@ void peano::grid::tests::SetCounterTest::isOnBoundaryTest() {
   }
   validate( isOnBoundary );
   #endif
+  logTraceOut("isOnBoundaryTest()" );
 }
 
 
 void peano::grid::tests::SetCounterTest::testAPosterioriRefinement2d() {
+  logTraceIn ("testAPosterioriRefinement2d()" );
   #ifdef Dim2
   TestVertex                                            coarseGridVertices[FOUR_POWER_D];
   peano::grid::SingleLevelEnumerator   coarseGridVerticesEnumerator(
@@ -396,10 +399,12 @@ void peano::grid::tests::SetCounterTest::testAPosterioriRefinement2d() {
   validateEqualsWithParams1( fineGridCounter[15], peano::grid::nodes::CounterHangingNode, peano::grid::nodes::counterToString(fineGridCounter[15]) );
 
   #endif
+  logTraceOut("testAPosterioriRefinement2d()" );
 }
 
 
 void peano::grid::tests::SetCounterTest::test2DSpacetreeConstructionFirstLevel() {
+  logTraceIn ("test2DSpacetreeConstructionFirstLevel()" );
   #ifdef Dim2
   TestVertex                                            coarseGridVertices[FOUR_POWER_D];
   peano::grid::SingleLevelEnumerator   coarseGridVerticesEnumerator(
@@ -412,11 +417,21 @@ void peano::grid::tests::SetCounterTest::test2DSpacetreeConstructionFirstLevel()
 
   peano::grid::nodes::loops::SetCounterLoopBody<TestVertex> loopBody(coarseGridVertices,coarseGridVerticesEnumerator,fineGridCounter);
 
+  #ifdef Asserts
+  coarseGridVertices[0].setPosition( 1.0, 0 );
+  coarseGridVertices[1].setPosition( 2.0, 1 );
+  coarseGridVertices[2].setPosition( 3.0, 2 );
+  coarseGridVertices[3].setPosition( 4.0, 3 );
+  coarseGridVertices[4].setPosition( 5.0, 4 );
+  #endif
+
   validate( coarseGridVertices[0].isHangingNode() );
   validate( coarseGridVertices[1].isHangingNode() );
   validate( coarseGridVertices[2].isHangingNode() );
   validate( coarseGridVertices[3].isHangingNode() );
   validate( coarseGridVertices[4].isHangingNode() );
+
+
   coarseGridVertices[5].switchToNonhangingNode();
   coarseGridVertices[5].refine();
   coarseGridVertices[5].switchRefinementTriggeredToRefining();
@@ -501,6 +516,7 @@ void peano::grid::tests::SetCounterTest::test2DSpacetreeConstructionFirstLevel()
   loopBody(vertex);
   validateEqualsWithParams1( fineGridCounter[15], peano::grid::nodes::CounterNewNode, peano::grid::nodes::counterToString(fineGridCounter[15]) );
   #endif
+  logTraceOut("test2DSpacetreeConstructionFirstLevel()" );
 }
 
 
@@ -509,6 +525,7 @@ int peano::grid::tests::SetCounterTest::analyseFineGridVertex(
   bool oneFatherCarriesRefiningFlag,
   bool oneFatherCarriesRefinedFlag
 ) const {
+  logTraceIn ("analyseFineGridVertex()" );
   if ( oneFatherCarriesRefiningFlag &&  oneFatherCarriesRefinedFlag &&  oneFatherCarriesDeleteFlag) {
     return peano::grid::nodes::CounterPersistentNode;
   }
@@ -536,6 +553,7 @@ int peano::grid::tests::SetCounterTest::analyseFineGridVertex(
 
   assertionMsg(false, "all cases handled in the if construct from above");
 
+  logTraceOut("analyseFineGridVertex()" );
   return peano::grid::nodes::CounterPersistentNode;
 }
 
