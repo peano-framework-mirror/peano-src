@@ -299,8 +299,27 @@ class tarch::parallel::Node {
 
     bool isInitialised() const;
 
+    /**
+     * Set time out warning
+     *
+     * Set after how much time a node waiting for an MPI message shall write a
+     * warning that it is likely that it ran into a deadlock. If you pass 0,
+     * that switches off this feature.
+     */
     void setTimeOutWarning( const std::clock_t & value );
+
+    /**
+     * Set deadlock time out
+     *
+     * Set after how much time a node waiting for an MPI message shall quit
+     * and shutdown the whole application with an error report. If you pass 0,
+     * that switches off this feature.
+     */
     void setDeadlockTimeOut( const std::clock_t & value );
+
+    /**
+     * Set communicator to be used by Peano
+     */
     void setCommunicator( MPI_Comm communicator );
 
     /**
