@@ -13,6 +13,9 @@ registerTest(peano::grid::tests::ForkRegularTreeTest)
 
 
 
+tarch::logging::Log peano::grid::tests::ForkRegularTreeTest::_log( "peano::grid::tests::ForkRegularTreeTest" );
+
+
 peano::grid::tests::ForkRegularTreeTest::ForkRegularTreeTest():
   TestCase( "peano::grid::tests::ForkRegularTreeTest" ) {
 }
@@ -24,7 +27,9 @@ peano::grid::tests::ForkRegularTreeTest::~ForkRegularTreeTest() {
 
 
 void peano::grid::tests::ForkRegularTreeTest::run() {
+  logTraceIn( "run() ");
   testMethod( testMayForkLoadOrStoreVertexTaskOnRegularSubtree );
+  logTraceOut( "run() ");
 }
 
 

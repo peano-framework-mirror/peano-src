@@ -24,6 +24,8 @@ namespace peano {
  */
 class peano::grid::tests::ForkRegularTreeTest: public tarch::tests::TestCase {
   private:
+    static tarch::logging::Log _log;
+
     void testMayForkLoadOrStoreVertexTaskOnRegularSubtree();
   public:
     ForkRegularTreeTest();

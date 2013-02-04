@@ -15,6 +15,9 @@ registerTest(peano::grid::tests::SetCounterTest)
 
 
 
+tarch::logging::Log peano::grid::tests::SetCounterTest::_log( "peano::grid::tests::SetCounterTest" );
+
+
 peano::grid::tests::SetCounterTest::SetCounterTest():
   tarch::tests::TestCase( "peano::grid::tests::SetCounterTest" ) {
 }
@@ -25,12 +28,14 @@ peano::grid::tests::SetCounterTest::~SetCounterTest() {
 
 
 void peano::grid::tests::SetCounterTest::run() {
+  logTraceIn( "run() ");
   testMethod( test2DSpacetreeConstructionFirstLevel );
   testMethod( isOnBoundaryTest );
   testMethod( testAPosterioriRefinement2d );
   testMethod( testOptimisedAnalysis );
   testMethod( testRefinementDueToJoinThoughWorkerIsAlreadyErasing0 );
   testMethod( testRefinementDueToJoinThoughWorkerIsAlreadyErasing1 );
+  logTraceOut( "run() ");
 }
 
 

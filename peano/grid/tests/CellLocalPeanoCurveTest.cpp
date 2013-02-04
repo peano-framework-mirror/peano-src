@@ -13,6 +13,9 @@ registerTest(peano::grid::tests::CellLocalPeanoCurveTest)
 
 
 
+tarch::logging::Log peano::grid::tests::CellLocalPeanoCurveTest::_log( "peano::grid::tests::CellLocalPeanoCurveTest" );
+
+
 peano::grid::tests::CellLocalPeanoCurveTest::CellLocalPeanoCurveTest():
   tarch::tests::TestCase( "peano::grid::tests::CellLocalPeanoCurveTest" ) {
 }
@@ -23,6 +26,7 @@ peano::grid::tests::CellLocalPeanoCurveTest::~CellLocalPeanoCurveTest() {
 
 
 void peano::grid::tests::CellLocalPeanoCurveTest::run() {
+  logTraceIn( "run() ");
   testMethod( test2DCreateReadVertexSequenceForP0P0P1P2 );
   testMethod( test2DCreateReadVertexSequenceForM1M2P2P3 );
   testMethod( test2DCreateReadVertexSequenceForM1P0P0P1 );
@@ -34,6 +38,7 @@ void peano::grid::tests::CellLocalPeanoCurveTest::run() {
   testMethod( test2DCreateWriteVertexSequenceForP1M1M2P2 );
 
   testMethod( test3DCreateReadVertexSequenceForM2P4M1P1P2P3 );
+  logTraceOut( "run() ");
 }
 
 

@@ -20,6 +20,8 @@ namespace peano {
 
 class peano::grid::tests::SingleLevelEnumeratorTest: public tarch::tests::TestCase {
   private:
+    static tarch::logging::Log   _log;
+
     void test2DLineariseCellIndex();
     void test2DLineariseVertexIndex();
     void testFunctorWithZeroArgument();

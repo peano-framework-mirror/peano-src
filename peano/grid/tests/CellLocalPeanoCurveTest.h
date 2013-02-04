@@ -24,6 +24,8 @@ namespace peano {
  */
 class peano::grid::tests::CellLocalPeanoCurveTest: public tarch::tests::TestCase {
   private:
+    static tarch::logging::Log _log;
+
     typedef peano::grid::Cell<peano::grid::tests::records::TestCell> TestCell;
 
     /**

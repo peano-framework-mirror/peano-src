@@ -11,6 +11,9 @@ registerTest(peano::grid::tests::RefinementTest)
 #endif
 
 
+tarch::logging::Log peano::grid::tests::RefinementTest::_log( "peano::grid::tests::RefinementTest" );
+
+
 peano::grid::tests::RefinementTest::RefinementTest():
   TestCase( "peano::grid::tests::RefinementTest" ) {
 }
@@ -21,8 +24,10 @@ peano::grid::tests::RefinementTest::~RefinementTest() {
 
 
 void peano::grid::tests::RefinementTest::run() {
+  logTraceIn( "run() ");
   testMethod( testRootNodeRefinementCells );
   testMethod( test2DCellM1M2P0P0 );
+  logTraceOut( "run() ");
 }
 
 

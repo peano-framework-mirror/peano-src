@@ -24,7 +24,10 @@ namespace peano {
  */
 class peano::grid::tests::RefinementTest: public tarch::tests::TestCase {
   private:
-	typedef peano::grid::Cell<peano::grid::tests::records::TestCell> TestCell;
+    static tarch::logging::Log _log;
+
+
+  	typedef peano::grid::Cell<peano::grid::tests::records::TestCell> TestCell;
 
 
     /**

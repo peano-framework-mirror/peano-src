@@ -22,6 +22,8 @@ namespace peano {
 
 class peano::grid::tests::SetCounterTest: public tarch::tests::TestCase {
   private:
+    static tarch::logging::Log _log;
+
     typedef peano::grid::Vertex<peano::grid::tests::records::TestVertex> TestVertex;
 
     /**

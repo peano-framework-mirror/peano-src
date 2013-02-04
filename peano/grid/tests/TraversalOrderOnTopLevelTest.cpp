@@ -10,6 +10,8 @@ registerTest(peano::grid::tests::TraversalOrderOnTopLevelTest)
 #pragma optimize("",off)
 #endif
 
+tarch::logging::Log peano::grid::tests::TraversalOrderOnTopLevelTest::_log( "peano::grid::tests::TraversalOrderOnTopLevelTest" );
+
 
 peano::grid::tests::TraversalOrderOnTopLevelTest::TraversalOrderOnTopLevelTest():
   tarch::tests::TestCase( "peano::grid::tests::TraversalOrderOnTopLevelTest" ) {
@@ -21,7 +23,9 @@ peano::grid::tests::TraversalOrderOnTopLevelTest::~TraversalOrderOnTopLevelTest(
 
 
 void peano::grid::tests::TraversalOrderOnTopLevelTest::run() {
+  logTraceIn( "run() ");
   testMethod( test2DReconstruction );
+  logTraceOut( "run() ");
 }
 
 

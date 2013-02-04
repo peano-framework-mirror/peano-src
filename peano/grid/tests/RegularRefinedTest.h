@@ -5,6 +5,7 @@
 
 
 #include "tarch/tests/TestCase.h"
+#include "tarch/logging/Log.h"
 
 
 namespace peano {
@@ -18,6 +19,9 @@ namespace peano {
 
 class peano::grid::tests::RegularRefinedTest: public tarch::tests::TestCase {
   private:
+    static tarch::logging::Log  _log;
+
+
     void test2DComputePositionRelativeToNextCoarserLevelFromFineGridVertexPosition();
     void test2DComputePositionRelativeToNextCoarserLevelFromFineGridCellPosition();
     void testIsVertexOnLevel1DataDecompositionBoundaryAlgorithm();

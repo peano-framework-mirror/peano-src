@@ -11,6 +11,9 @@ registerTest(peano::grid::tests::SingleLevelEnumeratorTest)
 #endif
 
 
+tarch::logging::Log peano::grid::tests::SingleLevelEnumeratorTest::_log( "peano::grid::tests::SingleLevelEnumeratorTest" );
+
+
 peano::grid::tests::SingleLevelEnumeratorTest::SingleLevelEnumeratorTest():
   tarch::tests::TestCase( "peano::grid::tests::SingleLevelEnumeratorTest" ) {
 }
@@ -21,11 +24,13 @@ peano::grid::tests::SingleLevelEnumeratorTest::~SingleLevelEnumeratorTest() {
 
 
 void peano::grid::tests::SingleLevelEnumeratorTest::run() {
+  logTraceIn( "run() ");
   testMethod( test2DLineariseCellIndex );
   testMethod( test2DLineariseVertexIndex );
   testMethod( testFunctorWithZeroArgument );
   testMethod( testGetVertexPositionOnCoarserLevel );
   testMethod( test2DFunctor );
+  logTraceOut( "run() ");
 }
 
 

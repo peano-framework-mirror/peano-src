@@ -12,6 +12,8 @@ registerTest(peano::grid::tests::RegularRefinedTest)
 #endif
 
 
+tarch::logging::Log peano::grid::tests::RegularRefinedTest::_log( "peano::grid::tests::RegularRefinedTest" );
+
 
 peano::grid::tests::RegularRefinedTest::RegularRefinedTest():
   TestCase( "peano::grid::tests::RegularRefinedTest" ) {
@@ -23,9 +25,11 @@ peano::grid::tests::RegularRefinedTest::~RegularRefinedTest() {
 
 
 void peano::grid::tests::RegularRefinedTest::run() {
+  logTraceIn( "run() ");
   testMethod( test2DComputePositionRelativeToNextCoarserLevelFromFineGridVertexPosition );
   testMethod( test2DComputePositionRelativeToNextCoarserLevelFromFineGridCellPosition );
   testMethod( testIsVertexOnLevel1DataDecompositionBoundaryAlgorithm );
+  logTraceOut( "run() ");
 }
 
 
