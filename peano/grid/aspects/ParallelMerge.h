@@ -42,6 +42,10 @@ class peano::grid::aspects::ParallelMerge {
      * - The spatial positions have to be the same.
      * - The level has to be the same.
      * - The inside/outside flag has to be the same.
+     *
+     * If can happen that the neighbour holds refining and the local node holds erase-triggered:
+     *
+     * @image html MergeAtBoundary.png
      */
     template <class Vertex>
     static void mergeOnDomainBoundary(
