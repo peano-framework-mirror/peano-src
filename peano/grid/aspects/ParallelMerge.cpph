@@ -322,12 +322,12 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
     localVertex.getRefinementControl() == Vertex::Records::RefinementTriggered,
     localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
   );
-  assertion4(
-    masterVertex.getRefinementControl() != Vertex::Records::Erasing &&
-    masterVertex.getRefinementControl() != Vertex::Records::EraseTriggered &&
-    masterVertex.getRefinementControl() != Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing,
-    localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
-  );
+//  assertion4(
+//    masterVertex.getRefinementControl() != Vertex::Records::Erasing &&
+//    masterVertex.getRefinementControl() != Vertex::Records::EraseTriggered &&
+//    masterVertex.getRefinementControl() != Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing,
+//    localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
+//  );
   
   // @todo Was passiert, wenn Master erased?
 
@@ -337,6 +337,7 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
   const bool                                          workerIsRefiningOrTriggeredRefinementWhileMasterVertexIsUnrefined  =
     (localVertex.getRefinementControl()==Vertex::Records::Refining || localVertex.getRefinementControl()==Vertex::Records::RefinementTriggered) &&
     (masterVertex.getRefinementControl()==Vertex::Records::Unrefined || masterVertex.getRefinementControl()==Vertex::Records::Erasing);
+  const bool                                          workerHasToRefineTemporarily     = masterVertex.getRefinementControl()==Vertex::Records::Erasing && localVertex.getRefinementControl()==Vertex::Records::Unrefined;
 
   const typename Vertex::Records::InsideOutsideDomain insideOutsideDomainOfLocalVertex = localVertex._vertexData.getInsideOutsideDomain();
 
@@ -376,6 +377,9 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
     // reset the refining to refinement-triggered.
     localVertex._vertexData.setRefinementControl( Vertex::Records::RefinementTriggered );
     logDebug( "mergeWithForkedVertexFromMaster(...)","manually reset refinement state of " << localVertex.toString() );
+  }
+  else if (workerHasToRefineTemporarily) {
+    localVertex._vertexData.setRefinementControl( Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing );
   }
 
   localVertex.invalidateAdjacentCellInformation();
