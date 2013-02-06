@@ -216,24 +216,20 @@ void peano::grid::Vertex<VertexData>::updateTransientRefinementFlagsBeforeVertex
 template <class VertexData>
 void peano::grid::Vertex<VertexData>::refine() {
   assertion2( !_vertexData.getIsHangingNode(), toString(), "may not call refine on hanging node" );
-  assertion2( _vertexData.getRefinementControl()!=VertexData::Refined, toString(), "tried to call refine on vertex that was already refined" );
+  assertion2( _vertexData.getRefinementControl()==VertexData::Unrefined, toString(), "tried to call refine on vertex that was already refined" );
 
-  if (_vertexData.getRefinementControl()==VertexData::Unrefined) {
-	  _vertexData.setRefinementControl(VertexData::RefinementTriggered);
-	  _vertexData.setAdjacentCellsHeight( peano::grid::NotStationary );
-  }
+  _vertexData.setRefinementControl(VertexData::RefinementTriggered);
+  _vertexData.setAdjacentCellsHeight( peano::grid::NotStationary );
 }
 
 
 template <class VertexData>
 void peano::grid::Vertex<VertexData>::erase() {
   assertion1( !_vertexData.getIsHangingNode(), toString() );
-  assertion2( _vertexData.getRefinementControl()!=VertexData::Unrefined, toString(), "tried to call erase on vertex that was already unrefined" );
+  assertion2( _vertexData.getRefinementControl()==VertexData::Refined, toString(), "tried to call erase on vertex that was already unrefined" );
 
-  if (_vertexData.getRefinementControl()==VertexData::Refined) {
-    _vertexData.setRefinementControl(VertexData::EraseTriggered);
-    _vertexData.setAdjacentCellsHeight( peano::grid::NotStationary );
-  }
+  _vertexData.setRefinementControl(VertexData::EraseTriggered);
+  _vertexData.setAdjacentCellsHeight( peano::grid::NotStationary );
 }
 
 
