@@ -233,7 +233,12 @@ class peano::parallel::loadbalancing::Oracle {
      * As a consequence, Peano informs the oracle whenever a fork has failed.
      * It then is a good idea for an efficient oracle to skip further fork
      * fork calls for this traversal, i.e. I recommend to return Continue or
-     * Join afterwards until the next receivedStartCommand() is called.
+     * Join afterwards. Such forkFailed() information is valid only until the
+     * next iteration, i.e. I recommend to try again to fork in the next
+     * iteration. I recommend to reset internal fork-failed states. The start
+     * of a new iteration is mirrored by receivedStartCommand(). So, after
+     * the next receivedStartCommand(), forks should be tried again.
+     *
      * Alternatively, it might even make sense to wait for a fixed number
      * of receivedStartCommand() calls before the oracle tries to fork the
      * next time.
