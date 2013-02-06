@@ -150,7 +150,8 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
 
         peano::grid::aspects::ParallelMerge::mergeOnDomainBoundary(
           _fineGridVertices[positionInVertexArray],
-          receivedVertex
+          receivedVertex,
+          currentNeighbourRank
         );
 
         _threadLocalEventHandle.mergeWithNeighbour(
