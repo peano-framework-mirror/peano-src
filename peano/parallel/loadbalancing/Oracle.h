@@ -223,9 +223,20 @@ class peano::parallel::loadbalancing::Oracle {
      * Informs the active oracle that a fork has failed. This is usually due to
      * a lack of idle MPI ranks.
      *
-     * If the current start command for this oracle is fork, we reset it to
-     * continue, as it does make sense to try to fork over and over again if
-     * this just doesn't work out.
+     * Peano is robust with respect to fork attempts if no idle workers are
+     * available. If the oracle says fork but no ranks are available, the grid
+     * just remains unchanged. However, detecting such a case is expensive:
+     * Each time the oracle says fork, a message is sent to the central node
+     * pool. This node pool then can answer 'no nodes available'. This is a
+     * very flexible concept but introduces a single point of contact.
+     *
+     * As a consequence, Peano informs the oracle whenever a fork has failed.
+     * It then is a good idea for an efficient oracle to skip further fork
+     * fork calls for this traversal, i.e. I recommend to return Continue or
+     * Join afterwards until the next receivedStartCommand() is called.
+     * Alternatively, it might even make sense to wait for a fixed number
+     * of receivedStartCommand() calls before the oracle tries to fork the
+     * next time.
      */
     void forkFailed();
 };
