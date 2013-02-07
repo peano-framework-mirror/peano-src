@@ -128,10 +128,7 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
       p++
     ) {
       const int currentNeighbourRank = *p;
-      if (
-        !_state.isForkingRank(currentNeighbourRank) &&
-        !_state.isJoiningRank(currentNeighbourRank)
-      ) {
+      if ( !_state.isForkingRank(currentNeighbourRank) ) {
         const Vertex receivedVertex = peano::parallel::SendReceiveBufferPool::getInstance().getVertex<Vertex>(currentNeighbourRank);
 
         #ifdef Debug
@@ -141,12 +138,14 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
         assertionEquals4(receivedVertex.isBoundary(), _fineGridVertices[positionInVertexArray].isBoundary(), receivedVertex.toString(), _fineGridVertices[positionInVertexArray].toString(), *p, tarch::parallel::Node::getInstance().getRank());
         assertionEquals4(receivedVertex.isInside(),   _fineGridVertices[positionInVertexArray].isInside(), receivedVertex.toString(), _fineGridVertices[positionInVertexArray].toString(), *p, tarch::parallel::Node::getInstance().getRank());
 
-        peano::parallel::getMergedAdjacencyLists(
-          originalAdjacencyList,
-          mergedAdjacencyList,
-          receivedVertex.getAdjacentRanks(),
-          currentNeighbourRank
-        );
+        if (!_state.isJoiningRank(currentNeighbourRank)) {
+          peano::parallel::getMergedAdjacencyLists(
+            originalAdjacencyList,
+            mergedAdjacencyList,
+            receivedVertex.getAdjacentRanks(),
+            currentNeighbourRank
+          );
+        }
 
         peano::grid::aspects::ParallelMerge::mergeOnDomainBoundary(
           _fineGridVertices[positionInVertexArray],
@@ -464,7 +463,7 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
   const bool CaseLoadPersistentVertex =                                     (_counter[positionInArray]==CounterPersistentNode && action._id==peano::stacks::Constants::InOutStack);
   const bool CaseLoadOfDeleteVertex   =  !StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterPersistentNodeDelete && action._id==peano::stacks::Constants::InOutStack);
   const bool CaseCreateHangingNode    =  !RegularStaticGrid              && (_counter[positionInArray]==CounterHangingNode);
-  const bool CaseCreateNewNode            =  !StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterNewNode && action._id==peano::stacks::Constants::InOutStack);
+  const bool CaseCreateNewNode        =  !StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterNewNode && action._id==peano::stacks::Constants::InOutStack);
   #ifdef Parallel
   const bool CaseCreateNewNodeTemporarily = !StaticGridWithParallelBoundary && (_counter[positionInArray]==CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing && action._id==peano::stacks::Constants::InOutStack);
   #endif
