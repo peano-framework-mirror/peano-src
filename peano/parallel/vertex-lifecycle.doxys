@@ -104,8 +104,8 @@
    adjacent cells were deployed to other ranks touchVertexFirstTime()  would 
    not be called, as it were a remote vertex.
  - M at some point enters the cell deployed to rank W. Here, all adjacent 
-   vertices already are loaded. For W, no enterCell() is called, as W is a 
-   remote cell. Instead, W asks the oracle for load balancing instructions and 
+   vertices already are loaded. For M, no enterCell() is called, as M holds a 
+   remote cell. Instead, M asks the oracle for load balancing instructions and 
    passes the cell, its vertices, and some coarser information to prepareSendToWorker().
    Afterwards, the cell and vertices are sent to the worker. Only attributes labeled as 
    parallelise are exchanged. A copy of the red vertex is handed over to W. See  
@@ -159,4 +159,7 @@
  Please note that the events ascend and descend are omitted here, as there is no 
  parallelisation-related issue there. They just fit smoothly into the event sequence. 
    
+ If you interpolate from coarse to fine meshes in enterCell(), please note that you have 
+ to invoke that interplay manually in prepareSendToWorker(),too. 
+ 
  */
