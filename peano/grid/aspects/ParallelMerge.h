@@ -50,7 +50,8 @@ class peano::grid::aspects::ParallelMerge {
     template <class Vertex>
     static void mergeOnDomainBoundary(
       Vertex&        localVertex,
-      const Vertex&  neighbourVertex
+      const Vertex&  neighbourVertex,
+      int            neighbourRank
     );
 
     /**
@@ -135,7 +136,7 @@ class peano::grid::aspects::ParallelMerge {
      * Merging subdomains becomes tricky if the worker tries to erase right in the
      * iteration when it joins its data into its master:
      *
-     * @image html EraseRolback.png
+     * @image html EraseRollback.png
      *
      * In the example abover, we study two nodes. Node 1 holds the grey cells. Node
      * 2 holds the green cells and the blue one. The later is subject of our study.
