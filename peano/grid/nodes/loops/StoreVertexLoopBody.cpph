@@ -120,7 +120,7 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
             copy.replaceAdjancyEntriesOfLocalRankWithMaster();
           }
 
-          logDebug("exchangeVerticesDueToParallelisation(...)", "vertex at position " << positionInLocalCell << " belongs to parallel boundary. Send to rank " << *p );
+          logDebug("exchangeVerticesDueToParallelisation(...)", "vertex at position " << positionInLocalCell << " belongs to parallel boundary. Send " << copy.toString() << " to rank " << *p );
           peano::parallel::SendReceiveBufferPool::getInstance().sendVertex(copy,*p,peano::parallel::SendReceiveBufferPool::LIFO);
         }
       }
