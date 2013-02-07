@@ -320,13 +320,17 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 ) const {
   #ifdef Parallel
     logTraceInWith2Arguments( "updateCellsParallelStateAfterLoadIfStateIsForking(...)", state.toString(), fineGridCell.toString() );
-    dfor2(k)
-      logDebug( "updateCellsParallelStateAfterLoadIfStateIsForking(...)", "- adjacent vertex: " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
-    enddforx
     const std::set<int> forkingRanks= state.getForkingOrJoiningOrTriggeredForRebalancingRanks();
     for (std::set<int>::const_iterator p = forkingRanks.begin(); p!=forkingRanks.end();p++ ) {
       const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> adjacencyBitset   = peano::grid::aspects::VertexStateAnalysis::whichPersistentVerticesAreAdjacentToRank(*p,fineGridVertices,fineGridVerticesEnumerator);
       if (adjacencyBitset.any()) {
+        logDebug( "updateCellsParallelStateAfterLoadIfStateIsForking(...)", "send fork data to rank " << *p );
+        logDebug( "updateCellsParallelStateAfterLoadIfStateIsForking(...)", "- adjacency flag: " << adjacencyBitset );
+        dfor2(k)
+          logDebug( "updateCellsParallelStateAfterLoadIfStateIsForking(...)", "- adjacent vertex: " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
+        enddforx
+        logDebug( "updateCellsParallelStateAfterLoadIfStateIsForking(...)", "- cell: " << fineGridCell.toString() );
+
         _eventHandle.prepareCopyToRemoteNode(fineGridCell,*p);
 
         peano::parallel::JoinDataBufferPool::getInstance().sendCell(fineGridCell,adjacencyBitset,*p);
@@ -348,7 +352,6 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
           state.changedCellState();
         }
 
-        logDebug( "updateCellsParallelStateAfterLoadIfStateIsForking()", "due to fork sent cell " << fineGridCell.toString() << " with flag (" << adjacencyBitset << ") to rank " << *p );
         dfor2(k)
           if (adjacencyBitset[kScalar]) {
             // I have to invalidate the information, as the store process might delete or switch to outside
@@ -395,21 +398,31 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
       const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> adjacencyBitset   = peano::grid::aspects::VertexStateAnalysis::whichPersistentVerticesAreAdjacentToRank(*p,fineGridVertices,fineGridVerticesEnumerator);
       if (adjacencyBitset.any()) {
-        #if defined(Debug) && (defined(Dim2) || defined(Dim3) || defined(Dim4))
+        #ifdef Asserts
         const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> receivedBitset( peano::parallel::JoinDataBufferPool::getInstance().getCellMarkerFromStream(*p) );
-        assertionEquals3(
+        assertionEquals7(
           receivedBitset,
           adjacencyBitset,
           fineGridVerticesEnumerator.toString(),
           *p,
-          adjacencyBitset
+          adjacencyBitset,
+          fineGridVertices[ fineGridVerticesEnumerator(0) ].toString(),
+          fineGridVertices[ fineGridVerticesEnumerator(1) ].toString(),
+          fineGridVertices[ fineGridVerticesEnumerator(2) ].toString(),
+          fineGridVertices[ fineGridVerticesEnumerator(3) ].toString()
         );
-        assertionEquals3(
+        #endif
+        #if defined(Debug) && (defined(Dim2) || defined(Dim3) || defined(Dim4))
+        assertionEquals7(
           fineGridCell.getLevel(),
           peano::parallel::JoinDataBufferPool::getInstance().getCellLevelFromStream(*p),
           fineGridVerticesEnumerator.toString(),
           *p,
-          adjacencyBitset
+          adjacencyBitset,
+          fineGridVertices[ fineGridVerticesEnumerator(0) ].toString(),
+          fineGridVertices[ fineGridVerticesEnumerator(1) ].toString(),
+          fineGridVertices[ fineGridVerticesEnumerator(2) ].toString(),
+          fineGridVertices[ fineGridVerticesEnumerator(3) ].toString()
         );
         #endif
         logDebug( "updateCellsParallelStateAfterLoadIfNodeIsJoiningWithWorker(...)", "received flag " << adjacencyBitset << " due to join with worker");
@@ -505,12 +518,15 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 ) const {
   #ifdef Parallel
     logTraceInWith2Arguments( "updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(...)", state.toString(), fineGridCell.toString() );
-    dfor2(k)
-      logDebug( "updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(...)", "- adjacent vertex: " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
-    enddforx
     const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> localAdjacencyBitset = peano::grid::aspects::VertexStateAnalysis::whichPersistentVerticesAreAdjacentToRank(tarch::parallel::Node::getInstance().getRank(),fineGridVertices,fineGridVerticesEnumerator);
     if (localAdjacencyBitset.any()) {
       const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> adjacencyBitset( peano::parallel::JoinDataBufferPool::getInstance().getCellMarkerFromStream(tarch::parallel::NodePool::getInstance().getMasterRank()) );
+
+      logDebug( "updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(...)", "receive fork data from master " );
+      logDebug( "updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(...)", "- adjacency flag: " << adjacencyBitset );
+      dfor2(k)
+        logDebug( "updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(...)", "- adjacent vertex (before merge): " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
+      enddforx
 
       #if defined(Debug) && (defined(Dim2) || defined(Dim3) || defined(Dim4))
       assertionEquals2(
@@ -520,7 +536,16 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
         tarch::parallel::NodePool::getInstance().getMasterRank()
       );
       #endif
-      assertionEquals4(localAdjacencyBitset,adjacencyBitset,localAdjacencyBitset,adjacencyBitset,fineGridVerticesEnumerator.toString(),tarch::parallel::NodePool::getInstance().getMasterRank());
+      assertionEquals6(
+        localAdjacencyBitset,
+        adjacencyBitset,
+        fineGridVerticesEnumerator.toString(),
+        tarch::parallel::NodePool::getInstance().getMasterRank(),
+        fineGridVertices[ fineGridVerticesEnumerator(0) ].toString(),
+        fineGridVertices[ fineGridVerticesEnumerator(1) ].toString(),
+        fineGridVertices[ fineGridVerticesEnumerator(2) ].toString(),
+        fineGridVertices[ fineGridVerticesEnumerator(3) ].toString()
+      );
 
       logDebug( "updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(...)", "received flag " << adjacencyBitset );
       peano::parallel::JoinDataBufferPool::getInstance().removeCellMarkerFromStream(tarch::parallel::NodePool::getInstance().getMasterRank(),false);
@@ -708,9 +733,9 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
   logTraceInWith2Arguments( "updateCellsGeometryInformationAfterLoad(...)", state.toString(), fineGridCell.toString() );
 
   #ifdef Parallel
-  const bool studyCell                   = (fineGridVerticesEnumerator.getCellFlags()<=peano::grid::NotStationary) && !fineGridCell.isRemote(state,false,false);
+  const bool studyCell = (fineGridVerticesEnumerator.getCellFlags()<=peano::grid::NotStationary) && !fineGridCell.isRemote(state,false,false);
   #else
-  const bool studyCell                   = fineGridVerticesEnumerator.getCellFlags()<=peano::grid::NotStationary;
+  const bool studyCell = fineGridVerticesEnumerator.getCellFlags()<=peano::grid::NotStationary;
   #endif
 
   const SingleLevelEnumerator::Vector cellCenter      = peano::geometry::GeometryHelper::getCellCenter(fineGridVerticesEnumerator.getVertexPosition(),fineGridVerticesEnumerator.getCellSize());
