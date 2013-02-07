@@ -6,9 +6,8 @@
 template <class Vertex>
 void peano::grid::aspects::ParallelMerge::mergeOnDomainBoundary(
   Vertex&        localVertex,
-  const Vertex&  neighbourVertex
-  // @todo Neighbour rank ist hier ganz praktisch zum Debuggen. Noch einfuehren.
-//  int neighbourRank
+  const Vertex&  neighbourVertex,
+  int            neighbourRank
 ) {
   logTraceInWith3Arguments( "mergeOnDomainBoundary(...)", localVertex, neighbourVertex, neighbourRank );
 
@@ -55,8 +54,6 @@ void peano::grid::aspects::ParallelMerge::mergeOnDomainBoundary(
   }
 
   localVertex._vertexData.setNumberOfAdjacentRefinedCells( neighbourVertex._vertexData.getNumberOfAdjacentRefinedCells() );
-
-  // @todo Roland hat noch Fixes zum Listen-Merge. Evtl. mit anderer Funktion abgleichen (s. Doku) 
   
   logTraceOutWith1Argument( "mergeOnDomainBoundary(...)", localVertex );
 }
@@ -75,8 +72,8 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
 
   const bool LocalNodeHasNotBeenResponsibleBefore = !localVertex.isAdjacentToDomainOf( tarch::parallel::Node::getInstance().getRank() );
 
-  assertionVectorNumericalEquals2( localVertex._vertexData.getX(), workerVertex._vertexData.getX(),     localVertex.toString(), workerVertex.toString() );
-  assertionEquals2( localVertex._vertexData.getLevel(),            workerVertex._vertexData.getLevel(), localVertex.toString(), workerVertex.toString() );
+  assertionVectorNumericalEquals3( localVertex._vertexData.getX(), workerVertex._vertexData.getX(),     localVertex.toString(), workerVertex.toString(), workerRank );
+  assertionEquals3( localVertex._vertexData.getLevel(),            workerVertex._vertexData.getLevel(), localVertex.toString(), workerVertex.toString(), workerRank );
 
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2,  localVertex.toString(), workerVertex.toString() );
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeight()                    <= -2,  localVertex.toString(), workerVertex.toString() );
@@ -205,8 +202,8 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
       localVertex.toString(), workerVertex.toString(), workerRank, tarch::parallel::Node::getInstance().getRank()
     );
     // ich mein dass die richtig ist. Das sollte nicht auftauchen, tuts aber schon mit n=3 bei rotating heat source
-//    assertion4( false, localVertex.toString(), workerVertex.toString(), workerRank, tarch::parallel::Node::getInstance().getRank() );
-    localVertex._vertexData.setRefinementControl(Vertex::Records::Erasing);
+    assertion4( false, localVertex.toString(), workerVertex.toString(), workerRank, tarch::parallel::Node::getInstance().getRank() );
+//    localVertex._vertexData.setRefinementControl(Vertex::Records::Erasing);
   }
   // local vertex = erasing
   else if (
@@ -274,7 +271,6 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
       if ( !entriesAreEqual && !workersEntryIsMe) {
         localVertex._vertexData.setAdjacentRanks( i, workerVertex._vertexData.getAdjacentRanks(i) );
       }
-      // Das ist evtl. buggy. Evtl. war's frueher korrekt und ist jetzt nimmer
       else if (!entriesAreEqual) {
         localVertex._vertexData.setAdjacentRanks( i, workerRank );
       }
@@ -300,10 +296,8 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
 
   const bool MasterIsNotResponsibleAnymore = !masterVertex.isAdjacentToDomainOf( tarch::parallel::NodePool::getInstance().getMasterRank() );
 
-  #ifdef Debug // if we are not in debug mode, these values are not available.
   assertionVectorNumericalEquals2( localVertex._vertexData.getX(),     masterVertex._vertexData.getX(),     localVertex.toString(), masterVertex.toString() );
   assertionEquals2(                localVertex._vertexData.getLevel(), masterVertex._vertexData.getLevel(), localVertex.toString(), masterVertex.toString() );
-  #endif
 
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2,  localVertex.toString(), masterVertex.toString() );
   assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeight()                    <= -2,  localVertex.toString(), masterVertex.toString() );
@@ -319,25 +313,24 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
   assertion4(
     localVertex.getRefinementControl() == Vertex::Records::Unrefined ||
     localVertex.getRefinementControl() == Vertex::Records::Refining ||
-    localVertex.getRefinementControl() == Vertex::Records::RefinementTriggered,
+    localVertex.getRefinementControl() == Vertex::Records::RefinementTriggered ||
+    localVertex.getRefinementControl() == Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing,
     localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
   );
-//  assertion4(
-//    masterVertex.getRefinementControl() != Vertex::Records::Erasing &&
-//    masterVertex.getRefinementControl() != Vertex::Records::EraseTriggered &&
-//    masterVertex.getRefinementControl() != Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing,
-//    localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
-//  );
-  
-  // @todo Was passiert, wenn Master erased?
-
+  assertion4(
+    localVertex.getRefinementControl() != Vertex::Records::Erasing,
+    localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
+  );
   assertion2( masterVertex.isAdjacentToDomainOf(tarch::parallel::Node::getInstance().getRank()), masterVertex.toString(), localVertex.toString() );
 
   const bool                                          masterIsRefinedLocalVertexIsNot  = masterVertex.getRefinementControl()==Vertex::Records::Refined && localVertex.getRefinementControl()!=Vertex::Records::Refined;
   const bool                                          workerIsRefiningOrTriggeredRefinementWhileMasterVertexIsUnrefined  =
     (localVertex.getRefinementControl()==Vertex::Records::Refining || localVertex.getRefinementControl()==Vertex::Records::RefinementTriggered) &&
     (masterVertex.getRefinementControl()==Vertex::Records::Unrefined || masterVertex.getRefinementControl()==Vertex::Records::Erasing);
-  const bool                                          workerHasToRefineTemporarily     = masterVertex.getRefinementControl()==Vertex::Records::Erasing && localVertex.getRefinementControl()==Vertex::Records::Unrefined;
+  const bool                                          workerHasToRefineTemporarily     =
+    (masterVertex.getRefinementControl()==Vertex::Records::Erasing && localVertex.getRefinementControl()==Vertex::Records::Unrefined)
+    ||
+    (masterVertex.getRefinementControl()==Vertex::Records::Erasing && localVertex.getRefinementControl()==Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing);
 
   const typename Vertex::Records::InsideOutsideDomain insideOutsideDomainOfLocalVertex = localVertex._vertexData.getInsideOutsideDomain();
 
@@ -383,6 +376,11 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
   }
 
   localVertex.invalidateAdjacentCellInformation();
+
+  assertion4(
+    localVertex.getRefinementControl() != Vertex::Records::Erasing,
+    localVertex.toString(), masterVertex.toString(), tarch::parallel::NodePool::getInstance().getMasterRank(), tarch::parallel::Node::getInstance().getRank()
+  );
 
   logTraceOutWith1Argument( "mergeWithForkedVertexFromMaster(...)", localVertex );
 }
@@ -471,7 +469,6 @@ bool peano::grid::aspects::ParallelMerge::mergeWithJoinedCellFromWorker(
     tarch::parallel::Node::getInstance().getRank(),
     tarch::parallel::NodePool::getInstance().getMasterRank()
   );
-
   assertion5(
     !WorkerJoinsThisElementToLocalRank || workerCell._cellData.getResponsibleRank() == localCell._cellData.getResponsibleRank(),
     localCell.toString(), workerCell.toString(),
@@ -479,7 +476,6 @@ bool peano::grid::aspects::ParallelMerge::mergeWithJoinedCellFromWorker(
     tarch::parallel::Node::getInstance().getRank(),
     tarch::parallel::NodePool::getInstance().getMasterRank()
   );
-
 
   if (WorkerJoinsThisElementToLocalRank) {
     localCell._cellData.setResponsibleRank(    workerCell._cellData.getResponsibleRank() );
