@@ -16,19 +16,12 @@ void peano::parallel::getMergedAdjacencyLists(
 
   for (int i=0; i<NUMBER_OF_VERTICES_PER_ELEMENT; i++) {
 
-    bool localNodeIsReponsible  = neighbourList(i)      == tarch::parallel::Node::getInstance().getRank();
     bool neighbourIsResponsible = ownListBeforeMerge(i) == neighbourRank;
 
-    assertion6(
-      !(localNodeIsReponsible && neighbourIsResponsible),
-      i, ownListBeforeMerge, ownListAfterMerge, neighbourList, neighbourRank, tarch::parallel::Node::getInstance().getRank()
-    );
-
-    if (localNodeIsReponsible) {
-      // if ownList(i) is not equal to local rank, the local node has forked
-    }
     if (neighbourIsResponsible) {
-      // if neighbourList(i) is not equal to neighbour's rank, the neighbour has forked
+      // if neighbourList(i) is not equal to neighbour's rank, the neighbour
+      // has forked or joined. You may not call this operation, if the the
+      // neighbour is joining.
       ownListAfterMerge(i) = neighbourList(i);
     }
   }
