@@ -38,7 +38,7 @@ namespace peano {
     *
     * 		   build date: 29-11-2012 08:46
     *
-    * @date   30/01/2013 12:34
+    * @date   08/02/2013 09:40
     */
    class peano::grid::tests::records::TestCell { 
       
@@ -272,7 +272,7 @@ namespace peano {
        *
        * 		   build date: 29-11-2012 08:46
        *
-       * @date   30/01/2013 12:34
+       * @date   08/02/2013 09:40
        */
       class peano::grid::tests::records::TestCellPacked { 
          
@@ -510,7 +510,7 @@ namespace peano {
           *
           * 		   build date: 29-11-2012 08:46
           *
-          * @date   30/01/2013 12:34
+          * @date   08/02/2013 09:40
           */
          class peano::grid::tests::records::TestCell { 
             
@@ -723,7 +723,7 @@ namespace peano {
              *
              * 		   build date: 29-11-2012 08:46
              *
-             * @date   30/01/2013 12:34
+             * @date   08/02/2013 09:40
              */
             class peano::grid::tests::records::TestCellPacked { 
                
@@ -941,7 +941,7 @@ namespace peano {
              *
              * 		   build date: 29-11-2012 08:46
              *
-             * @date   30/01/2013 12:34
+             * @date   08/02/2013 09:40
              */
             class peano::grid::tests::records::TestCell { 
                
@@ -959,6 +959,9 @@ namespace peano {
                      std::bitset<DIMENSIONS> _evenFlags;
                      tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                      int _responsibleRank;
+                     double _nodeWorkload;
+                     double _localWorkload;
+                     double _totalWorkload;
                      /**
                       * Generated
                       */
@@ -967,7 +970,7 @@ namespace peano {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank);
+                     PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
                      
                      /**
                       * Generated
@@ -1007,6 +1010,36 @@ namespace peano {
                       */
                       void setResponsibleRank(const int& responsibleRank) ;
                      
+                     /**
+                      * Generated
+                      */
+                      double getNodeWorkload() const ;
+                     
+                     /**
+                      * Generated
+                      */
+                      void setNodeWorkload(const double& nodeWorkload) ;
+                     
+                     /**
+                      * Generated
+                      */
+                      double getLocalWorkload() const ;
+                     
+                     /**
+                      * Generated
+                      */
+                      void setLocalWorkload(const double& localWorkload) ;
+                     
+                     /**
+                      * Generated
+                      */
+                      double getTotalWorkload() const ;
+                     
+                     /**
+                      * Generated
+                      */
+                      void setTotalWorkload(const double& totalWorkload) ;
+                     
                      
                   };
                   
@@ -1027,7 +1060,7 @@ namespace peano {
                   /**
                    * Generated
                    */
-                  TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank);
+                  TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
                   
                   /**
                    * Generated
@@ -1081,6 +1114,36 @@ namespace peano {
                    * Generated
                    */
                    void setResponsibleRank(const int& responsibleRank) ;
+                  
+                  /**
+                   * Generated
+                   */
+                   double getNodeWorkload() const ;
+                  
+                  /**
+                   * Generated
+                   */
+                   void setNodeWorkload(const double& nodeWorkload) ;
+                  
+                  /**
+                   * Generated
+                   */
+                   double getLocalWorkload() const ;
+                  
+                  /**
+                   * Generated
+                   */
+                   void setLocalWorkload(const double& localWorkload) ;
+                  
+                  /**
+                   * Generated
+                   */
+                   double getTotalWorkload() const ;
+                  
+                  /**
+                   * Generated
+                   */
+                   void setTotalWorkload(const double& totalWorkload) ;
                   
                   /**
                    * Generated
@@ -1154,7 +1217,7 @@ namespace peano {
                 *
                 * 		   build date: 29-11-2012 08:46
                 *
-                * @date   30/01/2013 12:34
+                * @date   08/02/2013 09:40
                 */
                class peano::grid::tests::records::TestCellPacked { 
                   
@@ -1165,6 +1228,9 @@ namespace peano {
                      struct PersistentRecords {
                         tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                         int _responsibleRank;
+                        double _nodeWorkload;
+                        double _localWorkload;
+                        double _totalWorkload;
                         
                         /** mapping of records:
                         || Member 	|| startbit 	|| length
@@ -1182,7 +1248,7 @@ namespace peano {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank);
+                        PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
                         
                         /**
                          * Generated
@@ -1222,6 +1288,36 @@ namespace peano {
                          */
                          void setResponsibleRank(const int& responsibleRank) ;
                         
+                        /**
+                         * Generated
+                         */
+                         double getNodeWorkload() const ;
+                        
+                        /**
+                         * Generated
+                         */
+                         void setNodeWorkload(const double& nodeWorkload) ;
+                        
+                        /**
+                         * Generated
+                         */
+                         double getLocalWorkload() const ;
+                        
+                        /**
+                         * Generated
+                         */
+                         void setLocalWorkload(const double& localWorkload) ;
+                        
+                        /**
+                         * Generated
+                         */
+                         double getTotalWorkload() const ;
+                        
+                        /**
+                         * Generated
+                         */
+                         void setTotalWorkload(const double& totalWorkload) ;
+                        
                         
                      };
                      
@@ -1242,7 +1338,7 @@ namespace peano {
                      /**
                       * Generated
                       */
-                     TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank);
+                     TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
                      
                      /**
                       * Generated
@@ -1296,6 +1392,36 @@ namespace peano {
                       * Generated
                       */
                       void setResponsibleRank(const int& responsibleRank) ;
+                     
+                     /**
+                      * Generated
+                      */
+                      double getNodeWorkload() const ;
+                     
+                     /**
+                      * Generated
+                      */
+                      void setNodeWorkload(const double& nodeWorkload) ;
+                     
+                     /**
+                      * Generated
+                      */
+                      double getLocalWorkload() const ;
+                     
+                     /**
+                      * Generated
+                      */
+                      void setLocalWorkload(const double& localWorkload) ;
+                     
+                     /**
+                      * Generated
+                      */
+                      double getTotalWorkload() const ;
+                     
+                     /**
+                      * Generated
+                      */
+                      void setTotalWorkload(const double& totalWorkload) ;
                      
                      /**
                       * Generated
@@ -1372,7 +1498,7 @@ namespace peano {
                 *
                 * 		   build date: 29-11-2012 08:46
                 *
-                * @date   30/01/2013 12:34
+                * @date   08/02/2013 09:40
                 */
                class peano::grid::tests::records::TestCell { 
                   
@@ -1564,7 +1690,7 @@ namespace peano {
                    *
                    * 		   build date: 29-11-2012 08:46
                    *
-                   * @date   30/01/2013 12:34
+                   * @date   08/02/2013 09:40
                    */
                   class peano::grid::tests::records::TestCellPacked { 
                      
@@ -1761,7 +1887,7 @@ namespace peano {
                    *
                    * 		   build date: 29-11-2012 08:46
                    *
-                   * @date   30/01/2013 12:34
+                   * @date   08/02/2013 09:40
                    */
                   class peano::grid::tests::records::TestCell { 
                      
@@ -1780,6 +1906,9 @@ namespace peano {
                            std::bitset<DIMENSIONS> _evenFlags;
                            tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                            int _responsibleRank;
+                           double _nodeWorkload;
+                           double _localWorkload;
+                           double _totalWorkload;
                            int _numberOfLoadsFromInputStream;
                            int _numberOfStoresToOutputStream;
                            /**
@@ -1790,7 +1919,7 @@ namespace peano {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            /**
                             * Generated
@@ -1843,6 +1972,36 @@ namespace peano {
                            /**
                             * Generated
                             */
+                            double getNodeWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setNodeWorkload(const double& nodeWorkload) ;
+                           
+                           /**
+                            * Generated
+                            */
+                            double getLocalWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setLocalWorkload(const double& localWorkload) ;
+                           
+                           /**
+                            * Generated
+                            */
+                            double getTotalWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setTotalWorkload(const double& totalWorkload) ;
+                           
+                           /**
+                            * Generated
+                            */
                             int getNumberOfLoadsFromInputStream() const ;
                            
                            /**
@@ -1880,7 +2039,7 @@ namespace peano {
                         /**
                          * Generated
                          */
-                        TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                        TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                         
                         /**
                          * Generated
@@ -1944,6 +2103,36 @@ namespace peano {
                          * Generated
                          */
                          void setResponsibleRank(const int& responsibleRank) ;
+                        
+                        /**
+                         * Generated
+                         */
+                         double getNodeWorkload() const ;
+                        
+                        /**
+                         * Generated
+                         */
+                         void setNodeWorkload(const double& nodeWorkload) ;
+                        
+                        /**
+                         * Generated
+                         */
+                         double getLocalWorkload() const ;
+                        
+                        /**
+                         * Generated
+                         */
+                         void setLocalWorkload(const double& localWorkload) ;
+                        
+                        /**
+                         * Generated
+                         */
+                         double getTotalWorkload() const ;
+                        
+                        /**
+                         * Generated
+                         */
+                         void setTotalWorkload(const double& totalWorkload) ;
                         
                         /**
                          * Generated
@@ -2037,7 +2226,7 @@ namespace peano {
                       *
                       * 		   build date: 29-11-2012 08:46
                       *
-                      * @date   30/01/2013 12:34
+                      * @date   08/02/2013 09:40
                       */
                      class peano::grid::tests::records::TestCellPacked { 
                         
@@ -2049,6 +2238,9 @@ namespace peano {
                               int _level;
                               tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                               int _responsibleRank;
+                              double _nodeWorkload;
+                              double _localWorkload;
+                              double _totalWorkload;
                               int _numberOfLoadsFromInputStream;
                               int _numberOfStoresToOutputStream;
                               
@@ -2068,7 +2260,7 @@ namespace peano {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               /**
                                * Generated
@@ -2121,6 +2313,36 @@ namespace peano {
                               /**
                                * Generated
                                */
+                               double getNodeWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setNodeWorkload(const double& nodeWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getLocalWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setLocalWorkload(const double& localWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getTotalWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setTotalWorkload(const double& totalWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
                                int getNumberOfLoadsFromInputStream() const ;
                               
                               /**
@@ -2158,7 +2380,7 @@ namespace peano {
                            /**
                             * Generated
                             */
-                           TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            /**
                             * Generated
@@ -2222,6 +2444,36 @@ namespace peano {
                             * Generated
                             */
                             void setResponsibleRank(const int& responsibleRank) ;
+                           
+                           /**
+                            * Generated
+                            */
+                            double getNodeWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setNodeWorkload(const double& nodeWorkload) ;
+                           
+                           /**
+                            * Generated
+                            */
+                            double getLocalWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setLocalWorkload(const double& localWorkload) ;
+                           
+                           /**
+                            * Generated
+                            */
+                            double getTotalWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setTotalWorkload(const double& totalWorkload) ;
                            
                            /**
                             * Generated
@@ -2318,7 +2570,7 @@ namespace peano {
                       *
                       * 		   build date: 29-11-2012 08:46
                       *
-                      * @date   30/01/2013 12:34
+                      * @date   08/02/2013 09:40
                       */
                      class peano::grid::tests::records::TestCell { 
                         
@@ -2337,6 +2589,9 @@ namespace peano {
                               std::bitset<DIMENSIONS> _evenFlags;
                               tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                               int _responsibleRank;
+                              double _nodeWorkload;
+                              double _localWorkload;
+                              double _totalWorkload;
                               /**
                                * Generated
                                */
@@ -2345,7 +2600,7 @@ namespace peano {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank);
+                              PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
                               
                               /**
                                * Generated
@@ -2395,6 +2650,36 @@ namespace peano {
                                */
                                void setResponsibleRank(const int& responsibleRank) ;
                               
+                              /**
+                               * Generated
+                               */
+                               double getNodeWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setNodeWorkload(const double& nodeWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getLocalWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setLocalWorkload(const double& localWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getTotalWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setTotalWorkload(const double& totalWorkload) ;
+                              
                               
                            };
                            
@@ -2415,7 +2700,7 @@ namespace peano {
                            /**
                             * Generated
                             */
-                           TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank);
+                           TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
                            
                            /**
                             * Generated
@@ -2479,6 +2764,36 @@ namespace peano {
                             * Generated
                             */
                             void setResponsibleRank(const int& responsibleRank) ;
+                           
+                           /**
+                            * Generated
+                            */
+                            double getNodeWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setNodeWorkload(const double& nodeWorkload) ;
+                           
+                           /**
+                            * Generated
+                            */
+                            double getLocalWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setLocalWorkload(const double& localWorkload) ;
+                           
+                           /**
+                            * Generated
+                            */
+                            double getTotalWorkload() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setTotalWorkload(const double& totalWorkload) ;
                            
                            /**
                             * Generated
@@ -2552,7 +2867,7 @@ namespace peano {
                          *
                          * 		   build date: 29-11-2012 08:46
                          *
-                         * @date   30/01/2013 12:34
+                         * @date   08/02/2013 09:40
                          */
                         class peano::grid::tests::records::TestCellPacked { 
                            
@@ -2564,6 +2879,9 @@ namespace peano {
                                  int _level;
                                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                                  int _responsibleRank;
+                                 double _nodeWorkload;
+                                 double _localWorkload;
+                                 double _totalWorkload;
                                  
                                  /** mapping of records:
                                  || Member 	|| startbit 	|| length
@@ -2581,7 +2899,7 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank);
+                                 PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
                                  
                                  /**
                                   * Generated
@@ -2631,6 +2949,36 @@ namespace peano {
                                   */
                                   void setResponsibleRank(const int& responsibleRank) ;
                                  
+                                 /**
+                                  * Generated
+                                  */
+                                  double getNodeWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setNodeWorkload(const double& nodeWorkload) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  double getLocalWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setLocalWorkload(const double& localWorkload) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  double getTotalWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setTotalWorkload(const double& totalWorkload) ;
+                                 
                                  
                               };
                               
@@ -2651,7 +2999,7 @@ namespace peano {
                               /**
                                * Generated
                                */
-                              TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank);
+                              TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
                               
                               /**
                                * Generated
@@ -2715,6 +3063,36 @@ namespace peano {
                                * Generated
                                */
                                void setResponsibleRank(const int& responsibleRank) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getNodeWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setNodeWorkload(const double& nodeWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getLocalWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setLocalWorkload(const double& localWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getTotalWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setTotalWorkload(const double& totalWorkload) ;
                               
                               /**
                                * Generated
@@ -2791,7 +3169,7 @@ namespace peano {
                          *
                          * 		   build date: 29-11-2012 08:46
                          *
-                         * @date   30/01/2013 12:34
+                         * @date   08/02/2013 09:40
                          */
                         class peano::grid::tests::records::TestCell { 
                            
@@ -2809,6 +3187,9 @@ namespace peano {
                                  std::bitset<DIMENSIONS> _evenFlags;
                                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                                  int _responsibleRank;
+                                 double _nodeWorkload;
+                                 double _localWorkload;
+                                 double _totalWorkload;
                                  int _numberOfLoadsFromInputStream;
                                  int _numberOfStoresToOutputStream;
                                  /**
@@ -2819,7 +3200,7 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
@@ -2862,6 +3243,36 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
+                                  double getNodeWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setNodeWorkload(const double& nodeWorkload) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  double getLocalWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setLocalWorkload(const double& localWorkload) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  double getTotalWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setTotalWorkload(const double& totalWorkload) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
                                   int getNumberOfLoadsFromInputStream() const ;
                                  
                                  /**
@@ -2899,7 +3310,7 @@ namespace peano {
                               /**
                                * Generated
                                */
-                              TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               /**
                                * Generated
@@ -2953,6 +3364,36 @@ namespace peano {
                                * Generated
                                */
                                void setResponsibleRank(const int& responsibleRank) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getNodeWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setNodeWorkload(const double& nodeWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getLocalWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setLocalWorkload(const double& localWorkload) ;
+                              
+                              /**
+                               * Generated
+                               */
+                               double getTotalWorkload() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setTotalWorkload(const double& totalWorkload) ;
                               
                               /**
                                * Generated
@@ -3046,7 +3487,7 @@ namespace peano {
                             *
                             * 		   build date: 29-11-2012 08:46
                             *
-                            * @date   30/01/2013 12:34
+                            * @date   08/02/2013 09:40
                             */
                            class peano::grid::tests::records::TestCellPacked { 
                               
@@ -3057,6 +3498,9 @@ namespace peano {
                                  struct PersistentRecords {
                                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                                     int _responsibleRank;
+                                    double _nodeWorkload;
+                                    double _localWorkload;
+                                    double _totalWorkload;
                                     int _numberOfLoadsFromInputStream;
                                     int _numberOfStoresToOutputStream;
                                     
@@ -3076,7 +3520,7 @@ namespace peano {
                                     /**
                                      * Generated
                                      */
-                                    PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                     
                                     /**
                                      * Generated
@@ -3119,6 +3563,36 @@ namespace peano {
                                     /**
                                      * Generated
                                      */
+                                     double getNodeWorkload() const ;
+                                    
+                                    /**
+                                     * Generated
+                                     */
+                                     void setNodeWorkload(const double& nodeWorkload) ;
+                                    
+                                    /**
+                                     * Generated
+                                     */
+                                     double getLocalWorkload() const ;
+                                    
+                                    /**
+                                     * Generated
+                                     */
+                                     void setLocalWorkload(const double& localWorkload) ;
+                                    
+                                    /**
+                                     * Generated
+                                     */
+                                     double getTotalWorkload() const ;
+                                    
+                                    /**
+                                     * Generated
+                                     */
+                                     void setTotalWorkload(const double& totalWorkload) ;
+                                    
+                                    /**
+                                     * Generated
+                                     */
                                      int getNumberOfLoadsFromInputStream() const ;
                                     
                                     /**
@@ -3156,7 +3630,7 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
-                                 TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
@@ -3210,6 +3684,36 @@ namespace peano {
                                   * Generated
                                   */
                                   void setResponsibleRank(const int& responsibleRank) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  double getNodeWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setNodeWorkload(const double& nodeWorkload) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  double getLocalWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setLocalWorkload(const double& localWorkload) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  double getTotalWorkload() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setTotalWorkload(const double& totalWorkload) ;
                                  
                                  /**
                                   * Generated
@@ -3306,7 +3810,7 @@ namespace peano {
                             *
                             * 		   build date: 29-11-2012 08:46
                             *
-                            * @date   30/01/2013 12:34
+                            * @date   08/02/2013 09:40
                             */
                            class peano::grid::tests::records::TestCell { 
                               
@@ -3561,7 +4065,7 @@ namespace peano {
                                *
                                * 		   build date: 29-11-2012 08:46
                                *
-                               * @date   30/01/2013 12:34
+                               * @date   08/02/2013 09:40
                                */
                               class peano::grid::tests::records::TestCellPacked { 
                                  

@@ -2315,12 +2315,15 @@ peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords() {
 }
 
 
-peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank):
+peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload):
 _isInside(isInside),
 _state(state),
 _evenFlags(evenFlags),
 _accessNumber(accessNumber),
-_responsibleRank(responsibleRank) {
+_responsibleRank(responsibleRank),
+_nodeWorkload(nodeWorkload),
+_localWorkload(localWorkload),
+_totalWorkload(totalWorkload) {
    
 }
 
@@ -2384,19 +2387,55 @@ _responsibleRank(responsibleRank) {
 }
 
 
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getNodeWorkload() const  {
+   return _nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setNodeWorkload(const double& nodeWorkload)  {
+   _nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getLocalWorkload() const  {
+   return _localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setLocalWorkload(const double& localWorkload)  {
+   _localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getTotalWorkload() const  {
+   return _totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setTotalWorkload(const double& totalWorkload)  {
+   _totalWorkload = totalWorkload;
+}
+
+
 peano::grid::tests::records::TestCell::TestCell() {
    
 }
 
 
 peano::grid::tests::records::TestCell::TestCell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank) {
+_persistentRecords(persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload) {
    
 }
 
 
-peano::grid::tests::records::TestCell::TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank):
-_persistentRecords(isInside, state, evenFlags, accessNumber, responsibleRank) {
+peano::grid::tests::records::TestCell::TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload):
+_persistentRecords(isInside, state, evenFlags, accessNumber, responsibleRank, nodeWorkload, localWorkload, totalWorkload) {
    
 }
 
@@ -2507,6 +2546,42 @@ peano::grid::tests::records::TestCell::~TestCell() { }
 }
 
 
+
+ double peano::grid::tests::records::TestCell::getNodeWorkload() const  {
+   return _persistentRecords._nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setNodeWorkload(const double& nodeWorkload)  {
+   _persistentRecords._nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::getLocalWorkload() const  {
+   return _persistentRecords._localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setLocalWorkload(const double& localWorkload)  {
+   _persistentRecords._localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::getTotalWorkload() const  {
+   return _persistentRecords._totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setTotalWorkload(const double& totalWorkload)  {
+   _persistentRecords._totalWorkload = totalWorkload;
+}
+
+
 std::string peano::grid::tests::records::TestCell::toString(const State& param) {
    switch (param) {
       case Leaf: return "Leaf";
@@ -2546,6 +2621,12 @@ void peano::grid::tests::records::TestCell::toString (std::ostream& out) const {
    out << getAccessNumber(DIMENSIONS_TIMES_TWO-1) << "]";
    out << ",";
    out << "responsibleRank:" << getResponsibleRank();
+   out << ",";
+   out << "nodeWorkload:" << getNodeWorkload();
+   out << ",";
+   out << "localWorkload:" << getLocalWorkload();
+   out << ",";
+   out << "totalWorkload:" << getTotalWorkload();
    out <<  ")";
 }
 
@@ -2560,7 +2641,10 @@ peano::grid::tests::records::TestCellPacked peano::grid::tests::records::TestCel
       getState(),
       getEvenFlags(),
       getAccessNumber(),
-      getResponsibleRank()
+      getResponsibleRank(),
+      getNodeWorkload(),
+      getLocalWorkload(),
+      getTotalWorkload()
    );
 }
 
@@ -2606,13 +2690,16 @@ peano::grid::tests::records::TestCellPacked peano::grid::tests::records::TestCel
       {
          TestCell dummyTestCell[2];
          
-         const int Attributes = 6;
+         const int Attributes = 9;
          MPI_Datatype subtypes[Attributes] = {
             MPI_CHAR,		 //isInside
             MPI_INT,		 //state
             MPI_INT,		 //evenFlags
             MPI_SHORT,		 //accessNumber
             MPI_INT,		 //responsibleRank
+            MPI_DOUBLE,		 //nodeWorkload
+            MPI_DOUBLE,		 //localWorkload
+            MPI_DOUBLE,		 //totalWorkload
             MPI_UB		 // end/displacement flag
          };
          
@@ -2622,6 +2709,9 @@ peano::grid::tests::records::TestCellPacked peano::grid::tests::records::TestCel
             DIMENSIONS,		 //evenFlags
             DIMENSIONS_TIMES_TWO,		 //accessNumber
             1,		 //responsibleRank
+            1,		 //nodeWorkload
+            1,		 //localWorkload
+            1,		 //totalWorkload
             1		 // end/displacement flag
          };
          
@@ -2634,7 +2724,10 @@ peano::grid::tests::records::TestCellPacked peano::grid::tests::records::TestCel
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._evenFlags))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._accessNumber[0]))), 		&disp[3] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._responsibleRank))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[1]._persistentRecords._isInside))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._nodeWorkload))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._localWorkload))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._totalWorkload))), 		&disp[7] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[1]._persistentRecords._isInside))), 		&disp[8] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -2854,9 +2947,12 @@ peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecord
 }
 
 
-peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank):
+peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload):
 _accessNumber(accessNumber),
-_responsibleRank(responsibleRank) {
+_responsibleRank(responsibleRank),
+_nodeWorkload(nodeWorkload),
+_localWorkload(localWorkload),
+_totalWorkload(totalWorkload) {
    setIsInside(isInside);
    setState(state);
    setEvenFlags(evenFlags);
@@ -2944,6 +3040,42 @@ _responsibleRank(responsibleRank) {
 }
 
 
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getNodeWorkload() const  {
+   return _nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setNodeWorkload(const double& nodeWorkload)  {
+   _nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getLocalWorkload() const  {
+   return _localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setLocalWorkload(const double& localWorkload)  {
+   _localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getTotalWorkload() const  {
+   return _totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setTotalWorkload(const double& totalWorkload)  {
+   _totalWorkload = totalWorkload;
+}
+
+
 peano::grid::tests::records::TestCellPacked::TestCellPacked() {
    assertion((DIMENSIONS+3 < (8 * sizeof(int))));
    
@@ -2951,14 +3083,14 @@ peano::grid::tests::records::TestCellPacked::TestCellPacked() {
 
 
 peano::grid::tests::records::TestCellPacked::TestCellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank) {
+_persistentRecords(persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload) {
    assertion((DIMENSIONS+3 < (8 * sizeof(int))));
    
 }
 
 
-peano::grid::tests::records::TestCellPacked::TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank):
-_persistentRecords(isInside, state, evenFlags, accessNumber, responsibleRank) {
+peano::grid::tests::records::TestCellPacked::TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload):
+_persistentRecords(isInside, state, evenFlags, accessNumber, responsibleRank, nodeWorkload, localWorkload, totalWorkload) {
    assertion((DIMENSIONS+3 < (8 * sizeof(int))));
    
 }
@@ -3097,6 +3229,42 @@ peano::grid::tests::records::TestCellPacked::~TestCellPacked() { }
 }
 
 
+
+ double peano::grid::tests::records::TestCellPacked::getNodeWorkload() const  {
+   return _persistentRecords._nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setNodeWorkload(const double& nodeWorkload)  {
+   _persistentRecords._nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::getLocalWorkload() const  {
+   return _persistentRecords._localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setLocalWorkload(const double& localWorkload)  {
+   _persistentRecords._localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::getTotalWorkload() const  {
+   return _persistentRecords._totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setTotalWorkload(const double& totalWorkload)  {
+   _persistentRecords._totalWorkload = totalWorkload;
+}
+
+
 std::string peano::grid::tests::records::TestCellPacked::toString(const State& param) {
    return peano::grid::tests::records::TestCell::toString(param);
 }
@@ -3132,6 +3300,12 @@ void peano::grid::tests::records::TestCellPacked::toString (std::ostream& out) c
    out << getAccessNumber(DIMENSIONS_TIMES_TWO-1) << "]";
    out << ",";
    out << "responsibleRank:" << getResponsibleRank();
+   out << ",";
+   out << "nodeWorkload:" << getNodeWorkload();
+   out << ",";
+   out << "localWorkload:" << getLocalWorkload();
+   out << ",";
+   out << "totalWorkload:" << getTotalWorkload();
    out <<  ")";
 }
 
@@ -3146,7 +3320,10 @@ peano::grid::tests::records::TestCell peano::grid::tests::records::TestCellPacke
       getState(),
       getEvenFlags(),
       getAccessNumber(),
-      getResponsibleRank()
+      getResponsibleRank(),
+      getNodeWorkload(),
+      getLocalWorkload(),
+      getTotalWorkload()
    );
 }
 
@@ -3192,10 +3369,13 @@ peano::grid::tests::records::TestCell peano::grid::tests::records::TestCellPacke
       {
          TestCellPacked dummyTestCellPacked[2];
          
-         const int Attributes = 4;
+         const int Attributes = 7;
          MPI_Datatype subtypes[Attributes] = {
             MPI_SHORT,		 //accessNumber
             MPI_INT,		 //responsibleRank
+            MPI_DOUBLE,		 //nodeWorkload
+            MPI_DOUBLE,		 //localWorkload
+            MPI_DOUBLE,		 //totalWorkload
             MPI_INT,		 //_packedRecords0
             MPI_UB		 // end/displacement flag
          };
@@ -3203,6 +3383,9 @@ peano::grid::tests::records::TestCell peano::grid::tests::records::TestCellPacke
          int blocklen[Attributes] = {
             DIMENSIONS_TIMES_TWO,		 //accessNumber
             1,		 //responsibleRank
+            1,		 //nodeWorkload
+            1,		 //localWorkload
+            1,		 //totalWorkload
             1,		 //_packedRecords0
             1		 // end/displacement flag
          };
@@ -3213,8 +3396,11 @@ peano::grid::tests::records::TestCell peano::grid::tests::records::TestCellPacke
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]))), &base);
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyTestCellPacked[1]._persistentRecords._accessNumber[0])), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._nodeWorkload))), 		&disp[2] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._localWorkload))), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._totalWorkload))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyTestCellPacked[1]._persistentRecords._accessNumber[0])), 		&disp[6] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -4495,13 +4681,16 @@ peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords() {
 }
 
 
-peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
 _isInside(isInside),
 _state(state),
 _level(level),
 _evenFlags(evenFlags),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
+_nodeWorkload(nodeWorkload),
+_localWorkload(localWorkload),
+_totalWorkload(totalWorkload),
 _numberOfLoadsFromInputStream(numberOfLoadsFromInputStream),
 _numberOfStoresToOutputStream(numberOfStoresToOutputStream) {
 
@@ -4580,6 +4769,42 @@ _responsibleRank = responsibleRank;
 
 
 
+ double peano::grid::tests::records::TestCell::PersistentRecords::getNodeWorkload() const  {
+return _nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setNodeWorkload(const double& nodeWorkload)  {
+_nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getLocalWorkload() const  {
+return _localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setLocalWorkload(const double& localWorkload)  {
+_localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getTotalWorkload() const  {
+return _totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setTotalWorkload(const double& totalWorkload)  {
+_totalWorkload = totalWorkload;
+}
+
+
+
  int peano::grid::tests::records::TestCell::PersistentRecords::getNumberOfLoadsFromInputStream() const  {
 return _numberOfLoadsFromInputStream;
 }
@@ -4609,13 +4834,13 @@ peano::grid::tests::records::TestCell::TestCell() {
 
 
 peano::grid::tests::records::TestCell::TestCell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-peano::grid::tests::records::TestCell::TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(isInside, state, level, evenFlags, accessNumber, responsibleRank, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+peano::grid::tests::records::TestCell::TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(isInside, state, level, evenFlags, accessNumber, responsibleRank, nodeWorkload, localWorkload, totalWorkload, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -4739,6 +4964,42 @@ _persistentRecords._responsibleRank = responsibleRank;
 
 
 
+ double peano::grid::tests::records::TestCell::getNodeWorkload() const  {
+return _persistentRecords._nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setNodeWorkload(const double& nodeWorkload)  {
+_persistentRecords._nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::getLocalWorkload() const  {
+return _persistentRecords._localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setLocalWorkload(const double& localWorkload)  {
+_persistentRecords._localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::getTotalWorkload() const  {
+return _persistentRecords._totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setTotalWorkload(const double& totalWorkload)  {
+_persistentRecords._totalWorkload = totalWorkload;
+}
+
+
+
  int peano::grid::tests::records::TestCell::getNumberOfLoadsFromInputStream() const  {
 return _persistentRecords._numberOfLoadsFromInputStream;
 }
@@ -4804,6 +5065,12 @@ out << "accessNumber:[";
 out << ",";
 out << "responsibleRank:" << getResponsibleRank();
 out << ",";
+out << "nodeWorkload:" << getNodeWorkload();
+out << ",";
+out << "localWorkload:" << getLocalWorkload();
+out << ",";
+out << "totalWorkload:" << getTotalWorkload();
+out << ",";
 out << "numberOfLoadsFromInputStream:" << getNumberOfLoadsFromInputStream();
 out << ",";
 out << "numberOfStoresToOutputStream:" << getNumberOfStoresToOutputStream();
@@ -4823,6 +5090,9 @@ getLevel(),
 getEvenFlags(),
 getAccessNumber(),
 getResponsibleRank(),
+getNodeWorkload(),
+getLocalWorkload(),
+getTotalWorkload(),
 getNumberOfLoadsFromInputStream(),
 getNumberOfStoresToOutputStream()
 );
@@ -4873,7 +5143,7 @@ void peano::grid::tests::records::TestCell::initDatatype() {
 {
    TestCell dummyTestCell[2];
    
-   const int Attributes = 9;
+   const int Attributes = 12;
    MPI_Datatype subtypes[Attributes] = {
       MPI_CHAR,		 //isInside
       MPI_INT,		 //state
@@ -4881,6 +5151,9 @@ void peano::grid::tests::records::TestCell::initDatatype() {
       MPI_INT,		 //evenFlags
       MPI_SHORT,		 //accessNumber
       MPI_INT,		 //responsibleRank
+      MPI_DOUBLE,		 //nodeWorkload
+      MPI_DOUBLE,		 //localWorkload
+      MPI_DOUBLE,		 //totalWorkload
       MPI_INT,		 //numberOfLoadsFromInputStream
       MPI_INT,		 //numberOfStoresToOutputStream
       MPI_UB		 // end/displacement flag
@@ -4893,6 +5166,9 @@ void peano::grid::tests::records::TestCell::initDatatype() {
       DIMENSIONS,		 //evenFlags
       DIMENSIONS_TIMES_TWO,		 //accessNumber
       1,		 //responsibleRank
+      1,		 //nodeWorkload
+      1,		 //localWorkload
+      1,		 //totalWorkload
       1,		 //numberOfLoadsFromInputStream
       1,		 //numberOfStoresToOutputStream
       1		 // end/displacement flag
@@ -4908,9 +5184,12 @@ void peano::grid::tests::records::TestCell::initDatatype() {
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._responsibleRank))), 		&disp[5] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[6] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[7] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[1]._persistentRecords._isInside))), 		&disp[8] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._nodeWorkload))), 		&disp[6] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._localWorkload))), 		&disp[7] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._totalWorkload))), 		&disp[8] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[9] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[10] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[1]._persistentRecords._isInside))), 		&disp[11] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -5130,10 +5409,13 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
 _level(level),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
+_nodeWorkload(nodeWorkload),
+_localWorkload(localWorkload),
+_totalWorkload(totalWorkload),
 _numberOfLoadsFromInputStream(numberOfLoadsFromInputStream),
 _numberOfStoresToOutputStream(numberOfStoresToOutputStream) {
 setIsInside(isInside);
@@ -5236,6 +5518,42 @@ _responsibleRank = responsibleRank;
 
 
 
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getNodeWorkload() const  {
+return _nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setNodeWorkload(const double& nodeWorkload)  {
+_nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getLocalWorkload() const  {
+return _localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setLocalWorkload(const double& localWorkload)  {
+_localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getTotalWorkload() const  {
+return _totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setTotalWorkload(const double& totalWorkload)  {
+_totalWorkload = totalWorkload;
+}
+
+
+
  int peano::grid::tests::records::TestCellPacked::PersistentRecords::getNumberOfLoadsFromInputStream() const  {
 return _numberOfLoadsFromInputStream;
 }
@@ -5266,14 +5584,14 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 peano::grid::tests::records::TestCellPacked::TestCellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 }
 
 
-peano::grid::tests::records::TestCellPacked::TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(isInside, state, level, evenFlags, accessNumber, responsibleRank, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+peano::grid::tests::records::TestCellPacked::TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(isInside, state, level, evenFlags, accessNumber, responsibleRank, nodeWorkload, localWorkload, totalWorkload, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 }
@@ -5425,6 +5743,42 @@ _persistentRecords._responsibleRank = responsibleRank;
 
 
 
+ double peano::grid::tests::records::TestCellPacked::getNodeWorkload() const  {
+return _persistentRecords._nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setNodeWorkload(const double& nodeWorkload)  {
+_persistentRecords._nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::getLocalWorkload() const  {
+return _persistentRecords._localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setLocalWorkload(const double& localWorkload)  {
+_persistentRecords._localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::getTotalWorkload() const  {
+return _persistentRecords._totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setTotalWorkload(const double& totalWorkload)  {
+_persistentRecords._totalWorkload = totalWorkload;
+}
+
+
+
  int peano::grid::tests::records::TestCellPacked::getNumberOfLoadsFromInputStream() const  {
 return _persistentRecords._numberOfLoadsFromInputStream;
 }
@@ -5486,6 +5840,12 @@ out << "accessNumber:[";
 out << ",";
 out << "responsibleRank:" << getResponsibleRank();
 out << ",";
+out << "nodeWorkload:" << getNodeWorkload();
+out << ",";
+out << "localWorkload:" << getLocalWorkload();
+out << ",";
+out << "totalWorkload:" << getTotalWorkload();
+out << ",";
 out << "numberOfLoadsFromInputStream:" << getNumberOfLoadsFromInputStream();
 out << ",";
 out << "numberOfStoresToOutputStream:" << getNumberOfStoresToOutputStream();
@@ -5505,6 +5865,9 @@ getLevel(),
 getEvenFlags(),
 getAccessNumber(),
 getResponsibleRank(),
+getNodeWorkload(),
+getLocalWorkload(),
+getTotalWorkload(),
 getNumberOfLoadsFromInputStream(),
 getNumberOfStoresToOutputStream()
 );
@@ -5555,11 +5918,14 @@ void peano::grid::tests::records::TestCellPacked::initDatatype() {
 {
    TestCellPacked dummyTestCellPacked[2];
    
-   const int Attributes = 7;
+   const int Attributes = 10;
    MPI_Datatype subtypes[Attributes] = {
       MPI_INT,		 //level
       MPI_SHORT,		 //accessNumber
       MPI_INT,		 //responsibleRank
+      MPI_DOUBLE,		 //nodeWorkload
+      MPI_DOUBLE,		 //localWorkload
+      MPI_DOUBLE,		 //totalWorkload
       MPI_INT,		 //numberOfLoadsFromInputStream
       MPI_INT,		 //numberOfStoresToOutputStream
       MPI_INT,		 //_packedRecords0
@@ -5570,6 +5936,9 @@ void peano::grid::tests::records::TestCellPacked::initDatatype() {
       1,		 //level
       DIMENSIONS_TIMES_TWO,		 //accessNumber
       1,		 //responsibleRank
+      1,		 //nodeWorkload
+      1,		 //localWorkload
+      1,		 //totalWorkload
       1,		 //numberOfLoadsFromInputStream
       1,		 //numberOfStoresToOutputStream
       1,		 //_packedRecords0
@@ -5583,10 +5952,13 @@ void peano::grid::tests::records::TestCellPacked::initDatatype() {
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._level))), 		&disp[0] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[2] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[3] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[4] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[1]._persistentRecords._level))), 		&disp[6] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._nodeWorkload))), 		&disp[3] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._localWorkload))), 		&disp[4] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._totalWorkload))), 		&disp[5] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[6] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[7] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[8] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[1]._persistentRecords._level))), 		&disp[9] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -5808,13 +6180,16 @@ peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords() {
 }
 
 
-peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank):
+peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload):
 _isInside(isInside),
 _state(state),
 _level(level),
 _evenFlags(evenFlags),
 _accessNumber(accessNumber),
-_responsibleRank(responsibleRank) {
+_responsibleRank(responsibleRank),
+_nodeWorkload(nodeWorkload),
+_localWorkload(localWorkload),
+_totalWorkload(totalWorkload) {
 
 }
 
@@ -5890,19 +6265,55 @@ _responsibleRank = responsibleRank;
 }
 
 
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getNodeWorkload() const  {
+return _nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setNodeWorkload(const double& nodeWorkload)  {
+_nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getLocalWorkload() const  {
+return _localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setLocalWorkload(const double& localWorkload)  {
+_localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getTotalWorkload() const  {
+return _totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setTotalWorkload(const double& totalWorkload)  {
+_totalWorkload = totalWorkload;
+}
+
+
 peano::grid::tests::records::TestCell::TestCell() {
 
 }
 
 
 peano::grid::tests::records::TestCell::TestCell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank) {
+_persistentRecords(persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload) {
 
 }
 
 
-peano::grid::tests::records::TestCell::TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank):
-_persistentRecords(isInside, state, level, evenFlags, accessNumber, responsibleRank) {
+peano::grid::tests::records::TestCell::TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload):
+_persistentRecords(isInside, state, level, evenFlags, accessNumber, responsibleRank, nodeWorkload, localWorkload, totalWorkload) {
 
 }
 
@@ -6025,6 +6436,42 @@ _persistentRecords._responsibleRank = responsibleRank;
 }
 
 
+
+ double peano::grid::tests::records::TestCell::getNodeWorkload() const  {
+return _persistentRecords._nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setNodeWorkload(const double& nodeWorkload)  {
+_persistentRecords._nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::getLocalWorkload() const  {
+return _persistentRecords._localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setLocalWorkload(const double& localWorkload)  {
+_persistentRecords._localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::getTotalWorkload() const  {
+return _persistentRecords._totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setTotalWorkload(const double& totalWorkload)  {
+_persistentRecords._totalWorkload = totalWorkload;
+}
+
+
 std::string peano::grid::tests::records::TestCell::toString(const State& param) {
 switch (param) {
 case Leaf: return "Leaf";
@@ -6066,6 +6513,12 @@ out << "accessNumber:[";
    out << getAccessNumber(DIMENSIONS_TIMES_TWO-1) << "]";
 out << ",";
 out << "responsibleRank:" << getResponsibleRank();
+out << ",";
+out << "nodeWorkload:" << getNodeWorkload();
+out << ",";
+out << "localWorkload:" << getLocalWorkload();
+out << ",";
+out << "totalWorkload:" << getTotalWorkload();
 out <<  ")";
 }
 
@@ -6081,7 +6534,10 @@ getState(),
 getLevel(),
 getEvenFlags(),
 getAccessNumber(),
-getResponsibleRank()
+getResponsibleRank(),
+getNodeWorkload(),
+getLocalWorkload(),
+getTotalWorkload()
 );
 }
 
@@ -6130,7 +6586,7 @@ MPI_Type_commit( &TestCell::Datatype );
 {
 TestCell dummyTestCell[2];
 
-const int Attributes = 7;
+const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
    MPI_CHAR,		 //isInside
    MPI_INT,		 //state
@@ -6138,6 +6594,9 @@ MPI_Datatype subtypes[Attributes] = {
    MPI_INT,		 //evenFlags
    MPI_SHORT,		 //accessNumber
    MPI_INT,		 //responsibleRank
+   MPI_DOUBLE,		 //nodeWorkload
+   MPI_DOUBLE,		 //localWorkload
+   MPI_DOUBLE,		 //totalWorkload
    MPI_UB		 // end/displacement flag
 };
 
@@ -6148,6 +6607,9 @@ int blocklen[Attributes] = {
    DIMENSIONS,		 //evenFlags
    DIMENSIONS_TIMES_TWO,		 //accessNumber
    1,		 //responsibleRank
+   1,		 //nodeWorkload
+   1,		 //localWorkload
+   1,		 //totalWorkload
    1		 // end/displacement flag
 };
 
@@ -6161,7 +6623,10 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._pers
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._responsibleRank))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[1]._persistentRecords._isInside))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._nodeWorkload))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._localWorkload))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._totalWorkload))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[1]._persistentRecords._isInside))), 		&disp[9] );
 
 for (int i=1; i<Attributes; i++) {
    assertion1( disp[i] > disp[i-1], i );
@@ -6381,10 +6846,13 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank):
+peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload):
 _level(level),
 _accessNumber(accessNumber),
-_responsibleRank(responsibleRank) {
+_responsibleRank(responsibleRank),
+_nodeWorkload(nodeWorkload),
+_localWorkload(localWorkload),
+_totalWorkload(totalWorkload) {
 setIsInside(isInside);
 setState(state);
 setEvenFlags(evenFlags);
@@ -6484,6 +6952,42 @@ _responsibleRank = responsibleRank;
 }
 
 
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getNodeWorkload() const  {
+return _nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setNodeWorkload(const double& nodeWorkload)  {
+_nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getLocalWorkload() const  {
+return _localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setLocalWorkload(const double& localWorkload)  {
+_localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getTotalWorkload() const  {
+return _totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setTotalWorkload(const double& totalWorkload)  {
+_totalWorkload = totalWorkload;
+}
+
+
 peano::grid::tests::records::TestCellPacked::TestCellPacked() {
 assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
@@ -6491,14 +6995,14 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 peano::grid::tests::records::TestCellPacked::TestCellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank) {
+_persistentRecords(persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload) {
 assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 }
 
 
-peano::grid::tests::records::TestCellPacked::TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank):
-_persistentRecords(isInside, state, level, evenFlags, accessNumber, responsibleRank) {
+peano::grid::tests::records::TestCellPacked::TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload):
+_persistentRecords(isInside, state, level, evenFlags, accessNumber, responsibleRank, nodeWorkload, localWorkload, totalWorkload) {
 assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 }
@@ -6649,6 +7153,42 @@ _persistentRecords._responsibleRank = responsibleRank;
 }
 
 
+
+ double peano::grid::tests::records::TestCellPacked::getNodeWorkload() const  {
+return _persistentRecords._nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setNodeWorkload(const double& nodeWorkload)  {
+_persistentRecords._nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::getLocalWorkload() const  {
+return _persistentRecords._localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setLocalWorkload(const double& localWorkload)  {
+_persistentRecords._localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::getTotalWorkload() const  {
+return _persistentRecords._totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setTotalWorkload(const double& totalWorkload)  {
+_persistentRecords._totalWorkload = totalWorkload;
+}
+
+
 std::string peano::grid::tests::records::TestCellPacked::toString(const State& param) {
 return peano::grid::tests::records::TestCell::toString(param);
 }
@@ -6686,6 +7226,12 @@ out << "accessNumber:[";
    out << getAccessNumber(DIMENSIONS_TIMES_TWO-1) << "]";
 out << ",";
 out << "responsibleRank:" << getResponsibleRank();
+out << ",";
+out << "nodeWorkload:" << getNodeWorkload();
+out << ",";
+out << "localWorkload:" << getLocalWorkload();
+out << ",";
+out << "totalWorkload:" << getTotalWorkload();
 out <<  ")";
 }
 
@@ -6701,7 +7247,10 @@ getState(),
 getLevel(),
 getEvenFlags(),
 getAccessNumber(),
-getResponsibleRank()
+getResponsibleRank(),
+getNodeWorkload(),
+getLocalWorkload(),
+getTotalWorkload()
 );
 }
 
@@ -6750,11 +7299,14 @@ MPI_Type_commit( &TestCellPacked::Datatype );
 {
 TestCellPacked dummyTestCellPacked[2];
 
-const int Attributes = 5;
+const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
    MPI_INT,		 //level
    MPI_SHORT,		 //accessNumber
    MPI_INT,		 //responsibleRank
+   MPI_DOUBLE,		 //nodeWorkload
+   MPI_DOUBLE,		 //localWorkload
+   MPI_DOUBLE,		 //totalWorkload
    MPI_INT,		 //_packedRecords0
    MPI_UB		 // end/displacement flag
 };
@@ -6763,6 +7315,9 @@ int blocklen[Attributes] = {
    1,		 //level
    DIMENSIONS_TIMES_TWO,		 //accessNumber
    1,		 //responsibleRank
+   1,		 //nodeWorkload
+   1,		 //localWorkload
+   1,		 //totalWorkload
    1,		 //_packedRecords0
    1		 // end/displacement flag
 };
@@ -6774,8 +7329,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._level))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[1]._persistentRecords._level))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._nodeWorkload))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._localWorkload))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._totalWorkload))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[1]._persistentRecords._level))), 		&disp[7] );
 
 for (int i=1; i<Attributes; i++) {
    assertion1( disp[i] > disp[i-1], i );
@@ -6997,12 +7555,15 @@ peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords() {
 }
 
 
-peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+peano::grid::tests::records::TestCell::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
 _isInside(isInside),
 _state(state),
 _evenFlags(evenFlags),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
+_nodeWorkload(nodeWorkload),
+_localWorkload(localWorkload),
+_totalWorkload(totalWorkload),
 _numberOfLoadsFromInputStream(numberOfLoadsFromInputStream),
 _numberOfStoresToOutputStream(numberOfStoresToOutputStream) {
 
@@ -7069,6 +7630,42 @@ _responsibleRank = responsibleRank;
 
 
 
+ double peano::grid::tests::records::TestCell::PersistentRecords::getNodeWorkload() const  {
+return _nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setNodeWorkload(const double& nodeWorkload)  {
+_nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getLocalWorkload() const  {
+return _localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setLocalWorkload(const double& localWorkload)  {
+_localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::PersistentRecords::getTotalWorkload() const  {
+return _totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::PersistentRecords::setTotalWorkload(const double& totalWorkload)  {
+_totalWorkload = totalWorkload;
+}
+
+
+
  int peano::grid::tests::records::TestCell::PersistentRecords::getNumberOfLoadsFromInputStream() const  {
 return _numberOfLoadsFromInputStream;
 }
@@ -7098,13 +7695,13 @@ peano::grid::tests::records::TestCell::TestCell() {
 
 
 peano::grid::tests::records::TestCell::TestCell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-peano::grid::tests::records::TestCell::TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(isInside, state, evenFlags, accessNumber, responsibleRank, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+peano::grid::tests::records::TestCell::TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(isInside, state, evenFlags, accessNumber, responsibleRank, nodeWorkload, localWorkload, totalWorkload, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -7216,6 +7813,42 @@ _persistentRecords._responsibleRank = responsibleRank;
 
 
 
+ double peano::grid::tests::records::TestCell::getNodeWorkload() const  {
+return _persistentRecords._nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setNodeWorkload(const double& nodeWorkload)  {
+_persistentRecords._nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::getLocalWorkload() const  {
+return _persistentRecords._localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setLocalWorkload(const double& localWorkload)  {
+_persistentRecords._localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCell::getTotalWorkload() const  {
+return _persistentRecords._totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCell::setTotalWorkload(const double& totalWorkload)  {
+_persistentRecords._totalWorkload = totalWorkload;
+}
+
+
+
  int peano::grid::tests::records::TestCell::getNumberOfLoadsFromInputStream() const  {
 return _persistentRecords._numberOfLoadsFromInputStream;
 }
@@ -7279,6 +7912,12 @@ out << "accessNumber:[";
 out << ",";
 out << "responsibleRank:" << getResponsibleRank();
 out << ",";
+out << "nodeWorkload:" << getNodeWorkload();
+out << ",";
+out << "localWorkload:" << getLocalWorkload();
+out << ",";
+out << "totalWorkload:" << getTotalWorkload();
+out << ",";
 out << "numberOfLoadsFromInputStream:" << getNumberOfLoadsFromInputStream();
 out << ",";
 out << "numberOfStoresToOutputStream:" << getNumberOfStoresToOutputStream();
@@ -7297,6 +7936,9 @@ getState(),
 getEvenFlags(),
 getAccessNumber(),
 getResponsibleRank(),
+getNodeWorkload(),
+getLocalWorkload(),
+getTotalWorkload(),
 getNumberOfLoadsFromInputStream(),
 getNumberOfStoresToOutputStream()
 );
@@ -7344,13 +7986,16 @@ MPI_Type_commit( &TestCell::Datatype );
 {
 TestCell dummyTestCell[2];
 
-const int Attributes = 8;
+const int Attributes = 11;
 MPI_Datatype subtypes[Attributes] = {
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //evenFlags
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //responsibleRank
+MPI_DOUBLE,		 //nodeWorkload
+MPI_DOUBLE,		 //localWorkload
+MPI_DOUBLE,		 //totalWorkload
 MPI_INT,		 //numberOfLoadsFromInputStream
 MPI_INT,		 //numberOfStoresToOutputStream
 MPI_UB		 // end/displacement flag
@@ -7362,6 +8007,9 @@ int blocklen[Attributes] = {
 DIMENSIONS,		 //evenFlags
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //responsibleRank
+1,		 //nodeWorkload
+1,		 //localWorkload
+1,		 //totalWorkload
 1,		 //numberOfLoadsFromInputStream
 1,		 //numberOfStoresToOutputStream
 1		 // end/displacement flag
@@ -7376,9 +8024,12 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._pers
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._evenFlags))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._accessNumber[0]))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._responsibleRank))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[1]._persistentRecords._isInside))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._nodeWorkload))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._localWorkload))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._totalWorkload))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCell[1]._persistentRecords._isInside))), 		&disp[10] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -7598,9 +8249,12 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+peano::grid::tests::records::TestCellPacked::PersistentRecords::PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
+_nodeWorkload(nodeWorkload),
+_localWorkload(localWorkload),
+_totalWorkload(totalWorkload),
 _numberOfLoadsFromInputStream(numberOfLoadsFromInputStream),
 _numberOfStoresToOutputStream(numberOfStoresToOutputStream) {
 setIsInside(isInside);
@@ -7691,6 +8345,42 @@ _responsibleRank = responsibleRank;
 
 
 
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getNodeWorkload() const  {
+return _nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setNodeWorkload(const double& nodeWorkload)  {
+_nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getLocalWorkload() const  {
+return _localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setLocalWorkload(const double& localWorkload)  {
+_localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::PersistentRecords::getTotalWorkload() const  {
+return _totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::PersistentRecords::setTotalWorkload(const double& totalWorkload)  {
+_totalWorkload = totalWorkload;
+}
+
+
+
  int peano::grid::tests::records::TestCellPacked::PersistentRecords::getNumberOfLoadsFromInputStream() const  {
 return _numberOfLoadsFromInputStream;
 }
@@ -7721,14 +8411,14 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 peano::grid::tests::records::TestCellPacked::TestCellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 }
 
 
-peano::grid::tests::records::TestCellPacked::TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(isInside, state, evenFlags, accessNumber, responsibleRank, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+peano::grid::tests::records::TestCellPacked::TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(isInside, state, evenFlags, accessNumber, responsibleRank, nodeWorkload, localWorkload, totalWorkload, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 }
@@ -7868,6 +8558,42 @@ _persistentRecords._responsibleRank = responsibleRank;
 
 
 
+ double peano::grid::tests::records::TestCellPacked::getNodeWorkload() const  {
+return _persistentRecords._nodeWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setNodeWorkload(const double& nodeWorkload)  {
+_persistentRecords._nodeWorkload = nodeWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::getLocalWorkload() const  {
+return _persistentRecords._localWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setLocalWorkload(const double& localWorkload)  {
+_persistentRecords._localWorkload = localWorkload;
+}
+
+
+
+ double peano::grid::tests::records::TestCellPacked::getTotalWorkload() const  {
+return _persistentRecords._totalWorkload;
+}
+
+
+
+ void peano::grid::tests::records::TestCellPacked::setTotalWorkload(const double& totalWorkload)  {
+_persistentRecords._totalWorkload = totalWorkload;
+}
+
+
+
  int peano::grid::tests::records::TestCellPacked::getNumberOfLoadsFromInputStream() const  {
 return _persistentRecords._numberOfLoadsFromInputStream;
 }
@@ -7927,6 +8653,12 @@ out << "accessNumber:[";
 out << ",";
 out << "responsibleRank:" << getResponsibleRank();
 out << ",";
+out << "nodeWorkload:" << getNodeWorkload();
+out << ",";
+out << "localWorkload:" << getLocalWorkload();
+out << ",";
+out << "totalWorkload:" << getTotalWorkload();
+out << ",";
 out << "numberOfLoadsFromInputStream:" << getNumberOfLoadsFromInputStream();
 out << ",";
 out << "numberOfStoresToOutputStream:" << getNumberOfStoresToOutputStream();
@@ -7945,6 +8677,9 @@ getState(),
 getEvenFlags(),
 getAccessNumber(),
 getResponsibleRank(),
+getNodeWorkload(),
+getLocalWorkload(),
+getTotalWorkload(),
 getNumberOfLoadsFromInputStream(),
 getNumberOfStoresToOutputStream()
 );
@@ -7992,10 +8727,13 @@ MPI_Type_commit( &TestCellPacked::Datatype );
 {
 TestCellPacked dummyTestCellPacked[2];
 
-const int Attributes = 6;
+const int Attributes = 9;
 MPI_Datatype subtypes[Attributes] = {
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //responsibleRank
+MPI_DOUBLE,		 //nodeWorkload
+MPI_DOUBLE,		 //localWorkload
+MPI_DOUBLE,		 //totalWorkload
 MPI_INT,		 //numberOfLoadsFromInputStream
 MPI_INT,		 //numberOfStoresToOutputStream
 MPI_INT,		 //_packedRecords0
@@ -8005,6 +8743,9 @@ MPI_UB		 // end/displacement flag
 int blocklen[Attributes] = {
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //responsibleRank
+1,		 //nodeWorkload
+1,		 //localWorkload
+1,		 //totalWorkload
 1,		 //numberOfLoadsFromInputStream
 1,		 //numberOfStoresToOutputStream
 1,		 //_packedRecords0
@@ -8017,10 +8758,13 @@ MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]))), &base);
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[1] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyTestCellPacked[1]._persistentRecords._accessNumber[0])), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._nodeWorkload))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._localWorkload))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._totalWorkload))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyTestCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyTestCellPacked[1]._persistentRecords._accessNumber[0])), 		&disp[8] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );

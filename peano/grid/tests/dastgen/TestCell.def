@@ -81,7 +81,10 @@ class  peano::grid::tests::records::TestCell {
   /**
    * Identifies who's in charge of this cell.   
    */
-  persistent int  responsibleRank;
+  persistent int     responsibleRank;
+  persistent double  nodeWorkload;
+  persistent double  localWorkload;
+  persistent double  totalWorkload;
   #endif
   
   #ifdef SharedMemoryParallelisation

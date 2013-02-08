@@ -23,6 +23,9 @@ peano::grid::Cell<CellData>::Cell():
 
   #ifdef Parallel
   _cellData.setResponsibleRank(tarch::parallel::Node::getInstance().getRank());
+  _cellData.setNodeWorkload(  0.0 );
+  _cellData.setTotalWorkload( 0.0 );
+  _cellData.setLocalWorkload( 0.0 );
   #endif
 }
 
@@ -168,12 +171,25 @@ template <class CellData>
 void peano::grid::Cell<CellData>::switchToInside() {
   assertion1( isOutside(), *this );
   _cellData.setIsInside(true);
+
+  #ifdef Parallel
+  _cellData.setNodeWorkload(  1.0 );
+  _cellData.setTotalWorkload( 1.0 );
+  _cellData.setLocalWorkload( 1.0 );
+  #endif
 }
 
 
 template <class CellData>
 void peano::grid::Cell<CellData>::switchToOutside() {
+  assertion1( isOutside(), *this );
   _cellData.setIsInside(false);
+
+  #ifdef Parallel
+  _cellData.setNodeWorkload(  0.0 );
+  _cellData.setTotalWorkload( 0.0 );
+  _cellData.setLocalWorkload( 0.0 );
+  #endif
 }
 
 
@@ -191,6 +207,9 @@ template <class CellData>
 void peano::grid::Cell<CellData>::switchToLeaf() {
   #ifdef Parallel
   assertion1( isRefined() || isRoot(), *this );
+
+  _cellData.setTotalWorkload( 0.0 );
+  _cellData.setLocalWorkload( 0.0 );
   #else
   assertion1( isRefined(), *this );
   #endif
@@ -294,6 +313,43 @@ bool peano::grid::Cell<CellData>::isRemote(
 
 
 #ifdef Parallel
+template <class CellData>
+void peano::grid::Cell<CellData>::setNodeWorkload( double value ) {
+  _cellData.setNodeWorkload(  value );
+  _cellData.setTotalWorkload( value );
+  _cellData.setLocalWorkload( value );
+}
+
+
+template <class CellData>
+double peano::grid::Cell<CellData>::getLocalWorkload() const {
+  return _cellData.getNodeWorkload() + _cellData.getLocalWorkload();
+}
+
+
+template <class CellData>
+double peano::grid::Cell<CellData>::getTotalWorkload() const {
+  return _cellData.getNodeWorkload() + _cellData.getTotalWorkload();
+}
+
+
+template <class CellData>
+void peano::grid::Cell<CellData>::clearWorkload() {
+  _cellData.setTotalWorkload( 0.0 );
+  _cellData.setLocalWorkload( 0.0 );
+}
+
+
+template <class CellData>
+void peano::grid::Cell<CellData>::incWorkload( const Cell& childCell ) {
+  _cellData.setTotalWorkload( _cellData.getTotalWorkload() + childCell.getTotalWorkload() );
+  if ( !childCell.isAssignedToRemoteRank() ) {
+    _cellData.setLocalWorkload( _cellData.getLocalWorkload() + childCell.getLocalWorkload() );
+  }
+}
+
+
+
 template <class CellData>
 void peano::grid::Cell<CellData>::replaceAccessNumbersAndEvenFlags( const Cell& otherCell ) {
   _cellData.setAccessNumber( otherCell._cellData.getAccessNumber() );

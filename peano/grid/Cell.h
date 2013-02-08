@@ -104,7 +104,18 @@ class peano::grid::Cell {
     bool isOutside() const;
     bool isInside() const;
 
+    /**
+     * Switch cell to inside
+     *
+     * @pre not isInside()
+     */
     void switchToInside();
+
+    /**
+     * Switch cell to outside
+     *
+     * @pre isInside()
+     */
     void switchToOutside();
 
     /**
@@ -196,6 +207,38 @@ class peano::grid::Cell {
      * a parallel worker.
      */
     void replaceAccessNumbersAndEvenFlags( const Cell& otherCell );
+
+    /**
+     * Get Workload
+     *
+     * This operation returns the node's serial workload plus the workload of
+     * all children (recursively). For this workload analysis, it does not take
+     * any remote node into account, i.e. you get the workload on the local
+     * rank.
+     */
+    double getLocalWorkload() const;
+
+    /**
+     * Get Serial Workload
+     *
+     * This operation returns the node's serial workload plus the workload of
+     * all children (recursively). For this workload analysis, it does not
+     * distinguish between remote and local cells.
+     */
+    double getTotalWorkload() const;
+
+    /**
+     * Set Node Workload
+     *
+     * Each node has an attribute denoting its workload. Use this operation to
+     * calibrate the workload. By default, it is set to 0 for outer cells and 1
+     * for inner cells. Note that you can also modify out cell's workload within
+     * the destroyCell() event.
+     */
+    void setNodeWorkload( double value );
+
+    void clearWorkload();
+    void incWorkload( const Cell& childCell );
     #endif
 
     #ifdef Debug
