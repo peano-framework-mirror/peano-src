@@ -58,11 +58,11 @@ void peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning::re
   double  workerNumberOfInnerCells,
   double  workerNumberOfOuterCells,
   int     workerMaxLevel,
-  int     workerLocalWorkload,
-  int     workerTotalWorkload,
+  double  workerLocalWorkload,
+  double  workerTotalWorkload,
   int     currentLevel,
-  int     parentCellLocalWorkload,
-  int     parentCellTotalWorkload
+  double  parentCellLocalWorkload,
+  double  parentCellTotalWorkload
 ) {
   if ( tarch::la::equals( workerNumberOfInnerCells, tarch::la::NUMERICAL_ZERO_DIFFERENCE ) ) {
     _idleWorkers.insert( workerRank );

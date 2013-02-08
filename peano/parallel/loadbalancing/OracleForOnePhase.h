@@ -116,18 +116,61 @@ class peano::parallel::loadbalancing::OracleForOnePhase {
     virtual LoadBalancingFlag getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) = 0;
 
     /**
-     * @param waitedTime This is the time the master had to wait for the worker,
-     * i.e. this is not the runtime of the worker, as the runtime of the worker
-     * is not important for the master - only whether the worker deployed its
-     * results on time or not. If you are interested in runtimes per worker, you
-     * should implement receivedStartCommand().
+     * Information about termination call
+     *
+     * Is called whenever the master receives the acknowledgement from the
+     * worker that the latter has finished its local traversal. Provides
+     * statistics that you might want to bookkeep for load balancing. All t
+     * the workload doubles stem from the cells' workload. See
+     * Cell::setNodeWorkload() to adopt these figures to your own workload
+     * model.
      *
      * @see receivedStartCommand()
      * @see getCommandForWorker()
      * @see Oracle
      *
-     * @param workerRank   Rank of the worker that has just reported that it finished its traversal.
-     * q
+     * @param workerRank   Rank of the worker that has just reported that it
+     *                     finished its traversal.
+     * @param waitedTime   Time (user time) that the master had to wait until
+     *                     the worker delivered its finish message. This time
+     *                     is zero, if the message was already in the MPI queue
+     *                     when the master checked for the worker.
+     * @param workerNumberOfInnerVertices  Number of inner vertices handled by
+     *                     this worker. If you require the total number, you
+     *                     have to feed your oracle manually within
+     *                     endIteration(). Here, you have access to the state
+     *                     object holding the total numbers.
+     * @param workerNumberOfBoundaryVertices Number of boundary vertices
+     *                     handled by this worker.
+     * @param workerNumberOfOuterVertices Number of outer vertices handled by
+     *                     this worker.
+     * @param workerNumberOfInnerCells Number of inner cells handled by
+     *                     this worker.
+     * @param workerNumberOfOuterCells Number of outer cells handled by this
+     *                     worker.
+     * @param workerMaxLevel Maximum level handled by the worker. If you
+     *                     compare it to current level, you have information
+     *                     about the height of the worker tree.
+     * @param workerLocalWorkload The workload handled by the worker. This is
+     *                     the worker's local workload, i.e. if the worker has
+     *                     forked itself again, workload of these children is
+     *                     not contained within this figure.
+     * @param workerTotalWorkload The workload represented by the worker. This
+     *                     number is equal to workerLocalWorkload if the worker
+     *                     has not forked again, i.e. if it does not have any
+     *                     children. Otherwise, total workload comprises both
+     *                     the worker's workload and those of its children.
+     * @param currentLevel Current level, i.e. level of the root cell of the
+     *                     worker partition.
+     * @param parentCellLocalWorkload Local workload of the next coarser cell
+     *                     on this rank. This number does not comprise workload
+     *                     of any worker, i.e. it does in particular neither
+     *                     comprise workerLocalWorkload nor
+     *                     workerTotalWorkload.
+     * @param parentCellTotalWorkload Total workload of the next coarser cell
+     *                     comprising the ranks workload of the whole tree
+     *                     induced by this cell plus the workloads of all
+     *                     forked subtrees.
      */
     virtual void receivedTerminateCommand(
       int     workerRank,
@@ -138,11 +181,11 @@ class peano::parallel::loadbalancing::OracleForOnePhase {
       double  workerNumberOfInnerCells,
       double  workerNumberOfOuterCells,
       int     workerMaxLevel,
-      int     workerLocalWorkload,
-      int     workerTotalWorkload,
+      double  workerLocalWorkload,
+      double  workerTotalWorkload,
       int     currentLevel,
-      int     parentCellLocalWorkload,
-      int     parentCellTotalWorkload
+      double  parentCellLocalWorkload,
+      double  parentCellTotalWorkload
     ) = 0;
 
     // @todo

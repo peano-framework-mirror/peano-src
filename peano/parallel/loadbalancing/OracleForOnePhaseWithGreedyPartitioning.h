@@ -80,11 +80,11 @@ class peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning: p
       double  workerNumberOfInnerCells,
       double  workerNumberOfOuterCells,
       int     workerMaxLevel,
-      int     workerLocalWorkload,
-      int     workerTotalWorkload,
+      double  workerLocalWorkload,
+      double  workerTotalWorkload,
       int     currentLevel,
-      int     parentCellLocalWorkload,
-      int     parentCellTotalWorkload
+      double  parentCellLocalWorkload,
+      double  parentCellTotalWorkload
     );
 
     /**
