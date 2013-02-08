@@ -125,8 +125,28 @@ class peano::parallel::loadbalancing::OracleForOnePhase {
      * @see receivedStartCommand()
      * @see getCommandForWorker()
      * @see Oracle
+     *
+     * @param workerRank   Rank of the worker that has just reported that it finished its traversal.
+     * q
      */
-    virtual void receivedTerminateCommand( int workerRank, double waitedTime, double workerCells) = 0;
+    virtual void receivedTerminateCommand(
+      int     workerRank,
+      double  waitedTime,
+      double  workerNumberOfInnerVertices,
+      double  workerNumberOfBoundaryVertices,
+      double  workerNumberOfOuterVertices,
+      double  workerNumberOfInnerCells,
+      double  workerNumberOfOuterCells,
+      int     workerMaxLevel,
+      int     workerLocalWorkload,
+      int     workerTotalWorkload,
+      int     currentLevel,
+      int     parentCellLocalWorkload,
+      int     parentCellTotalWorkload
+    ) = 0;
+
+    // @todo
+    // neue Operation, um entscheiden zu koennen, was man denn so macht
 
     /**
      * Plot something to info log device.

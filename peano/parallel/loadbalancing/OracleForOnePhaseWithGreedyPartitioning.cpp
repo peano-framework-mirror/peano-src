@@ -49,8 +49,22 @@ peano::parallel::loadbalancing::LoadBalancingFlag peano::parallel::loadbalancing
 }
 
 
-void peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning::receivedTerminateCommand( int workerRank, double waitedTime, double workerCells) {
-  if ( tarch::la::equals( workerCells, tarch::la::NUMERICAL_ZERO_DIFFERENCE ) ) {
+void peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning::receivedTerminateCommand(
+  int     workerRank,
+  double  waitedTime,
+  double  workerNumberOfInnerVertices,
+  double  workerNumberOfBoundaryVertices,
+  double  workerNumberOfOuterVertices,
+  double  workerNumberOfInnerCells,
+  double  workerNumberOfOuterCells,
+  int     workerMaxLevel,
+  int     workerLocalWorkload,
+  int     workerTotalWorkload,
+  int     currentLevel,
+  int     parentCellLocalWorkload,
+  int     parentCellTotalWorkload
+) {
+  if ( tarch::la::equals( workerNumberOfInnerCells, tarch::la::NUMERICAL_ZERO_DIFFERENCE ) ) {
     _idleWorkers.insert( workerRank );
   }
 }

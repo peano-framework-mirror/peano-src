@@ -71,7 +71,21 @@ class peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning: p
      * sent after a getCommandForWorker() call if the bottom-up communication
      * is switched off.
      */
-    virtual void receivedTerminateCommand( int workerRank, double waitedTime, double workerCells);
+    virtual void receivedTerminateCommand(
+      int     workerRank,
+      double  waitedTime,
+      double  workerNumberOfInnerVertices,
+      double  workerNumberOfBoundaryVertices,
+      double  workerNumberOfOuterVertices,
+      double  workerNumberOfInnerCells,
+      double  workerNumberOfOuterCells,
+      int     workerMaxLevel,
+      int     workerLocalWorkload,
+      int     workerTotalWorkload,
+      int     currentLevel,
+      int     parentCellLocalWorkload,
+      int     parentCellTotalWorkload
+    );
 
     /**
      * Plot something to info log device.

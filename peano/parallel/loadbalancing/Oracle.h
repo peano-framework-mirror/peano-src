@@ -127,13 +127,6 @@ class peano::parallel::loadbalancing::Oracle {
      */
     void removeWorker(int rank);
 
-    /**
-     * Removes the last worker added and returns its rank.
-     */
-    void removeLastWorkerAdded();
-
-    int getRankOfLastWorkerAdded() const;
-
     bool hasWorkers() const;
 
     int getNumberOfWorkers() const;
@@ -200,17 +193,28 @@ class peano::parallel::loadbalancing::Oracle {
      *
      * @param workerRank Rank of the worker for which the load balancing would
      *                   be interested in a command
-     * @param isRegularGrid For a regular grid, we may only join a partition if
-     *                   this was the last partition added.
      */
-    LoadBalancingFlag getCommandForWorker( int workerRank, bool isRegularGrid, bool forkIsAllowed = true, bool joinIsAllowed = true);
+    LoadBalancingFlag getCommandForWorker( int workerRank, bool forkIsAllowed = true, bool joinIsAllowed = true);
 
     /**
      * Notification mechanism that the master is finished. This might not be
      * sent after a getCommandForWorker() call if the bottom-up communication
      * is switched off.
      */
-    void receivedTerminateCommand( int workerRank, double workerCells);
+    void receivedTerminateCommand(
+      int     workerRank,
+      double  workerNumberOfInnerVertices,
+      double  workerNumberOfBoundaryVertices,
+      double  workerNumberOfOuterVertices,
+      double  workerNumberOfInnerCells,
+      double  workerNumberOfOuterCells,
+      int     workerMaxLevel,
+      int     workerLocalWorkload,
+      int     workerTotalWorkload,
+      int     currentLevel,
+      int     parentCellLocalWorkload,
+      int     parentCellTotalWorkload
+    );
 
     /**
      * Notifies the oracle that from now on, the master starts to wait for workers.

@@ -105,17 +105,6 @@ void peano::parallel::loadbalancing::Oracle::addWorker(
 }
 
 
-void peano::parallel::loadbalancing::Oracle::removeLastWorkerAdded() {
-  assertion( hasWorkers() );
-  removeWorker( _workers.back()._rank );
-}
-
-
-int peano::parallel::loadbalancing::Oracle::getRankOfLastWorkerAdded() const {
-  return _workers.back()._rank;
-}
-
-
 void peano::parallel::loadbalancing::Oracle::removeWorker(int rank) {
   assertion( workersListContainsRank(rank) );
 
@@ -319,8 +308,8 @@ void peano::parallel::loadbalancing::Oracle::forkFailed() {
 
 peano::parallel::loadbalancing::LoadBalancingFlag peano::parallel::loadbalancing::Oracle::getCommandForWorker(
   int workerRank,
-  bool isRegularGrid,
-  bool forkIsAllowed, bool joinIsAllowed
+  bool forkIsAllowed,
+  bool joinIsAllowed
 ) {
   logTraceInWith1Argument( "getCommandForWorker(int)", workerRank );
 
@@ -328,10 +317,6 @@ peano::parallel::loadbalancing::LoadBalancingFlag peano::parallel::loadbalancing
   assertion( _currentOracle<static_cast<int>(_oracles.size()));
 
   joinIsAllowed &= !tarch::parallel::Node::getInstance().isGlobalMaster();
-
-  if (isRegularGrid) {
-    joinIsAllowed &= peano::parallel::loadbalancing::Oracle::getInstance().getRankOfLastWorkerAdded()==workerRank;
-  }
 
   peano::parallel::loadbalancing::LoadBalancingFlag result;
   if (_oraclePrototype==0) {
@@ -346,13 +331,40 @@ peano::parallel::loadbalancing::LoadBalancingFlag peano::parallel::loadbalancing
 }
 
 
-void peano::parallel::loadbalancing::Oracle::receivedTerminateCommand( int workerRank, double workerCells) {
+void peano::parallel::loadbalancing::Oracle::receivedTerminateCommand(
+  int     workerRank,
+  double  workerNumberOfInnerVertices,
+  double  workerNumberOfBoundaryVertices,
+  double  workerNumberOfOuterVertices,
+  double  workerNumberOfInnerCells,
+  double  workerNumberOfOuterCells,
+  int     workerMaxLevel,
+  int     workerLocalWorkload,
+  int     workerTotalWorkload,
+  int     currentLevel,
+  int     parentCellLocalWorkload,
+  int     parentCellTotalWorkload
+) {
   assertion( _currentOracle>=0 );
   assertion( _currentOracle<static_cast<int>(_oracles.size()));
 
   _watch.stopTimer();
 
-  _oracles[_currentOracle]->receivedTerminateCommand(workerRank,_watch.getCalendarTime(),workerCells);
+  _oracles[_currentOracle]->receivedTerminateCommand(
+    workerRank,
+    _watch.getCalendarTime(),
+    workerNumberOfInnerVertices,
+    workerNumberOfBoundaryVertices,
+    workerNumberOfOuterVertices,
+    workerNumberOfInnerCells,
+    workerNumberOfOuterCells,
+    workerMaxLevel,
+    workerLocalWorkload,
+    workerTotalWorkload,
+    currentLevel,
+    parentCellLocalWorkload,
+    parentCellTotalWorkload
+  );
 
   _watch.startTimer();
 }
