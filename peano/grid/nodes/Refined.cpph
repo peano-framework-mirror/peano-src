@@ -2,6 +2,7 @@
 
 #include "peano/MappingSpecification.h"
 
+#include "peano/grid/AscendDescendLevelEnumerator.h"
 #include "peano/grid/CellFlags.h"
 #include "peano/grid/aspects/CellPeanoCurve.h"
 #include "peano/grid/nodes/Constants.h"
@@ -584,6 +585,13 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       assertion1(false,currentCell);
     }
   endzfor
+
+  #ifdef Parallel
+  fineGridCell.clearWorkload();
+  for (int i=0; i<THREE_POWER_D; i++) {
+    fineGridCell.incWorkload(descendingFineGridCells[i]);
+  }
+  #endif
 
   if (
     Base::_eventHandle.ascendSpecification().manipulates != peano::MappingSpecification::NOP &&

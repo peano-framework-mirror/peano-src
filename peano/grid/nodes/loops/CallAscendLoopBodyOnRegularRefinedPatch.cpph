@@ -74,6 +74,13 @@ void peano::grid::nodes::loops::CallAscendLoopBodyOnRegularRefinedPatch<Vertex,C
     );
   }
 
+  #ifdef Parallel
+  currentCell.clearWorkload();
+  dfor3(i)
+    currentCell.incWorkload( _regularGridContainer.getCell(_coarseLevel+1)[ _fineGridEnumerator(i) ] );
+  enddforx
+  #endif
+
   logTraceOutWith3Arguments( "operator()", currentCell.isInside(), _fineGridEnumerator.toString(), _coarseGridEnumerator.toString() );
 }
 

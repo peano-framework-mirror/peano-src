@@ -182,7 +182,6 @@ void peano::grid::Cell<CellData>::switchToInside() {
 
 template <class CellData>
 void peano::grid::Cell<CellData>::switchToOutside() {
-  assertion1( isOutside(), *this );
   _cellData.setIsInside(false);
 
   #ifdef Parallel
@@ -313,6 +312,15 @@ bool peano::grid::Cell<CellData>::isRemote(
 
 
 #ifdef Parallel
+
+template <class CellData>
+void peano::grid::Cell<CellData>::setRemoteCellWorkload( const Cell& workerCell ) {
+  _cellData.setNodeWorkload(  workerCell._cellData.getNodeWorkload() );
+  _cellData.setTotalWorkload( workerCell._cellData.getTotalWorkload() );
+  _cellData.setLocalWorkload( workerCell._cellData.getLocalWorkload() );
+}
+
+
 template <class CellData>
 void peano::grid::Cell<CellData>::setNodeWorkload( double value ) {
   _cellData.setNodeWorkload(  value );

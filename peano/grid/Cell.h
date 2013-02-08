@@ -215,6 +215,10 @@ class peano::grid::Cell {
      * all children (recursively). For this workload analysis, it does not take
      * any remote node into account, i.e. you get the workload on the local
      * rank.
+     *
+     * Please note that this workload is updated on regular subgrids if and
+     * only if you specify your mapping to call ascend on the whole tree. On
+     * changing/instationary subgrids, I update it in each traversal.
      */
     double getLocalWorkload() const;
 
@@ -224,6 +228,10 @@ class peano::grid::Cell {
      * This operation returns the node's serial workload plus the workload of
      * all children (recursively). For this workload analysis, it does not
      * distinguish between remote and local cells.
+     *
+     * Please note that this workload is updated on regular subgrids if and
+     * only if you specify your mapping to call ascend on the whole tree. On
+     * changing/instationary subgrids, I update it in each traversal.
      */
     double getTotalWorkload() const;
 
@@ -239,6 +247,7 @@ class peano::grid::Cell {
 
     void clearWorkload();
     void incWorkload( const Cell& childCell );
+    void setRemoteCellWorkload( const Cell& workerCell );
     #endif
 
     #ifdef Debug

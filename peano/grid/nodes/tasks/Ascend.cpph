@@ -96,8 +96,8 @@ void peano::grid::nodes::tasks::Ascend<Vertex,Cell,State,EventHandle>::ascend(in
 
     _ascendLoopBody.setCoarseGridLevel(fineGridLevel-1);
     peano::datatraversal::SingleLevelCellLoop<AscendLoopBody> loop(
-        NumberOfCoarseGridCells,
-        _ascendLoopBody,
+      NumberOfCoarseGridCells,
+      _ascendLoopBody,
       sharedMemoryGrainSize
     );
 

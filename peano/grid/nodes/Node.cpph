@@ -180,9 +180,21 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       state
     );
 
+    fineGridCell.setRemoteCellWorkload(receivedWorkerCell);
+
     peano::parallel::loadbalancing::Oracle::getInstance().receivedTerminateCommand(
       currentWorker,
-      workerState.getNumberOfInnerCells()
+      workerState.getNumberOfInnerVertices(),
+      workerState.getNumberOfBoundaryVertices(),
+      workerState.getNumberOfOuterVertices(),
+      workerState.getNumberOfInnerCells(),
+      workerState.getNumberOfOuterCells(),
+      workerState.getMaxLevel(),
+      fineGridCell.getLocalWorkload(),
+      fineGridCell.getTotalWorkload(),
+      fineGridVerticesEnumerator.getLevel(),
+      coarseGridCell.getLocalWorkload(),
+      coarseGridCell.getTotalWorkload()
     );
 
     tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
@@ -267,7 +279,6 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     loadBalancingMessage.setLoadBalancingFlag(
       peano::parallel::loadbalancing::Oracle::getInstance().getCommandForWorker(
         currentWorker,
-        false,
         state.mayForkDueToLoadBalancing(currentWorker),
         state.mayJoinDueToLoadBalancing(currentWorker)
       )
