@@ -194,7 +194,9 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       fineGridCell.getTotalWorkload(),
       fineGridVerticesEnumerator.getLevel(),
       coarseGridCell.getLocalWorkload(),
-      coarseGridCell.getTotalWorkload()
+      coarseGridCell.getTotalWorkload(),
+      fineGridVerticesEnumerator.getOffset(),
+      fineGridVerticesEnumerator.getCellSize()
     );
 
     tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());

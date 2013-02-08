@@ -9,6 +9,7 @@
 
 
 #include "peano/utils/Globals.h"
+#include "tarch/la/Vector.h"
 
 
 namespace peano {
@@ -171,6 +172,8 @@ class peano::parallel::loadbalancing::OracleForOnePhase {
      *                     comprising the ranks workload of the whole tree
      *                     induced by this cell plus the workloads of all
      *                     forked subtrees.
+     * @param boundingBoxOffset Bounding box of this worker subtree.
+     * @param boundingBoxSize   Bounding box of this worker subtree.
      */
     virtual void receivedTerminateCommand(
       int     workerRank,
@@ -185,11 +188,10 @@ class peano::parallel::loadbalancing::OracleForOnePhase {
       double  workerTotalWorkload,
       int     currentLevel,
       double  parentCellLocalWorkload,
-      double  parentCellTotalWorkload
+      double  parentCellTotalWorkload,
+      const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize
     ) = 0;
-
-    // @todo
-    // neue Operation, um entscheiden zu koennen, was man denn so macht
 
     /**
      * Plot something to info log device.

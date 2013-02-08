@@ -343,7 +343,9 @@ void peano::parallel::loadbalancing::Oracle::receivedTerminateCommand(
   int     workerTotalWorkload,
   int     currentLevel,
   int     parentCellLocalWorkload,
-  int     parentCellTotalWorkload
+  int     parentCellTotalWorkload,
+  const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset,
+  const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize
 ) {
   assertion( _currentOracle>=0 );
   assertion( _currentOracle<static_cast<int>(_oracles.size()));
@@ -363,7 +365,9 @@ void peano::parallel::loadbalancing::Oracle::receivedTerminateCommand(
     workerTotalWorkload,
     currentLevel,
     parentCellLocalWorkload,
-    parentCellTotalWorkload
+    parentCellTotalWorkload,
+    boundingBoxOffset,
+    boundingBoxSize
   );
 
   _watch.startTimer();

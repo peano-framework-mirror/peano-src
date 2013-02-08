@@ -62,7 +62,9 @@ void peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning::re
   double  workerTotalWorkload,
   int     currentLevel,
   double  parentCellLocalWorkload,
-  double  parentCellTotalWorkload
+  double  parentCellTotalWorkload,
+  const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset,
+  const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize
 ) {
   if ( tarch::la::equals( workerNumberOfInnerCells, tarch::la::NUMERICAL_ZERO_DIFFERENCE ) ) {
     _idleWorkers.insert( workerRank );

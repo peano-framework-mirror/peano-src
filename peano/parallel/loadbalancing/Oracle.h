@@ -213,7 +213,9 @@ class peano::parallel::loadbalancing::Oracle {
       int     workerTotalWorkload,
       int     currentLevel,
       int     parentCellLocalWorkload,
-      int     parentCellTotalWorkload
+      int     parentCellTotalWorkload,
+      const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize
     );
 
     /**

@@ -84,7 +84,9 @@ class peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning: p
       double  workerTotalWorkload,
       int     currentLevel,
       double  parentCellLocalWorkload,
-      double  parentCellTotalWorkload
+      double  parentCellTotalWorkload,
+      const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize
     );
 
     /**
