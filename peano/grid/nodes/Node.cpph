@@ -16,6 +16,9 @@
 #include "peano/parallel/messages/LoadBalancingMessage.h"
 #include "peano/parallel/loadbalancing/OracleForOnePhase.h"
 #include "peano/parallel/loadbalancing/Oracle.h"
+
+#include "peano/grid/SingleElementVertexEnumerator.h"
+
 #include "peano/grid/aspects/VertexStateAnalysis.h"
 #include "peano/grid/aspects/ParallelMerge.h"
 #endif
@@ -155,9 +158,16 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     state.mergeWithWorkerState(workerState);
     peano::parallel::loadbalancing::Oracle::getInstance().setWorkerHasWorker(currentWorker,workerState.hasWorker());
 
+    SingleElementVertexEnumerator workerEnumerator(
+      fineGridVerticesEnumerator.getCellSize(),
+      fineGridVerticesEnumerator.getOffset(),
+      fineGridVerticesEnumerator.getLevel()
+    );
+
     _eventHandle.mergeWithMaster(
       receivedWorkerCell,
       receivedWorkerVertices,
+      workerEnumerator,
       fineGridCell,
       fineGridVertices,
       fineGridVerticesEnumerator,
