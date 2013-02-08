@@ -271,9 +271,9 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
       if ( !entriesAreEqual && !workersEntryIsMe) {
         localVertex._vertexData.setAdjacentRanks( i, workerVertex._vertexData.getAdjacentRanks(i) );
       }
-      else if (!entriesAreEqual) {
-        localVertex._vertexData.setAdjacentRanks( i, workerRank );
-      }
+//      else if (!entriesAreEqual) {
+//        localVertex._vertexData.setAdjacentRanks( i, workerRank );
+//      }
     }
   }
   else {
