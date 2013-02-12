@@ -6,6 +6,7 @@
 tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter::CellDataWriter::CellDataWriter(
   const std::string& dataIdentifier, VTKTextFileWriter& writer, int recordsPerCell
 ):
+  _identifier(dataIdentifier),
   _lastWriteCommandCellNumber(-1),
   _myWriter(writer),
   _out(),
@@ -48,8 +49,27 @@ void tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter::CellDataWri
   assertion(_lastWriteCommandCellNumber>=-1);
   assertion(1<=_recordsPerCell);
 
-  assertion1( value != std::numeric_limits<double>::infinity(), value );
-  assertion1( value == value, value );  // test for not a number
+  assertion6(
+    value != std::numeric_limits<double>::infinity(),
+    value,
+    _lastWriteCommandCellNumber,
+    _recordsPerCell,
+    _minValue,
+    _maxValue,
+    _identifier
+  );
+
+
+  // test for not a number
+  assertion6(
+    value == value,
+    value,
+    _lastWriteCommandCellNumber,
+    _recordsPerCell,
+    _minValue,
+    _maxValue,
+    _identifier
+  );
 
   while (_lastWriteCommandCellNumber<index-1) {
     plotCell(_lastWriteCommandCellNumber+1,0.0);

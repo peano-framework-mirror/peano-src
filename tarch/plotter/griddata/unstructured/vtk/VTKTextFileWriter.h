@@ -222,6 +222,11 @@ class tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter:
           friend class VTKTextFileWriter;
 
           /**
+           * Only required for assertions
+           */
+          const std::string& _identifier;
+
+          /**
            *
            */
           int _lastWriteCommandCellNumber;
