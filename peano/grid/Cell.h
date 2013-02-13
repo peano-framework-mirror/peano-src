@@ -247,6 +247,10 @@ class peano::grid::Cell {
 
     void clearWorkload();
     void incWorkload( const Cell& childCell );
+
+    /**
+     * Copy mechanism. Works for both worker and master.
+     */
     void setRemoteCellWorkload( const Cell& workerCell );
     #endif
 
