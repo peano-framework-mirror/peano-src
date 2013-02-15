@@ -195,6 +195,9 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
       const State&                                 state
     );
 
+    /**
+     * Take received data and merge it into local copies
+     */
     void mergeReceivedCellAndVerticesFromMasterIntoLocalDataStructure(
       const State&                                 state,
       Cell&                                        fineGridCell,
