@@ -77,6 +77,32 @@ class peano::grid::State {
      * forking ranks.
      */
     std::set<int>                _loadRebalancingRemoteRanks;
+
+    /**
+     * We may fork/join only every third iteration.
+     *
+     * The reason for this is tricky: Lets study two vertices a and
+     * b. Our master M node holding both forks into M and W and, in
+     * the same iteration, triggers a refine for a. b remains refined as it
+     * has been refined before. That is iteration 1.
+     *
+     * In iteration 2, a and b both are streamed to the new worker W. At the
+     * same time, M erases b as b has been streamed to W and is not needed on
+     * M anymore. It however cannot trigger erase for vertex a, as a is set to
+     * refining and we cannot both refine and simultaneously erase a vertex.
+     *
+     * In iteration 3, finally vertex a is erased as well, i.e. it is set to
+     * erase-triggered an in iteration 4 it switches to erasing.
+     *
+     * So far, everything works fine. Problems arise if already in iteration 3,
+     * the master decides to join the worker again. In this case, data is
+     * streamed from W back to M in iteration 4. Now, the vertex a is set
+     * refined on the worker but set to erasing on the master. And this is a
+     * situation we cannot handle as an erase probagates over multiple levels
+     * and makes the data inconsistent.
+     *
+     */
+    int                          _iterationCounter;
     #endif
   public:
      ~State();
