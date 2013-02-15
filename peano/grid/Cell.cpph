@@ -315,6 +315,14 @@ bool peano::grid::Cell<CellData>::isRemote(
 
 template <class CellData>
 void peano::grid::Cell<CellData>::setRemoteCellWorkload( const Cell& workerCell ) {
+  assertion2( workerCell._cellData.getNodeWorkload()  >=0.0,  toString(), workerCell.toString() );
+  assertion2( workerCell._cellData.getTotalWorkload() >=0.0, toString(), workerCell.toString() );
+  assertion2( workerCell._cellData.getLocalWorkload() >=0.0, toString(), workerCell.toString() );
+
+  assertion2( workerCell._cellData.getNodeWorkload()  !=std::numeric_limits<double>::infinity(),  toString(), workerCell.toString() );
+  assertion2( workerCell._cellData.getTotalWorkload() !=std::numeric_limits<double>::infinity(), toString(), workerCell.toString() );
+  assertion2( workerCell._cellData.getLocalWorkload() !=std::numeric_limits<double>::infinity(), toString(), workerCell.toString() );
+
   _cellData.setNodeWorkload(  workerCell._cellData.getNodeWorkload() );
   _cellData.setTotalWorkload( workerCell._cellData.getTotalWorkload() );
   _cellData.setLocalWorkload( workerCell._cellData.getLocalWorkload() );
@@ -323,9 +331,16 @@ void peano::grid::Cell<CellData>::setRemoteCellWorkload( const Cell& workerCell 
 
 template <class CellData>
 void peano::grid::Cell<CellData>::setNodeWorkload( double value ) {
+  assertion2( value==value,                                    value, toString() );
+  assertion2( value!=std::numeric_limits<double>::infinity(),  value, toString() );
+
   _cellData.setNodeWorkload(  value );
   _cellData.setTotalWorkload( value );
   _cellData.setLocalWorkload( value );
+
+  assertion1( _cellData.getNodeWorkload()  >=0.0, toString() );
+  assertion1( _cellData.getTotalWorkload() >=0.0, toString() );
+  assertion1( _cellData.getLocalWorkload() >=0.0, toString() );
 }
 
 
@@ -345,11 +360,31 @@ template <class CellData>
 void peano::grid::Cell<CellData>::clearWorkload() {
   _cellData.setTotalWorkload( 0.0 );
   _cellData.setLocalWorkload( 0.0 );
+
+  assertion1( _cellData.getNodeWorkload()  >=0.0, toString() );
+  assertion1( _cellData.getTotalWorkload() >=0.0, toString() );
+  assertion1( _cellData.getLocalWorkload() >=0.0, toString() );
 }
 
 
 template <class CellData>
 void peano::grid::Cell<CellData>::incWorkload( const Cell& childCell ) {
+  assertion2( _cellData.getNodeWorkload()  >=0.0,  toString(), childCell.toString() );
+  assertion2( _cellData.getTotalWorkload() >=0.0, toString(), childCell.toString() );
+  assertion2( _cellData.getLocalWorkload() >=0.0, toString(), childCell.toString() );
+
+  assertion2( _cellData.getNodeWorkload()  !=std::numeric_limits<double>::infinity(),  toString(), childCell.toString() );
+  assertion2( _cellData.getTotalWorkload() !=std::numeric_limits<double>::infinity(), toString(), childCell.toString() );
+  assertion2( _cellData.getLocalWorkload() !=std::numeric_limits<double>::infinity(), toString(), childCell.toString() );
+
+  assertion2( childCell._cellData.getNodeWorkload()  >=0.0,  toString(), childCell.toString() );
+  assertion2( childCell._cellData.getTotalWorkload() >=0.0, toString(), childCell.toString() );
+  assertion2( childCell._cellData.getLocalWorkload() >=0.0, toString(), childCell.toString() );
+
+  assertion2( childCell._cellData.getNodeWorkload()  !=std::numeric_limits<double>::infinity(),  toString(), childCell.toString() );
+  assertion2( childCell._cellData.getTotalWorkload() !=std::numeric_limits<double>::infinity(), toString(), childCell.toString() );
+  assertion2( childCell._cellData.getLocalWorkload() !=std::numeric_limits<double>::infinity(), toString(), childCell.toString() );
+
   _cellData.setTotalWorkload( _cellData.getTotalWorkload() + childCell.getTotalWorkload() );
   if ( !childCell.isAssignedToRemoteRank() ) {
     _cellData.setLocalWorkload( _cellData.getLocalWorkload() + childCell.getLocalWorkload() );
