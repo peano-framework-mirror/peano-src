@@ -19,6 +19,9 @@
 #endif
 
 
+#include <vector>
+
+
 namespace peano {
     namespace datatraversal {
       template <class LoopBody>
