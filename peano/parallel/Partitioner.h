@@ -10,6 +10,7 @@
 #include "tarch/logging/Log.h"
 
 #include <bitset>
+#include <vector>
 
 
 namespace peano {
