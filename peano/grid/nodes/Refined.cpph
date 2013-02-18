@@ -381,12 +381,25 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
 
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
 void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::updateRefinedEnumeratorsCellFlag(
+  State                   state,
   Vertex                  vertices[FOUR_POWER_D],
   SingleLevelEnumerator&  verticesEnumerator
 ) const {
   logTraceInWith1Argument( "updateRefinedEnumeratorsCellFlag(...)", verticesEnumerator.toString() );
 
   peano::grid::CellFlags adjacencyFlag = peano::grid::Undefined;
+
+  #ifdef Parallel
+  if (
+    peano::parallel::loadbalancing::Oracle::getInstance().getLastStartCommand()!=peano::parallel::loadbalancing::Continue
+    ||
+    state.isInvolvedInJoinOrFork()
+  ) {
+    adjacencyFlag = peano::grid::NotStationary;
+  } else {
+  #endif
+
+
   dfor2(k)
     const peano::grid::CellFlags vertexFlag = vertices[verticesEnumerator(k)].getAdjacentCellsHeightOfPreviousIteration();
 
@@ -402,8 +415,6 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
   enddforx
 
   #ifdef Parallel
-  if (peano::parallel::loadbalancing::Oracle::getInstance().getLastStartCommand()!=peano::parallel::loadbalancing::Continue) {
-    adjacencyFlag = peano::grid::NotStationary;
   }
   #endif
 
@@ -559,7 +570,7 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
     for (int d=0; d<DIMENSIONS; d++) {
       assertionEquals( descendingGridEnumerator[kScalar].getOffset()(d), k(d) );
     }
-    updateRefinedEnumeratorsCellFlag(descendingGridVertices,descendingGridEnumerator[kScalar]);
+    updateRefinedEnumeratorsCellFlag(state,descendingGridVertices,descendingGridEnumerator[kScalar]);
     Cell&       currentCell              = descendingFineGridCells[kScalar];
     #if defined(Parallel) && defined(UseRecursionUnrollingOnRegularPatches)
     const bool  mayEvaluateStaticSubtree = currentCell.isRefined() && !currentCell.isAssignedToRemoteRank();
