@@ -97,8 +97,8 @@ class peano::grid::nodes::Refined: public peano::grid::nodes::Node<Vertex,Cell,S
     *                      overwritten
     */
    void updateRefinedEnumeratorsCellFlag(
-     State                   state,
-     Vertex                  vertices[FOUR_POWER_D],
+     const State&            state,
+     const Vertex            vertices[FOUR_POWER_D],
      SingleLevelEnumerator&  verticesEnumerator
    ) const;
 

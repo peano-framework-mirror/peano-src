@@ -381,8 +381,8 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
 
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
 void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::updateRefinedEnumeratorsCellFlag(
-  State                   state,
-  Vertex                  vertices[FOUR_POWER_D],
+  const State&            state,
+  const Vertex            vertices[FOUR_POWER_D],
   SingleLevelEnumerator&  verticesEnumerator
 ) const {
   logTraceInWith1Argument( "updateRefinedEnumeratorsCellFlag(...)", verticesEnumerator.toString() );
