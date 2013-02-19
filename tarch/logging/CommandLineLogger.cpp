@@ -96,6 +96,7 @@ bool tarch::logging::CommandLineLogger::FilterListEntry::operator==(const Filter
 
 tarch::logging::CommandLineLogger::CommandLineLogger():
   _outputStream(0),
+  _hasWrittenToOuputStream(false),
   _iterationCounter(0) {
   configureOutputStreams();
   setLogColumnSeparator();
@@ -123,6 +124,7 @@ std::ostream& tarch::logging::CommandLineLogger::out() {
     return std::cout;
   }
   else {
+    _hasWrittenToOuputStream = true;
     return *_outputStream;
   }
 }
@@ -344,13 +346,14 @@ void tarch::logging::CommandLineLogger::indent( bool indent, const std::string& 
 
 
 void tarch::logging::CommandLineLogger::reopenOutputStream() {
-  if (_outputStream!=0) {
+  if (_outputStream!=0 && _hasWrittenToOuputStream) {
     _outputStream->flush();
     delete _outputStream;
-    _outputStream = 0;
+    _outputStream            = 0;
+    _hasWrittenToOuputStream = false;
   }
 
-  if (!_outputFileName.empty() ) {
+  if (!_outputFileName.empty() && _outputStream==0) {
     std::ostringstream fileName;
     if (_iterationCounter>0) {
       int leadingZeros = 1;

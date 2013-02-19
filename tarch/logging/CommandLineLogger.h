@@ -128,6 +128,7 @@ class tarch::logging::CommandLineLogger: public tarch::services::Service {
     bool           _logMessageType;
     bool           _logTrace;
     std::ostream*  _outputStream;
+    bool           _hasWrittenToOuputStream;
     int            _iterationCounter;
     std::string    _outputFileName;
 
