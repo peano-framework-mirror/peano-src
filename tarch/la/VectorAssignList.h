@@ -1,70 +1,63 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _TARCH_LA_VECTORASSIGNLIST_H_
 #define _TARCH_LA_VECTORASSIGNLIST_H_
 
-#include "tarch/la/traits/IsVector.h"
-#include "tarch/la/traits/VectorTraits.h"
-#include "tarch/utils/EnableIf.h"
+
 #include "tarch/Assertions.h"
+
 
 namespace tarch {
   namespace la {
-    template<typename Vector> class VectorAssignList;
+    template<int Size, typename Scalar>
+    class VectorAssignList;
 
-    /**
-     * Returns a wrapper object around a vector which can be assigned comma separated
-     * lists.
-     */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-      VectorAssignList<Vector>
-    >::Type assignList (Vector & vector);
+    template<int Size, typename Scalar>
+    VectorAssignList<Size,Scalar> assignList(Vector<Size,Scalar>& vector);
   }
 }
+
 
 /**
  * Wrapper around vector objects to enable comma separated list assignment.
  */
-template<typename Vector>
-class tarch::la::VectorAssignList
-{
-private:
+template<int Size, typename Scalar>
+class tarch::la::VectorAssignList {
+  private:
+    Vector<Size,Scalar>& _vector;
+    int _index;
 
-  Vector& _vector;
-  int _index;
+  public:
+    /**
+     * Constructor.
+     */
+    VectorAssignList(Vector<Size,Scalar>& vector);
 
-public:
+    /**
+     * Constructor, to start assignment not from first component (index > 0).
+     */
+    VectorAssignList(Vector<Size,Scalar>& vector, int index);
 
-  typedef VectorTraits<Vector> Traits;
+    /**
+     * Destructor, asserts that the right amount of elements have been assigned.
+     */
+    ~VectorAssignList();
 
-  /**
-   * Constructor.
-   */
-  VectorAssignList (Vector& vector);
+    /**
+     * Assigns the first element.
+     */
+    VectorAssignList<Size,Scalar>& operator= (const Scalar& toAssign);
 
-  /**
-   * Constructor, to start assignment not from first component (index > 0).
-   */
-  VectorAssignList(Vector& vector, int index);
+    /**
+     * Assigns all futher elements.
+     */
+    VectorAssignList<Size,Scalar>& operator, (const Scalar & toAssign);
 
-  /**
-   * Destructor, asserts that the right amount of elements have been assigned.
-   */
-  ~VectorAssignList();
-
-  /**
-   * Assigns the first element.
-   */
-  VectorAssignList<Vector> & operator= (const typename Traits::Scalar & toAssign);
-
-  /**
-   * Assigns all futher elements.
-   */
-  VectorAssignList<Vector> & operator, (const typename Traits::Scalar & toAssign);
+    std::string toString() const;
 };
+
+
 
 #include "tarch/la/VectorAssignList.cpph"
 
-#endif /* _TARCH_LA_VECTORASSIGNLIST_H_ */
+#endif

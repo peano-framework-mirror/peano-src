@@ -1,36 +1,36 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _TARCH_LA_MATRIX_H_
 #define _TARCH_LA_MATRIX_H_
 
-#include "tarch/la/MatrixAssign.h"
+
+namespace tarch {
+  namespace la {
+    template<int Rows, int Cols, typename Scalar>
+    class Matrix;
+  }
+}
+
+
 #include "tarch/la/MatrixAssignList.h"
 #include "tarch/la/MatrixOperations.h"
 #include "tarch/la/MatrixVectorOperations.h"
 #include "tarch/la/MatrixMatrixOperations.h"
 #include "tarch/la/MatrixScalarOperations.h"
 
-namespace tarch {
-  namespace la {
-    template<int Rows, int Cols, typename Scalar> class Matrix;
-  }
-}
 
 /**
  * Static (i.e. compiletime) sized matrix type.
  */
 template<int Rows, int Cols, typename Scalar>
-class tarch::la::Matrix
-{
-private:
+class tarch::la::Matrix {
+  private:
+    /**
+     * Values of the matrix components.
+     */
+    Scalar _values[Rows*Cols];
 
-  /**
-   * Values of the matrix components.
-   */
-  Scalar _values[Rows*Cols];
-
-public:
+  public:
 
   /**
    * Constructs a non-initialized matrix.
@@ -62,19 +62,22 @@ public:
    */
   Scalar & operator() (
     int rowIndex,
-    int colIndex );
+    int colIndex
+  );
 
   /**
    * Returns const element at given row and column index (from 0..size-1).
    */
   const Scalar & operator() (
     int rowIndex,
-    int colIndex ) const;
+    int colIndex
+  ) const;
 
-
-  // No more methods here? They are all generic free methods now!
+  std::string toString() const;
 };
+
+
 
 #include "tarch/la/Matrix.cpph"
 
-#endif /* _TARCH_LA_MATRIX_H_ */
+#endif

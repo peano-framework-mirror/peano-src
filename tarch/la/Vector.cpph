@@ -1,103 +1,87 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
-// This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
-#ifndef _TARCH_LA_VECTOR_CPPH_
-#define _TARCH_LA_VECTOR_CPPH_
-
-#include "Vector.h"
 #include "tarch/Assertions.h"
-#include "tarch/la/traits/VectorTraits.h"
 
-namespace tarch {
-namespace la {
 
 template<int Size, typename Scalar>
-Vector<Size,Scalar>::Vector ():
-  _values()
-{}
+tarch::la::Vector<Size,Scalar>::Vector ():
+  _values() {
+}
+
 
 template<int Size, typename Scalar>
-template<typename VECTOR>
-  typename utils::EnableIf< IsVector<VECTOR>::value,
-  Vector<Size,Scalar>&
->::Type Vector<Size,Scalar>::operator= (
-  const VECTOR& toAssign
+tarch::la::Vector<Size,Scalar>&  tarch::la::Vector<Size,Scalar>::operator= (
+  const Vector<Size,Scalar>&  toAssign
 ) {
-  assign(*this) = toAssign;
+  for (int i=0; i<Size; i++) {
+    _values[i] = toAssign._values[i];
+  }
   return *this;
 }
 
+
 template<int Size, typename Scalar>
-VectorAssignList<Vector<Size,Scalar> > Vector<Size,Scalar>::operator=(
+tarch::la::VectorAssignList<Size,Scalar> tarch::la::Vector<Size,Scalar>::operator=(
   const Scalar& value
 ) {
   assertion(Size > 0);
   _values[0] = value;
-  return VectorAssignList<Vector<Size,Scalar> >(*this,1);
+  return VectorAssignList<Size,Scalar>(*this,1);
 }
 
 template<int Size, typename Scalar>
-template<typename VECTOR>
-Vector<Size,Scalar>::Vector (
-  const VECTOR& toCopy,
-  typename utils::EnableIf< IsVector<VECTOR>::value,void*>::Type
-) :
-  _values()
-{
-  assign(*this) = toCopy;
+tarch::la::Vector<Size,Scalar>::Vector (
+  const Vector<Size,Scalar>& toCopy
+):
+  _values() {
+  for (int i=0; i<Size; i++) {
+    _values[i] = toCopy._values[i];
+  }
 }
 
 
 template<int Size, typename Scalar>
-Vector<Size,Scalar>::Vector
-(
+tarch::la::Vector<Size,Scalar>::Vector(
   const Scalar& initialValue
-) :
-  _values()
-{
+):
+  _values() {
   for (int i=0; i < Size; i++) {
     _values[i] = initialValue;
   }
 }
 
 template<int Size, typename Scalar>
-Vector<Size,Scalar>::Vector
-(
+tarch::la::Vector<Size,Scalar>::Vector(
   const Scalar& initialValue0,
   const Scalar& initialValue1
-) :
-  _values()
-{
+):
+  _values() {
   assertion (Size == 2);
   _values[0] = initialValue0;
   _values[1] = initialValue1;
 }
 
+
 template<int Size, typename Scalar>
-Vector<Size,Scalar>::Vector
-(
+tarch::la::Vector<Size,Scalar>::Vector(
   const Scalar& initialValue0,
   const Scalar& initialValue1,
   const Scalar& initialValue2
-) :
-  _values()
-{
+):
+  _values() {
   assertion (Size == 3);
   _values[0] = initialValue0;
   _values[1] = initialValue1;
   _values[2] = initialValue2;
 }
 
+
 template<int Size, typename Scalar>
-Vector<Size,Scalar>::Vector
-(
+tarch::la::Vector<Size,Scalar>::Vector(
   const Scalar& initialValue0,
   const Scalar& initialValue1,
   const Scalar& initialValue2,
   const Scalar& initialValue3
-) :
-  _values()
-{
+):
+  _values() {
   assertion (Size == 4);
   _values[0] = initialValue0;
   _values[1] = initialValue1;
@@ -105,37 +89,15 @@ Vector<Size,Scalar>::Vector
   _values[3] = initialValue3;
 }
 
-//template<int Size, typename Scalar>
-//template<typename VECTOR>
-//  typename utils::EnableIf<IsVector<VECTOR>::value,
-//Vector<Size,Scalar>&>::Type Vector<Size,Scalar>::operator= (const VECTOR& assign)
-//{
-//  typedef VectorTraits<VECTOR> Traits;
-//  assertion ( Traits::size(assign) == Size );
-//  for (int i=0; i < Size; i++) {
-//    _values[i] = Traits::celem(i,assign);
-//  }
-//  return *this;
-//}
-
-//template<int Size, typename Scalar>
-//Vector<Size,Scalar>& Vector<Size,Scalar>::operator= (const Scalar& assign)
-//{
-//  for (int i=0; i < Size; i++) {
-//    _values[i] = assign;
-//  }
-//  return *this;
-//}
 
 template<int Size, typename Scalar>
-int Vector<Size,Scalar>:: size () const
-{
+int tarch::la::Vector<Size,Scalar>::size() const {
   return Size;
 }
 
+
 template<int Size, typename Scalar>
-const Scalar & Vector<Size,Scalar>:: operator[] ( int index ) const
-{
+const Scalar& tarch::la::Vector<Size,Scalar>::operator[] ( int index ) const {
 //#pragma GCC diagnostic push // Save Warning configuration
 //#pragma GCC diagnostic ignored "-Warray-bounds"
   assertion ( index >= 0 );
@@ -145,64 +107,41 @@ const Scalar & Vector<Size,Scalar>:: operator[] ( int index ) const
 }
 
 template<int Size, typename Scalar>
-Scalar & Vector<Size,Scalar>:: operator[] ( int index )
-{
+Scalar& tarch::la::Vector<Size,Scalar>:: operator[] ( int index ) {
   assertion ( index >= 0 );
   assertion ( index < Size );
   return _values[index];
 }
 
+
 template<int Size, typename Scalar>
-const Scalar & Vector<Size,Scalar>:: operator() ( int index ) const
-{
+const Scalar&  tarch::la::Vector<Size,Scalar>::operator() ( int index ) const {
   assertion ( index >= 0 );
   assertion ( index < Size );
   return _values[index];
 }
 
+
 template<int Size, typename Scalar>
-Scalar & Vector<Size,Scalar>:: operator() ( int index )
-{
+Scalar&  tarch::la::Vector<Size,Scalar>::operator() ( int index ) {
   assertion ( index >= 0 );
   assertion2 ( index < Size, index, Size );
   return _values[index];
 }
 
-
-template <int Size, typename Scalar>
-inline Vector<Size, int> Vector<Size, Scalar>::integer() const
-{
-      Vector<Size, int> c;
-
-      for(int k=0; k<Size; k++)
-              c[k] = (int)_values[k];
-
-      return c;
+/**
+ * Pipes the elements of a vector into a std::string and returns the string.
+ */
+template<int Size, typename Scalar>
+std::string tarch::la::Vector<Size,Scalar>::toString() const {
+  std::ostringstream os;
+  os << "(";
+  for ( int i=0; i < Size; i++ ) {
+    os << _values[i];
+    if ( i + 1 < Size ) {
+      os << ",";
+    }
+  }
+  os << ")";
+  return os.str();
 }
-template <int Size, typename Scalar>
-inline Vector<Size, int> Vector<Size, Scalar>::integer(const Vector<Size, Scalar>& v)
-{
-      return v.integer();
-}
-
-template <int Size, typename Scalar>
-inline Vector<Size, double> Vector<Size, Scalar>::Double() const
-{
-      Vector<Size, double> c;
-
-      for(int k=0; k<Size; k++)
-              c[k] = (double)_values[k];
-
-      return c;
-}
-
-template <int Size, typename Scalar>
-inline Vector<Size, double> Vector<Size, Scalar>::Double(const Vector<Size, Scalar>& v)
-{
-      return v.Double();
-}
-
-}} // namespace tarch, la
-
-#endif /* _TARCH_LA_VECTOR_CPPH_ */
-

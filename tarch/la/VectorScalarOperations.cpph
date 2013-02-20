@@ -1,178 +1,278 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
-// This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
-#ifndef _TARCH_LA_VECTORSCALAROPERATIONS_CPPH_
-#define _TARCH_LA_VECTORSCALAROPERATIONS_CPPH_
-
-#include "tarch/la/VectorScalarOperations.h"
-
-namespace tarch {
-namespace la {
-
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector&>::Type operator*= (
-  Vector&                                      vector,
-  const typename VectorTraits<Vector>::Scalar& scalar
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar>& tarch::la::operator*= (
+  Vector<Size,Scalar>&  vector,
+  const Scalar&         scalar
 ) {
-  typedef VectorTraits<Vector> Traits;
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,vector) *= scalar;
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    vector(i) *= scalar;
   }
   return vector;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector&>::Type operator/= (
-  Vector&                                      vector,
-  const typename VectorTraits<Vector>::Scalar& scalar
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar>& tarch::la::operator/= (
+  Vector<Size,Scalar>&  vector,
+  const Scalar&         scalar
 ) {
-  typedef VectorTraits<Vector> Traits;
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,vector) /= scalar;
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    vector(i) /= scalar;
   }
   return vector;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector&>::Type operator+= (
-  Vector&                                      vector,
-  const typename VectorTraits<Vector>::Scalar& scalar
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar>& tarch::la::operator+= (
+  Vector<Size,Scalar>&  vector,
+  const Scalar&         scalar
 ) {
-  typedef VectorTraits<Vector> Traits;
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,vector) += scalar;
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    vector(i) += scalar;
   }
   return vector;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector&>::Type operator-= (
-  Vector &                                      vector,
-  const typename VectorTraits<Vector>::Scalar & scalar
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar>& tarch::la::operator-= (
+  Vector<Size,Scalar>&  vector,
+  const Scalar&         scalar
 ) {
-  typedef VectorTraits<Vector> Traits;
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,vector) -= scalar;
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    vector(i) -= scalar;
   }
   return vector;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector>::Type operator* (
-  const Vector&                                vector,
-  const typename VectorTraits<Vector>::Scalar& scalar
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar> tarch::la::operator/ (
+  const Vector<Size,Scalar>&  vector,
+  const Scalar&               scalar
 ) {
-  typedef VectorTraits<Vector> Traits;
-  Vector result(vector);
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,result) = Traits::celem(i,vector) * scalar;
+  Vector<Size,Scalar> result(vector);
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    result(i) = vector(i) / scalar;
   }
   return result;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector>::Type operator/ (
-  const Vector&                                vector,
-  const typename VectorTraits<Vector>::Scalar& scalar
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar> tarch::la::operator+ (
+  Vector<Size,Scalar>&  vector,
+  const Scalar&         scalar
 ) {
-  typedef VectorTraits<Vector> Traits;
-  Vector result(vector);
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,result) = Traits::celem(i,vector) / scalar;
+  Vector<Size,Scalar> result(vector);
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    result(i) = vector(i) + scalar;
   }
   return result;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector>::Type operator+ (
-  const Vector&                                vector,
-  const typename VectorTraits<Vector>::Scalar& scalar
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar> tarch::la::operator+ (
+  const Scalar&         scalar,
+  Vector<Size,Scalar>&  vector
 ) {
-  typedef VectorTraits<Vector> Traits;
-  Vector result(vector);
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,result) = Traits::celem(i,vector) + scalar;
+  return vector + scalar;
+}
+
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar> tarch::la::operator* (
+  const Vector<Size,Scalar>&  vector,
+  const Scalar&               scalar
+) {
+  Vector<Size,Scalar> result(vector);
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    result(i) = vector(i) * scalar;
   }
   return result;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector>::Type operator- (
-  const Vector&                                vector,
-  const typename VectorTraits<Vector>::Scalar& scalar
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar> tarch::la::operator* (
+  const Scalar&               scalar,
+  const Vector<Size,Scalar>&  vector
 ) {
-  typedef VectorTraits<Vector> Traits;
-  Vector result(vector);
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,result) = Traits::celem(i,vector) - scalar;
+  Vector<Size,Scalar> result(vector);
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    result(i) = vector(i) * scalar;
   }
   return result;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector>::Type operator* (
-  const typename VectorTraits<Vector>::Scalar& scalar,
-  const Vector&                                vector
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar> tarch::la::operator+ (
+  const Vector<Size,Scalar>&  vector,
+  const Scalar&               scalar
 ) {
-  typedef VectorTraits<Vector> Traits;
-  Vector result(vector);
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,result) = Traits::celem(i,vector) * scalar;
+  Vector<Size,Scalar> result(vector);
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    result(i) = vector(i) + scalar;
   }
   return result;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector>::Type operator+ (
-  const typename VectorTraits<Vector>::Scalar& scalar,
-  const Vector&                                vector
+
+template<int Size, typename Scalar>
+tarch::la::Vector<Size,Scalar> tarch::la::operator- (
+  const Vector<Size,Scalar>&  vector,
+  const Scalar&               scalar
 ) {
-  typedef VectorTraits<Vector> Traits;
-  Vector result(vector);
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,result) = Traits::celem(i,vector) + scalar;
+  Vector<Size,Scalar> result(vector);
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Size; i++) {
+    result(i) = vector(i)- scalar;
   }
   return result;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector>::Type operator- (
-  const typename VectorTraits<Vector>::Scalar& scalar,
-  const Vector&                                vector
+
+template<int Size, typename Scalar>
+bool tarch::la::equals (
+  const Vector<Size,Scalar>&  lhs,
+  const Scalar&               cmp,
+  const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
 ) {
-  typedef VectorTraits<Vector> Traits;
-  Vector result(vector);
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,result) = scalar - Traits::celem(i,vector);
+  for ( int i=0; i < Size; i++ ) {
+    if ( la::abs(lhs(i) - cmp) > tolerance ) {
+      return false;
+    }
   }
-  return result;
+  return true;
 }
 
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-Vector>::Type operator% (
-    const Vector&                                vector,
-    const typename VectorTraits<Vector>::Scalar& scalar
-){
-  typedef VectorTraits<Vector> Traits;
-  Vector result(vector);
-  for (int i=0; i < Traits::size(vector); i++) {
-    Traits::elem(i,result) = Traits::celem(i,vector) % scalar;
+
+template<int Size, typename Scalar>
+bool tarch::la::oneGreater (
+  const Vector<Size,Scalar>&  lhs,
+  const Scalar&               cmp,
+  const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+) {
+  for ( int i=0; i < Size; i++ ) {
+    if ( lhs(i) - cmp > tolerance ) {
+      return true;
+    }
   }
-    return result;
+  return false;
 }
 
-}} // namespace tarch, la
 
-#endif /* _TARCH_LA_VECTORSCALAROPERATIONS_CPPH_ */
+template<int Size, typename Scalar>
+bool tarch::la::oneGreaterEquals (
+  const Vector<Size,Scalar>&  lhs,
+  const Scalar&               cmp,
+  const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+) {
+  for ( int i=0; i < Size; i++ ) {
+    if ( lhs(i) - cmp >= - tolerance ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+template<int Size, typename Scalar>
+bool tarch::la::allGreater (
+  const Vector<Size,Scalar>&  lhs,
+  const Scalar&               cmp,
+  const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+) {
+  for ( int i=0; i < Size; i++ ) {
+    if ( lhs(i) - cmp <= tolerance ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+template<int Size, typename Scalar>
+bool tarch::la::allGreaterEquals (
+  const Vector<Size,Scalar>&  lhs,
+  const Scalar&               cmp,
+  const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+) {
+  for ( int i=0; i < Size; i++ ) {
+    if ( lhs(i) - cmp < -tolerance ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+template<int Size, typename Scalar>
+bool tarch::la::allSmaller (
+  const Vector<Size,Scalar>&  lhs,
+  const Scalar&               cmp,
+  const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+) {
+  for ( int i=0; i < Size; i++ ) {
+    if ( lhs(i) - cmp >= tolerance ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+template<int Size, typename Scalar>
+bool tarch::la::allSmallerEquals (
+  const Vector<Size,Scalar>&  lhs,
+  const Scalar&               cmp,
+  const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+) {
+  for ( int i=0; i < Size; i++ ) {
+    if ( lhs(i) - cmp > -tolerance ) {
+      return false;
+    }
+  }
+  return true;
+}

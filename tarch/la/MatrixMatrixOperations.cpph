@@ -1,57 +1,39 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
-// This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
-#ifndef _TARCH_LA_MATRIXMATRIXOPERATIONS_CPPH_
-#define _TARCH_LA_MATRIXMATRIXOPERATIONS_CPPH_
-
-#include "tarch/la/MatrixMatrixOperations.h"
-#include "tarch/la/ScalarOperations.h"
-
-namespace tarch {
-namespace la {
-
-template<typename LMatrix, typename RMatrix, typename ResultMatrix>
-  typename utils::EnableIf<
-  IsMatrix<LMatrix>::value && IsMatrix<RMatrix>::value && IsMatrix<ResultMatrix>::value,
-  void
->::Type multiply (
-  const LMatrix& lMatrix,
-  const RMatrix& rMatrix,
-  ResultMatrix&  result
+template<int Rows, int Cols, int X, typename Scalar>
+tarch::la::Matrix<Rows,Cols,Scalar> tarch::la::multiply (
+  const Matrix<Rows,X,Scalar>& lhs,
+  const Matrix<X,Cols,Scalar>& rhs
 ) {
-  typedef MatrixTraits<LMatrix> Left;
-  typedef MatrixTraits<RMatrix> Right;
-  typedef MatrixTraits<ResultMatrix> Result;
-  assertion (Left::cols(lMatrix) == Right::rows(rMatrix));
-  assertion (Left::rows(lMatrix) == Result::rows(result));
-  assertion (Right::cols(rMatrix) == Result::cols(result));
+  Matrix<Rows,Cols,Scalar> result = 0;
 
-  assign(result) = 0;
-  for (int i=0; i < Left::rows(lMatrix); i++) {
-    for (int j=0; j < Right::cols(rMatrix); j++) {
-      for (int k=0; k < Left::cols(lMatrix); k++) {
-        Result::elem(i,j,result) += Left::celem(i,k,lMatrix) * Right::celem(k,j,rMatrix);
+  for (int i=0; i < Rows; i++) {
+    for (int j=0; j < Cols; j++) {
+      for (int k=0; k < X; k++) {
+        result(i,j) += lhs(i,k) * rhs(k,j);
       }
     }
   }
+
+  return result;
 }
 
-template<typename LMatrix, typename RMatrix>
-  typename utils::EnableIf<
-  IsMatrix<LMatrix>::value && IsMatrix<RMatrix>::value,
-  bool
->::Type operator== (
-  const LMatrix& lMatrix,
-  const RMatrix& rMatrix
-) {
-  typedef MatrixTraits<LMatrix> Left;
-  typedef MatrixTraits<RMatrix> Right;
-  assertion (Left::rows(lMatrix) == Right::rows(rMatrix));
-  assertion (Left::cols(lMatrix) == Right::cols(rMatrix));
 
-  for (int i=0; i < Left::rows(lMatrix); i++) {
-    for (int j=0; j < Right::cols(rMatrix); j++) {
-      if (Left::celem(i,j,lMatrix) != Right::celem(i,j,rMatrix)) {
+template<int Rows, int Cols, int X, typename Scalar>
+tarch::la::Matrix<Rows,Cols,Scalar> tarch::la::operator*(
+  const Matrix<Rows,X,Scalar>& lhs,
+  const Matrix<X,Cols,Scalar>& rhs
+) {
+  return multiply(lhs,rhs);
+}
+
+
+template<int Rows, int Cols, typename Scalar>
+bool tarch::la::operator== (
+  const Matrix<Rows,Cols,Scalar>& lhs,
+  const Matrix<Rows,Cols,Scalar>& rhs
+) {
+  for (int i=0; i < Rows; i++) {
+    for (int j=0; j < Cols; j++) {
+      if (lhs(i,j) != rhs(i,j)) {
         return false;
       }
     }
@@ -59,23 +41,17 @@ template<typename LMatrix, typename RMatrix>
   return true;
 }
 
-template<typename LMatrix, typename RMatrix>
-  typename utils::EnableIf<
-  IsMatrix<LMatrix>::value && IsMatrix<RMatrix>::value /*&& EqualScalars<LMatrix,RMatrix>::value*/,
-  bool
->::Type equals (
-  const LMatrix&                         lMatrix,
-  const RMatrix&                         rMatrix,
-  typename MatrixTraits<LMatrix>::Scalar tolerance
-) {
-  typedef MatrixTraits<LMatrix> Left;
-  typedef MatrixTraits<RMatrix> Right;
-  assertion (Left::rows(lMatrix) == Right::rows(rMatrix));
-  assertion (Left::cols(lMatrix) == Right::cols(rMatrix));
 
-  for (int i=0; i < Left::rows(lMatrix); i++) {
-    for (int j=0; j < Right::cols(rMatrix); j++) {
-      if (not equals(Left::celem(i,j,lMatrix), Right::celem(i,j,rMatrix), tolerance)) {
+
+template<int Rows, int Cols, typename Scalar>
+bool tarch::la::equals (
+  const Matrix<Rows,Cols,Scalar>&  lhs,
+  const Matrix<Rows,Cols,Scalar>&  rhs,
+  const Scalar&                    tolerance = NUMERICAL_ZERO_DIFFERENCE
+) {
+  for (int i=0; i < Rows; i++) {
+    for (int j=0; j < Cols; j++) {
+      if (!equals(lhs(i,j), rhs(i,j), tolerance)) {
         return false;
       }
     }
@@ -83,48 +59,38 @@ template<typename LMatrix, typename RMatrix>
   return true;
 }
 
-template<typename LMatrix, typename RMatrix>
-  typename utils::EnableIf<
-  IsMatrix<LMatrix>::value && IsMatrix<RMatrix>::value,
-  LMatrix
->::Type operator+ (
-  const LMatrix& lMatrix,
-  const RMatrix& rMatrix
+
+template<int Rows, int Cols, typename Scalar>
+tarch::la::Matrix<Rows,Cols,Scalar> tarch::la::operator+ (
+  const Matrix<Rows,Cols,Scalar>&  lhs,
+  const Matrix<Rows,Cols,Scalar>&  rhs
 ) {
-  typedef MatrixTraits<LMatrix> Left;
-  typedef MatrixTraits<RMatrix> Right;
-  assertion (Left::rows(lMatrix) == Right::rows(rMatrix));
-  assertion (Left::cols(lMatrix) == Right::cols(rMatrix));
-  LMatrix result(lMatrix);
-  for (int i=0; i < Left::rows(lMatrix); i++) {
-    for (int j=0; j < Left::cols(lMatrix); j++) {
-          Left::elem(i,j,result) = Left::celem(i,j,lMatrix) + Right::celem(i,j,rMatrix);
+  tarch::la::Matrix<Rows,Cols,Scalar> result;
+  #ifdef CompilerICC
+  #pragma ivdep
+  #pragma simd
+  #endif
+  for (int i=0; i < Rows; i++) {
+    for (int j=0; j < Cols; j++) {
+      result(i,j) = lhs(i,j) + rhs(i,j);
     }
   }
   return result;
 }
 
-template<typename LMatrix, typename RMatrix>
-  typename utils::EnableIf<
-  IsMatrix<LMatrix>::value && IsMatrix<RMatrix>::value,
-  int
->::Type equalsReturnIndex (
-  const LMatrix& lMatrix,
-  const RMatrix& rMatrix,
-  typename MatrixTraits<LMatrix>::Scalar tolerance
+
+
+template<int Rows, int Cols, typename Scalar>
+std::pair<int,int> tarch::la::equalsReturnIndex (
+  const Matrix<Rows,Cols,Scalar>& lhs,
+  const Matrix<Rows,Cols,Scalar>& rhs,
+  const Scalar&                   tolerance
   ){
-  typedef MatrixTraits<LMatrix> Left;
-  typedef MatrixTraits<RMatrix> Right;
-  assertion (Left::rows(lMatrix) == Right::rows(rMatrix));
-  assertion (Left::cols(lMatrix) == Right::cols(rMatrix));
-  for (int i=0; i < Left::rows(lMatrix); i++) {
-      for (int j=0; j < Left::cols(lMatrix); j++) {
-          if(std::abs(Left::celem(i,j,lMatrix) - Right::celem(i,j,rMatrix))>tolerance) return i;
-      }
+  std::pair<int,int> result;
+  for (int i=0; i < Rows; i++) {
+    for (int j=0; j < Cols; j++) {
+      if(  std::abs(lhs(i,j) - rhs(i,j))>tolerance) return std::pair<int,int>(i,j);
+    }
   }
-  return -1;
+  return std::pair<int,int>(-1,-1);
 }
-
-}} // namespace tarch, la
-
-#endif /* _TARCH_LA_MATRIXMATRIXOPERATIONS_CPPH_ */

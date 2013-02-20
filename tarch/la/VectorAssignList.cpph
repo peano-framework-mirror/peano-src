@@ -1,62 +1,54 @@
-// This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www.peano-framework.org
-#ifndef _TARCH_LA_VECTORASSIGNLIST_CPPH_
-#define _TARCH_LA_VECTORASSIGNLIST_CPPH_
-
-#include "tarch/la/VectorAssignList.h"
-
-
-namespace tarch {
-namespace la {
-
-template<typename Vector>
-  typename utils::EnableIf< IsVector<Vector>::value,
-  VectorAssignList<Vector>
->::Type assignList (
-  Vector & vector
+template<int Size, typename Scalar>
+tarch::la::VectorAssignList<Size,Scalar> tarch::la::assignList (
+  Vector<Size,Scalar>& vector
 ) {
-  return VectorAssignList<Vector> ( vector );
+  return VectorAssignList<Size,Scalar>( vector );
 }
 
-template<typename Vector>
-VectorAssignList<Vector>::VectorAssignList (Vector& vector)
-:
-  _vector(vector), _index(0)
-{}
 
-template<typename Vector>
-VectorAssignList<Vector>::VectorAssignList(
-  Vector& vector,
-  int     index)
-: _vector(vector),
-  _index(index)
-{}
-
-template<typename Vector>
-VectorAssignList<Vector>::~VectorAssignList()
-{
-  // Assert, that the number of assigned components equals the vectors size
-  assertionEquals1( _index, Traits::size(_vector), _vector );
+template<int Size, typename Scalar>
+tarch::la::VectorAssignList<Size,Scalar>::VectorAssignList(Vector<Size,Scalar>& vector):
+  _vector(vector), _index(0) {
 }
 
-template<typename Vector>
-VectorAssignList<Vector> & VectorAssignList<Vector>::operator= (const typename Traits::Scalar & toAssign)
-{
-  assertion1 ( _index < Traits::size(_vector), _vector );
-  Traits::elem(_index, _vector) = toAssign;
+
+template<int Size, typename Scalar>
+tarch::la::VectorAssignList<Size,Scalar>::VectorAssignList(
+  Vector<Size,Scalar>& vector,
+  int                  index
+):
+  _vector(vector),
+  _index(index) {
+}
+
+
+template<int Size, typename Scalar>
+tarch::la::VectorAssignList<Size,Scalar>::~VectorAssignList() {
+  assertion1( _index==Size, toString() );
+}
+
+
+template<int Size, typename Scalar>
+tarch::la::VectorAssignList<Size,Scalar>&  tarch::la::VectorAssignList<Size,Scalar>::operator=(const Scalar&  toAssign) {
+  assertion1( _index < Size, toString() );
+  _vector(_index) = toAssign;
   _index ++;
   return *this;
 }
 
-template<typename Vector>
-VectorAssignList<Vector> & VectorAssignList<Vector>::operator, (const typename Traits::Scalar & toAssign)
-{
-  assertion1 ( _index < Traits::size(_vector), _vector );
-  Traits::elem(_index, _vector) = toAssign;
+
+template<int Size, typename Scalar>
+tarch::la::VectorAssignList<Size,Scalar>&  tarch::la::VectorAssignList<Size,Scalar>::operator, (const Scalar&  toAssign) {
+  assertion1 ( _index < Size, toString() );
+  _vector(_index) = toAssign;
   _index ++;
   return *this;
 }
 
-}} // namespace tarch, la
 
-#endif /* _TARCH_LA_VECTORASSIGNLIST_CPPH_ */
+template<int Size, typename Scalar>
+std::string tarch::la::VectorAssignList<Size,Scalar>::toString() const {
+  std::ostringstream out;
+  out << "(index=" << _index << ",vector=" << _vector.toString() << ")";
+  return out.str();
+}

@@ -1,13 +1,8 @@
-// Copyright (C) 2009 Technische Universitaet Muenchen
 // This file is part of the Peano project. For conditions of distribution and
-// use, please see the copyright notice at www5.in.tum.de/peano
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _TARCH_LA_VECTORSCALAROPERATIONS_H_
 #define _TARCH_LA_VECTORSCALAROPERATIONS_H_
 
-#include "tarch/la/traits/IsVector.h"
-#include "tarch/la/traits/VectorTraits.h"
-#include "tarch/la/traits/DeduceScalar.h"
-#include "tarch/utils/EnableIf.h"
 
 namespace tarch {
   namespace la {
@@ -18,11 +13,10 @@ namespace tarch {
      *
      * No temporary objects are created during the operation.
      */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector&>::Type operator*= (
-      Vector&                                      vector,
-      const typename VectorTraits<Vector>::Scalar& scalar
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar>& operator*= (
+      Vector<Size,Scalar>&  vector,
+      const Scalar&         scalar
     );
 
     /**
@@ -31,11 +25,10 @@ namespace tarch {
      *
      * No temporary objects are created during the operation.
      */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector&>::Type operator/= (
-      Vector&                                      vector,
-      const typename VectorTraits<Vector>::Scalar& scalar
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar>& operator/= (
+      Vector<Size,Scalar>&  vector,
+      const Scalar&         scalar
     );
 
     /**
@@ -44,11 +37,10 @@ namespace tarch {
      *
      * No temporary objects are created during the operation.
      */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector&>::Type operator+= (
-      Vector&                                      vector,
-      const typename VectorTraits<Vector>::Scalar& scalar
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar>& operator+= (
+      Vector<Size,Scalar>&  vector,
+      const Scalar&         scalar
     );
 
     /**
@@ -57,11 +49,10 @@ namespace tarch {
      *
      * No temporary objects are created during the operation.
      */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector&>::Type operator-= (
-      Vector &                                      vector,
-      const typename VectorTraits<Vector>::Scalar & scalar
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar>& operator-= (
+      Vector<Size,Scalar>&  vector,
+      const Scalar&         scalar
     );
 
     /**
@@ -70,11 +61,16 @@ namespace tarch {
      *
      * A temporary vector is created during the operation and copied as result.
      */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector>::Type operator* (
-      const Vector&                                vector,
-      const typename VectorTraits<Vector>::Scalar& scalar
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar> operator* (
+      const Vector<Size,Scalar>&  vector,
+      const Scalar&               scalar
+    );
+
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar> operator* (
+      const Scalar&               scalar,
+      const Vector<Size,Scalar>&  vector
     );
 
     /**
@@ -83,11 +79,10 @@ namespace tarch {
      *
      * A temporary vector is created during the operation and copied as result.
      */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector>::Type operator/ (
-      const Vector&                                vector,
-      const typename VectorTraits<Vector>::Scalar& scalar
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar> operator/ (
+      const Vector<Size,Scalar>&  vector,
+      const Scalar&               scalar
     );
 
     /**
@@ -96,11 +91,16 @@ namespace tarch {
      *
      * A temporary vector is created during the operation and copied as result.
      */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector>::Type operator+ (
-      const Vector&                                vector,
-      const typename VectorTraits<Vector>::Scalar& scalar
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar> operator+ (
+      const Vector<Size,Scalar>&  vector,
+      const Scalar&               scalar
+    );
+
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar> operator+ (
+      const Scalar&               scalar,
+      const Vector<Size,Scalar>&  vector
     );
 
     /**
@@ -109,65 +109,64 @@ namespace tarch {
      *
      * A temporary vector is created during the operation and copied as result.
      */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector>::Type operator- (
-      const Vector&                                vector,
-      const typename VectorTraits<Vector>::Scalar& scalar
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar> operator- (
+      const Vector<Size,Scalar>&  vector,
+      const Scalar&               scalar
     );
 
-    /**
-     * Multiplies every component of the vector with the scalar and returns the
-     * result.
-     *
-     * A temporary vector is created during the operation and copied as result.
-     */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector>::Type operator* (
-      const typename VectorTraits<Vector>::Scalar& scalar,
-      const Vector&                                vector
+    template<int Size, typename Scalar>
+    bool equals (
+      const Vector<Size,Scalar>&  lhs,
+      const Scalar&               cmp,
+      const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
     );
 
-    /**
-     * Adds the scalar to every component of the vector and returns the
-     * result.
-     *
-     * A temporary vector is created during the operation and copied as result.
-     */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector>::Type operator+ (
-      const typename VectorTraits<Vector>::Scalar& scalar,
-      const Vector&                                vector
+    template<int Size, typename Scalar>
+    bool oneGreater (
+      const Vector<Size,Scalar>&  lhs,
+      const Scalar&               cmp,
+      const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
     );
 
-    /**
-     * Subtracts every component of the vector from the scalar and returns the
-     * result.
-     *
-     * Attention: 1 - (v0, v1, v2) = (1 - v0, 1 - v1, 1 - v2).
-     *
-     * A temporary vector is created during the operation and copied as result.
-     */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector>::Type operator- (
-      const typename VectorTraits<Vector>::Scalar& scalar,
-      const Vector&                                vector
+    template<int Size, typename Scalar>
+    bool oneGreaterEquals (
+      const Vector<Size,Scalar>&  lhs,
+      const Scalar&               cmp,
+      const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
     );
-    /**
-     * Define operator %
-     */
-    template<typename Vector>
-      typename utils::EnableIf< IsVector<Vector>::value,
-    Vector>::Type operator% (
-        const Vector&                                vector,
-        const typename VectorTraits<Vector>::Scalar& scalar
+
+    template<int Size, typename Scalar>
+    bool allGreater (
+      const Vector<Size,Scalar>&  lhs,
+      const Scalar&               cmp,
+      const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
     );
-  } // namespace la
-} // namespace tarch
+
+    template<int Size, typename Scalar>
+    bool allGreaterEquals (
+      const Vector<Size,Scalar>&  lhs,
+      const Scalar&               cmp,
+      const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+    );
+
+    template<int Size, typename Scalar>
+    bool allSmaller (
+      const Vector<Size,Scalar>&  lhs,
+      const Scalar&               cmp,
+      const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+    );
+
+    template<int Size, typename Scalar>
+    bool allSmallerEquals (
+      const Vector<Size,Scalar>&  lhs,
+      const Scalar&               cmp,
+      const Scalar                tolerance = NUMERICAL_ZERO_DIFFERENCE
+    );
+  }
+}
+
 
 #include "tarch/la/VectorScalarOperations.cpph"
 
-#endif /* _TARCH_LA_VECTORSCALAROPERATIONS_H_ */
+#endif
