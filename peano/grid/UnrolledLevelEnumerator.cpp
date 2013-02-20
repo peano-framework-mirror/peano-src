@@ -62,7 +62,7 @@ peano::grid::UnrolledLevelEnumerator::UnrolledLevelEnumerator(
 
   const int ThreePowerActualLevel = threePowI(relativeLevelOfThisEnumerator);
 
-  tarch::la::assign(_fineGridCellSize) = coarsestGridCellSize / static_cast<double>(ThreePowerActualLevel);
+  _fineGridCellSize = coarsestGridCellSize / static_cast<double>(ThreePowerActualLevel);
 
   logTraceOutWith7Arguments( "UnrolledLevelEnumerator(...)", _discreteOffset, _fineGridCellSize, _domainOffset, _level, _adjacentCellsHeight, _CellsPerAxis, _VerticesPerAxis );
 }
