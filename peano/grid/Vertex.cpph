@@ -518,7 +518,7 @@ tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> peano::grid::Vertex<VertexD
 ) {
   tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> result;
   dfor2(x)
-    tarch::la::slice<TWO_POWER_D>(result,xScalar*TWO_POWER_D) = vertices[ enumerator(x) ]._vertexData.getAdjacentRanks();
+    tarch::la::slice(result,vertices[ enumerator(x) ]._vertexData.getAdjacentRanks(),xScalar*TWO_POWER_D);
   enddforx
   return result;
 }
