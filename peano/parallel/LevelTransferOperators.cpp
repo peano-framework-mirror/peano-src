@@ -2,7 +2,6 @@
 #include "peano/utils/Loop.h"
 
 #include "tarch/parallel/Node.h"
-#include "tarch/la/WrappedVector.h"
 
 #include <bitset>
 
@@ -79,8 +78,8 @@ namespace peano {
               index += multiplyBy * base;
               base *= 2;
             }
-            tarch::la::Vector<TWO_POWER_D,int> result;
-            tarch::la::assign(result) = tarch::la::wrap<TWO_POWER_D,int>(&coarseGridAdjacencyInformation[index]);
+            tarch::la::Vector<TWO_POWER_D,int> result =
+              tarch::la::slice<TWO_POWER_D>(coarseGridAdjacencyInformation,index);
             return result;
           }
           else {
