@@ -224,7 +224,7 @@ class tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter:
           /**
            * Only required for assertions
            */
-          const std::string& _identifier;
+          const std::string _identifier;
 
           /**
            *
