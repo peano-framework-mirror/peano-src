@@ -559,15 +559,18 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
         tarch::parallel::NodePool::getInstance().getMasterRank()
       );
       #endif
-      assertionEquals6(
+      assertionEquals9(
         localAdjacencyBitset,
         adjacencyBitset,
         fineGridVerticesEnumerator.toString(),
         tarch::parallel::NodePool::getInstance().getMasterRank(),
+        fineGridCell.toString(),
         fineGridVertices[ fineGridVerticesEnumerator(0) ].toString(),
         fineGridVertices[ fineGridVerticesEnumerator(1) ].toString(),
         fineGridVertices[ fineGridVerticesEnumerator(2) ].toString(),
-        fineGridVertices[ fineGridVerticesEnumerator(3) ].toString()
+        fineGridVertices[ fineGridVerticesEnumerator(3) ].toString(),
+        peano::parallel::JoinDataBufferPool::getInstance().getCellFromStream<Cell>(tarch::parallel::NodePool::getInstance().getMasterRank()).toString(),
+        peano::parallel::JoinDataBufferPool::getInstance().getVertexFromStream<Vertex>(tarch::parallel::NodePool::getInstance().getMasterRank()).toString()
       );
 
       logDebug( "updateCellsParallelStateAfterLoadForNewWorkerDueToForkOfExistingDomain(...)", "received flag " << adjacencyBitset );
@@ -584,7 +587,7 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
       dfor2(k)
         if (adjacencyBitset[kScalar]) {
-          const Vertex receivedVertex = peano::parallel::JoinDataBufferPool::getInstance().getVertexFromStream<Vertex>(tarch::parallel::NodePool::getInstance().getMasterRank());;
+          const Vertex receivedVertex = peano::parallel::JoinDataBufferPool::getInstance().getVertexFromStream<Vertex>(tarch::parallel::NodePool::getInstance().getMasterRank());
           peano::grid::aspects::ParallelMerge::mergeWithForkedVertexFromMaster(
             fineGridVertices[fineGridVerticesEnumerator(k)],
             receivedVertex
@@ -674,7 +677,11 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       fineGridPositionOfCell
     );
   }
-  else if (!fineGridCell.isAssignedToRemoteRank() && coarseGridCell.isAssignedToRemoteRank() && !coarseGridCell.isRoot()) {
+  else if (
+    !fineGridCell.isAssignedToRemoteRank()  &&
+    coarseGridCell.isAssignedToRemoteRank() &&
+    !coarseGridCell.isRoot()
+  ) {
     logTraceInWith3Arguments( "updateCellsParallelStateAfterLoad(...)", state.toString(), fineGridCell.toString(), coarseGridCell.toString() );
     dfor2(k)
       logDebug( "updateCellsParallelStateAfterLoad(...)", "- adjacent vertex: " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() );
