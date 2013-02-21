@@ -160,7 +160,7 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
     SingleElementVertexEnumerator workerEnumerator(
       fineGridVerticesEnumerator.getCellSize(),
-      fineGridVerticesEnumerator.getOffset(),
+      fineGridVerticesEnumerator.getVertexPosition(),
       fineGridVerticesEnumerator.getLevel()
     );
 
@@ -195,8 +195,8 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       fineGridVerticesEnumerator.getLevel(),
       coarseGridCell.getLocalWorkload(),
       coarseGridCell.getTotalWorkload(),
-      fineGridVerticesEnumerator.getOffset(),
-      fineGridVerticesEnumerator.getCellSize()
+      workerEnumerator.getVertexPosition(),
+      workerEnumerator.getCellSize()
     );
 
     tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
