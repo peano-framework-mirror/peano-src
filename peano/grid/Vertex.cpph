@@ -2,7 +2,6 @@
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
 #include "peano/parallel/AdjacencyList.h"
-#include "tarch/la/WrappedVector.h"
 #endif
 
 
