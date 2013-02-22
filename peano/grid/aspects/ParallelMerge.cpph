@@ -271,9 +271,6 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
       if ( !entriesAreEqual && !workersEntryIsMe) {
         localVertex._vertexData.setAdjacentRanks( i, workerVertex._vertexData.getAdjacentRanks(i) );
       }
-//      else if (!entriesAreEqual) {
-//        localVertex._vertexData.setAdjacentRanks( i, workerRank );
-//      }
     }
   }
   else {
@@ -419,7 +416,7 @@ void peano::grid::aspects::ParallelMerge::mergeWithForkedCellFromMaster(
   localCell.clearInputOutputStackAccessStatistics();
   #endif
 
-  localCell.setRemoteCellWorkload( masterCell );
+  localCell.setRemoteCellWorkloadAndSubtreeFlags( masterCell );
 
   if (MasterIsRefinedLocalCellIsNot) {
     localCell._cellData.setState( Cell::Records::Leaf );
@@ -486,7 +483,7 @@ bool peano::grid::aspects::ParallelMerge::mergeWithJoinedCellFromWorker(
   localCell.clearInputOutputStackAccessStatistics();
   #endif
 
-  localCell.setRemoteCellWorkload( workerCell );
+  localCell.setRemoteCellWorkloadAndSubtreeFlags( workerCell );
 
   if (WorkerIsRefinedLocalCellIsNot) {
     localCell._cellData.setState( Cell::Records::Leaf );
