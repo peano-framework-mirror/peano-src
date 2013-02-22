@@ -396,7 +396,8 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
     state.isInvolvedInJoinOrFork()
   ) {
     adjacencyFlag = peano::grid::NotStationary;
-  } else {
+  } 
+  else {
   #endif
 
 
@@ -434,7 +435,11 @@ std::bitset<THREE_POWER_D> peano::grid::nodes::Refined<Vertex,Cell,State,VertexS
 
   #ifdef Parallel
   dfor3(k)
-    bool isInside = (newFineGridCells[kScalar].isInside() && !newFineGridCells[kScalar].isRemote(state,true,true));
+    bool isInside =
+      newFineGridCells[kScalar].isInside() &&
+      !newFineGridCells[kScalar].isRemote(state,true,true) &&
+      !newFineGridCells[kScalar].thisSubtreeHoldsWorker();
+      ;
     dfor2(i)
       isInside &= !fineGridVertices[ SingleLevelEnumerator::lineariseVertexIndex(i+k) ].isHangingNode();
       isInside &= fineGridVertices[ SingleLevelEnumerator::lineariseVertexIndex(i+k) ].getRefinementControl()==Vertex::Records::Refined;
@@ -460,6 +465,7 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
   #ifdef Parallel
   if (
     peano::parallel::loadbalancing::Oracle::getInstance().getLastStartCommand()>=peano::parallel::loadbalancing::ForkOnce &&
+    state.reduceStateAndCell() &&
     !state.isInvolvedInJoinOrFork()
   ) {
     const std::bitset<THREE_POWER_D> localInnerCells = getForkCandidates(state,newFineGridCells,newFineGridVertices);
@@ -598,9 +604,9 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
   endzfor
 
   #ifdef Parallel
-  fineGridCell.clearWorkload();
+  fineGridCell.clearWorkloadAndSubtreeFlags();
   for (int i=0; i<THREE_POWER_D; i++) {
-    fineGridCell.incWorkload(descendingFineGridCells[i]);
+    fineGridCell.incWorkloadAndReduceSubtreeFlags(descendingFineGridCells[i]);
   }
   #endif
 
