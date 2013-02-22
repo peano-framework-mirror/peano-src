@@ -13,8 +13,7 @@ peano::parallel::loadbalancing::Oracle::Worker::Worker(
 ):
   _rank(rank),
   _boundingBoxOffset(boundingBoxOffset),
-  _boundingBoxSize(boundingBoxSize),
-  _hasWorker(false) {
+  _boundingBoxSize(boundingBoxSize) {
 }
 
 
@@ -169,18 +168,6 @@ peano::parallel::loadbalancing::Oracle::WorkerContainer::const_iterator peano::p
 
   assertionMsg( false, "worker not found" );
   return _workers.begin();
-}
-
-
-void peano::parallel::loadbalancing::Oracle::setWorkerHasWorker(int workerRank, bool value) {
-  assertion1( workersListContainsRank(workerRank), workerRank );
-  getWorkerRecord( workerRank )->_hasWorker = value;
-}
-
-
-bool peano::parallel::loadbalancing::Oracle::hasWorkerAWorker(int workerRank) const {
-  assertion1( workersListContainsRank(workerRank), workerRank );
-  return getWorkerRecord( workerRank )->_hasWorker;
 }
 
 

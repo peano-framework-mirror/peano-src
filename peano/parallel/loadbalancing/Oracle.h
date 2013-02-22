@@ -45,7 +45,6 @@ class peano::parallel::loadbalancing::Oracle {
       int                                   _rank;
       tarch::la::Vector<DIMENSIONS,double>  _boundingBoxOffset;
       tarch::la::Vector<DIMENSIONS,double>  _boundingBoxSize;
-      bool                                  _hasWorker;
 
       Worker(int rank, const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset, const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize);
     };
@@ -149,9 +148,6 @@ class peano::parallel::loadbalancing::Oracle {
      * been nodes available. If might turn out to be wrong in the next
      * restriction, but till then, this is all we know.
      */
-    void setWorkerHasWorker(int workerRank, bool value);
-
-    bool hasWorkerAWorker(int workerRank) const;
 
     void plotStatistics();
 
