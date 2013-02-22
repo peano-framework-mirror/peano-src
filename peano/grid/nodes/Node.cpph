@@ -156,7 +156,6 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     State workerState;
     workerState.receive(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
     state.mergeWithWorkerState(workerState);
-    peano::parallel::loadbalancing::Oracle::getInstance().setWorkerHasWorker(currentWorker,workerState.hasWorker());
 
     SingleElementVertexEnumerator workerEnumerator(
       fineGridVerticesEnumerator.getCellSize(),
@@ -180,7 +179,7 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       state
     );
 
-    fineGridCell.setRemoteCellWorkload(receivedWorkerCell);
+    fineGridCell.setRemoteCellWorkloadAndSubtreeFlags(receivedWorkerCell);
 
     peano::parallel::loadbalancing::Oracle::getInstance().receivedTerminateCommand(
       currentWorker,
@@ -275,24 +274,26 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     enddforx
 
     const int currentWorker = fineGridCell.getRankOfRemoteNode();
-    logDebug( "updateCellsParallelStateAfterLoadForRootOfDeployedSubtree()", "startup worker " << currentWorker );
-
     peano::parallel::messages::LoadBalancingMessage loadBalancingMessage;
     loadBalancingMessage.setLoadBalancingFlag(
       peano::parallel::loadbalancing::Oracle::getInstance().getCommandForWorker(
         currentWorker,
-        state.mayForkDueToLoadBalancing(currentWorker),
-        state.mayJoinDueToLoadBalancing(currentWorker)
+        state.mayForkDueToLoadBalancing(),
+        state.mayJoinDueToLoadBalancing() && !fineGridCell.thisSubtreeHoldsWorker()
       )
     );
+
+    logDebug(
+      "updateCellsParallelStateAfterLoadForRootOfDeployedSubtree()",
+      "startup worker " << currentWorker << "(" << state.mayForkDueToLoadBalancing() << "," << state.mayJoinDueToLoadBalancing() << "," << fineGridCell.toString() << "," << fineGridCell.thisSubtreeHoldsWorker() << "): " <<
+      loadBalancingMessage.toString()
+    );
+
     if (loadBalancingMessage.getLoadBalancingFlag()==peano::parallel::loadbalancing::Join) {
       state.joinWithRank(currentWorker);
 
       peano::parallel::JoinDataBufferPool::getInstance().createVertexBufferManually<Vertex>( true, currentWorker );
       peano::parallel::JoinDataBufferPool::getInstance().createCellBufferManually<Cell>( true, currentWorker );
-    }
-    if (loadBalancingMessage.getLoadBalancingFlag()>=peano::parallel::loadbalancing::ForkOnce) {
-      peano::parallel::loadbalancing::Oracle::getInstance().setWorkerHasWorker(currentWorker,true);
     }
 
     logDebug( "updateCellsParallelStateAfterLoadForRootOfDeployedSubtree()", "send balancing message " << loadBalancingMessage.toString() << " to rank " << currentWorker );
