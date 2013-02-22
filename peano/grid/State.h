@@ -301,10 +301,9 @@ class peano::grid::State {
      *
      * @see send()
      */
-    bool hasWorker() const;
 
-    bool mayForkDueToLoadBalancing(int workerRank) const;
-    bool mayJoinDueToLoadBalancing(int workerRank) const;
+    bool mayForkDueToLoadBalancing() const;
+    bool mayJoinDueToLoadBalancing() const;
 
     /**
      * Has to be called if you restart a repository, i.e. if you receive the

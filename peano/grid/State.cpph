@@ -367,11 +367,9 @@ void peano::grid::State<StateData>::send(int destination, int tag) {
 
   #if defined(ParallelExchangePackedRecords)
   MPIDatatypeContainer copy = _stateData.convert();
-  copy.setHasWorkerWithWorker( peano::parallel::loadbalancing::Oracle::getInstance().hasWorkers() );
   copy.send(destination,tag,true);
   #else
   StateData copy = _stateData;
-  copy.setHasWorkerWithWorker( peano::parallel::loadbalancing::Oracle::getInstance().hasWorkers() );
   copy.send(destination,tag,true);
   #endif
 }
@@ -539,7 +537,7 @@ bool peano::grid::State<StateData>::reduceStateAndCell() const {
 
 
 template <class StateData>
-bool peano::grid::State<StateData>::mayForkDueToLoadBalancing(int workerRank) const {
+bool peano::grid::State<StateData>::mayForkDueToLoadBalancing() const {
   if (_iterationCounter<3) return false;
 
   return _stateData.getLoadRebalancingState() == StateData::NoRebalancing ||
@@ -548,23 +546,11 @@ bool peano::grid::State<StateData>::mayForkDueToLoadBalancing(int workerRank) co
 
 
 template <class StateData>
-bool peano::grid::State<StateData>::mayJoinDueToLoadBalancing(int workerRank) const {
+bool peano::grid::State<StateData>::mayJoinDueToLoadBalancing() const {
   if (_iterationCounter<3) return false;
 
-  const bool StateWouldAllowJoin =
-         _stateData.getLoadRebalancingState() == StateData::NoRebalancing ||
+  return _stateData.getLoadRebalancingState() == StateData::NoRebalancing ||
          _stateData.getLoadRebalancingState() == StateData::JoinTriggered;
-
-  const bool RankCouldJoin =
-      !peano::parallel::loadbalancing::Oracle::getInstance().hasWorkerAWorker(workerRank);
-
-  return StateWouldAllowJoin && RankCouldJoin;
-}
-
-
-template <class StateData>
-bool peano::grid::State<StateData>::hasWorker() const {
-  return _stateData.getHasWorkerWithWorker();
 }
 
 #endif
