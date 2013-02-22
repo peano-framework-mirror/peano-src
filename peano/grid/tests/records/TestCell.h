@@ -36,9 +36,9 @@ namespace peano {
     * 		   2007-2009 Wolfgang Eckhardt
     * 		   2012      Tobias Weinzierl
     *
-    * 		   build date: 29-11-2012 08:46
+    * 		   build date: 20-02-2013 11:21
     *
-    * @date   08/02/2013 09:40
+    * @date   21/02/2013 13:56
     */
    class peano::grid::tests::records::TestCell { 
       
@@ -232,7 +232,7 @@ namespace peano {
          protected:
             static tarch::logging::Log _log;
             
-            int _senderRank;
+            int _senderDestinationRank;
             
          public:
             
@@ -270,9 +270,9 @@ namespace peano {
        * 		   2007-2009 Wolfgang Eckhardt
        * 		   2012      Tobias Weinzierl
        *
-       * 		   build date: 29-11-2012 08:46
+       * 		   build date: 20-02-2013 11:21
        *
-       * @date   08/02/2013 09:40
+       * @date   21/02/2013 13:56
        */
       class peano::grid::tests::records::TestCellPacked { 
          
@@ -468,7 +468,7 @@ namespace peano {
             protected:
                static tarch::logging::Log _log;
                
-               int _senderRank;
+               int _senderDestinationRank;
                
             public:
                
@@ -508,9 +508,9 @@ namespace peano {
           * 		   2007-2009 Wolfgang Eckhardt
           * 		   2012      Tobias Weinzierl
           *
-          * 		   build date: 29-11-2012 08:46
+          * 		   build date: 20-02-2013 11:21
           *
-          * @date   08/02/2013 09:40
+          * @date   21/02/2013 13:56
           */
          class peano::grid::tests::records::TestCell { 
             
@@ -683,7 +683,7 @@ namespace peano {
                protected:
                   static tarch::logging::Log _log;
                   
-                  int _senderRank;
+                  int _senderDestinationRank;
                   
                public:
                   
@@ -721,9 +721,9 @@ namespace peano {
              * 		   2007-2009 Wolfgang Eckhardt
              * 		   2012      Tobias Weinzierl
              *
-             * 		   build date: 29-11-2012 08:46
+             * 		   build date: 20-02-2013 11:21
              *
-             * @date   08/02/2013 09:40
+             * @date   21/02/2013 13:56
              */
             class peano::grid::tests::records::TestCellPacked { 
                
@@ -898,7 +898,7 @@ namespace peano {
                   protected:
                      static tarch::logging::Log _log;
                      
-                     int _senderRank;
+                     int _senderDestinationRank;
                      
                   public:
                      
@@ -939,9 +939,9 @@ namespace peano {
              * 		   2007-2009 Wolfgang Eckhardt
              * 		   2012      Tobias Weinzierl
              *
-             * 		   build date: 29-11-2012 08:46
+             * 		   build date: 20-02-2013 11:21
              *
-             * @date   08/02/2013 09:40
+             * @date   21/02/2013 13:56
              */
             class peano::grid::tests::records::TestCell { 
                
@@ -962,6 +962,7 @@ namespace peano {
                      double _nodeWorkload;
                      double _localWorkload;
                      double _totalWorkload;
+                     bool _subtreeHoldsWorker;
                      /**
                       * Generated
                       */
@@ -970,7 +971,7 @@ namespace peano {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
+                     PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker);
                      
                      /**
                       * Generated
@@ -1040,6 +1041,16 @@ namespace peano {
                       */
                       void setTotalWorkload(const double& totalWorkload) ;
                      
+                     /**
+                      * Generated
+                      */
+                      bool getSubtreeHoldsWorker() const ;
+                     
+                     /**
+                      * Generated
+                      */
+                      void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                     
                      
                   };
                   
@@ -1060,7 +1071,7 @@ namespace peano {
                   /**
                    * Generated
                    */
-                  TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
+                  TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker);
                   
                   /**
                    * Generated
@@ -1148,6 +1159,16 @@ namespace peano {
                   /**
                    * Generated
                    */
+                   bool getSubtreeHoldsWorker() const ;
+                  
+                  /**
+                   * Generated
+                   */
+                   void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                  
+                  /**
+                   * Generated
+                   */
                   static std::string toString(const State& param);
                   
                   /**
@@ -1177,7 +1198,7 @@ namespace peano {
                   protected:
                      static tarch::logging::Log _log;
                      
-                     int _senderRank;
+                     int _senderDestinationRank;
                      
                   public:
                      
@@ -1215,9 +1236,9 @@ namespace peano {
                 * 		   2007-2009 Wolfgang Eckhardt
                 * 		   2012      Tobias Weinzierl
                 *
-                * 		   build date: 29-11-2012 08:46
+                * 		   build date: 20-02-2013 11:21
                 *
-                * @date   08/02/2013 09:40
+                * @date   21/02/2013 13:56
                 */
                class peano::grid::tests::records::TestCellPacked { 
                   
@@ -1231,6 +1252,7 @@ namespace peano {
                         double _nodeWorkload;
                         double _localWorkload;
                         double _totalWorkload;
+                        bool _subtreeHoldsWorker;
                         
                         /** mapping of records:
                         || Member 	|| startbit 	|| length
@@ -1248,7 +1270,7 @@ namespace peano {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
+                        PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker);
                         
                         /**
                          * Generated
@@ -1318,6 +1340,16 @@ namespace peano {
                          */
                          void setTotalWorkload(const double& totalWorkload) ;
                         
+                        /**
+                         * Generated
+                         */
+                         bool getSubtreeHoldsWorker() const ;
+                        
+                        /**
+                         * Generated
+                         */
+                         void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                        
                         
                      };
                      
@@ -1338,7 +1370,7 @@ namespace peano {
                      /**
                       * Generated
                       */
-                     TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
+                     TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker);
                      
                      /**
                       * Generated
@@ -1426,6 +1458,16 @@ namespace peano {
                      /**
                       * Generated
                       */
+                      bool getSubtreeHoldsWorker() const ;
+                     
+                     /**
+                      * Generated
+                      */
+                      void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                     
+                     /**
+                      * Generated
+                      */
                      static std::string toString(const State& param);
                      
                      /**
@@ -1455,7 +1497,7 @@ namespace peano {
                      protected:
                         static tarch::logging::Log _log;
                         
-                        int _senderRank;
+                        int _senderDestinationRank;
                         
                      public:
                         
@@ -1496,9 +1538,9 @@ namespace peano {
                 * 		   2007-2009 Wolfgang Eckhardt
                 * 		   2012      Tobias Weinzierl
                 *
-                * 		   build date: 29-11-2012 08:46
+                * 		   build date: 20-02-2013 11:21
                 *
-                * @date   08/02/2013 09:40
+                * @date   21/02/2013 13:56
                 */
                class peano::grid::tests::records::TestCell { 
                   
@@ -1650,7 +1692,7 @@ namespace peano {
                      protected:
                         static tarch::logging::Log _log;
                         
-                        int _senderRank;
+                        int _senderDestinationRank;
                         
                      public:
                         
@@ -1688,9 +1730,9 @@ namespace peano {
                    * 		   2007-2009 Wolfgang Eckhardt
                    * 		   2012      Tobias Weinzierl
                    *
-                   * 		   build date: 29-11-2012 08:46
+                   * 		   build date: 20-02-2013 11:21
                    *
-                   * @date   08/02/2013 09:40
+                   * @date   21/02/2013 13:56
                    */
                   class peano::grid::tests::records::TestCellPacked { 
                      
@@ -1844,7 +1886,7 @@ namespace peano {
                         protected:
                            static tarch::logging::Log _log;
                            
-                           int _senderRank;
+                           int _senderDestinationRank;
                            
                         public:
                            
@@ -1885,9 +1927,9 @@ namespace peano {
                    * 		   2007-2009 Wolfgang Eckhardt
                    * 		   2012      Tobias Weinzierl
                    *
-                   * 		   build date: 29-11-2012 08:46
+                   * 		   build date: 20-02-2013 11:21
                    *
-                   * @date   08/02/2013 09:40
+                   * @date   21/02/2013 13:56
                    */
                   class peano::grid::tests::records::TestCell { 
                      
@@ -1909,6 +1951,7 @@ namespace peano {
                            double _nodeWorkload;
                            double _localWorkload;
                            double _totalWorkload;
+                           bool _subtreeHoldsWorker;
                            int _numberOfLoadsFromInputStream;
                            int _numberOfStoresToOutputStream;
                            /**
@@ -1919,7 +1962,7 @@ namespace peano {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            /**
                             * Generated
@@ -2002,6 +2045,16 @@ namespace peano {
                            /**
                             * Generated
                             */
+                            bool getSubtreeHoldsWorker() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                           
+                           /**
+                            * Generated
+                            */
                             int getNumberOfLoadsFromInputStream() const ;
                            
                            /**
@@ -2039,7 +2092,7 @@ namespace peano {
                         /**
                          * Generated
                          */
-                        TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                        TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                         
                         /**
                          * Generated
@@ -2137,6 +2190,16 @@ namespace peano {
                         /**
                          * Generated
                          */
+                         bool getSubtreeHoldsWorker() const ;
+                        
+                        /**
+                         * Generated
+                         */
+                         void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                        
+                        /**
+                         * Generated
+                         */
                          int getNumberOfLoadsFromInputStream() const ;
                         
                         /**
@@ -2186,7 +2249,7 @@ namespace peano {
                         protected:
                            static tarch::logging::Log _log;
                            
-                           int _senderRank;
+                           int _senderDestinationRank;
                            
                         public:
                            
@@ -2224,9 +2287,9 @@ namespace peano {
                       * 		   2007-2009 Wolfgang Eckhardt
                       * 		   2012      Tobias Weinzierl
                       *
-                      * 		   build date: 29-11-2012 08:46
+                      * 		   build date: 20-02-2013 11:21
                       *
-                      * @date   08/02/2013 09:40
+                      * @date   21/02/2013 13:56
                       */
                      class peano::grid::tests::records::TestCellPacked { 
                         
@@ -2241,6 +2304,7 @@ namespace peano {
                               double _nodeWorkload;
                               double _localWorkload;
                               double _totalWorkload;
+                              bool _subtreeHoldsWorker;
                               int _numberOfLoadsFromInputStream;
                               int _numberOfStoresToOutputStream;
                               
@@ -2260,7 +2324,7 @@ namespace peano {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               /**
                                * Generated
@@ -2343,6 +2407,16 @@ namespace peano {
                               /**
                                * Generated
                                */
+                               bool getSubtreeHoldsWorker() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                              
+                              /**
+                               * Generated
+                               */
                                int getNumberOfLoadsFromInputStream() const ;
                               
                               /**
@@ -2380,7 +2454,7 @@ namespace peano {
                            /**
                             * Generated
                             */
-                           TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            /**
                             * Generated
@@ -2478,6 +2552,16 @@ namespace peano {
                            /**
                             * Generated
                             */
+                            bool getSubtreeHoldsWorker() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                           
+                           /**
+                            * Generated
+                            */
                             int getNumberOfLoadsFromInputStream() const ;
                            
                            /**
@@ -2527,7 +2611,7 @@ namespace peano {
                            protected:
                               static tarch::logging::Log _log;
                               
-                              int _senderRank;
+                              int _senderDestinationRank;
                               
                            public:
                               
@@ -2568,9 +2652,9 @@ namespace peano {
                       * 		   2007-2009 Wolfgang Eckhardt
                       * 		   2012      Tobias Weinzierl
                       *
-                      * 		   build date: 29-11-2012 08:46
+                      * 		   build date: 20-02-2013 11:21
                       *
-                      * @date   08/02/2013 09:40
+                      * @date   21/02/2013 13:56
                       */
                      class peano::grid::tests::records::TestCell { 
                         
@@ -2592,6 +2676,7 @@ namespace peano {
                               double _nodeWorkload;
                               double _localWorkload;
                               double _totalWorkload;
+                              bool _subtreeHoldsWorker;
                               /**
                                * Generated
                                */
@@ -2600,7 +2685,7 @@ namespace peano {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
+                              PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker);
                               
                               /**
                                * Generated
@@ -2680,6 +2765,16 @@ namespace peano {
                                */
                                void setTotalWorkload(const double& totalWorkload) ;
                               
+                              /**
+                               * Generated
+                               */
+                               bool getSubtreeHoldsWorker() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                              
                               
                            };
                            
@@ -2700,7 +2795,7 @@ namespace peano {
                            /**
                             * Generated
                             */
-                           TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
+                           TestCell(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker);
                            
                            /**
                             * Generated
@@ -2798,6 +2893,16 @@ namespace peano {
                            /**
                             * Generated
                             */
+                            bool getSubtreeHoldsWorker() const ;
+                           
+                           /**
+                            * Generated
+                            */
+                            void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                           
+                           /**
+                            * Generated
+                            */
                            static std::string toString(const State& param);
                            
                            /**
@@ -2827,7 +2932,7 @@ namespace peano {
                            protected:
                               static tarch::logging::Log _log;
                               
-                              int _senderRank;
+                              int _senderDestinationRank;
                               
                            public:
                               
@@ -2865,9 +2970,9 @@ namespace peano {
                          * 		   2007-2009 Wolfgang Eckhardt
                          * 		   2012      Tobias Weinzierl
                          *
-                         * 		   build date: 29-11-2012 08:46
+                         * 		   build date: 20-02-2013 11:21
                          *
-                         * @date   08/02/2013 09:40
+                         * @date   21/02/2013 13:56
                          */
                         class peano::grid::tests::records::TestCellPacked { 
                            
@@ -2882,6 +2987,7 @@ namespace peano {
                                  double _nodeWorkload;
                                  double _localWorkload;
                                  double _totalWorkload;
+                                 bool _subtreeHoldsWorker;
                                  
                                  /** mapping of records:
                                  || Member 	|| startbit 	|| length
@@ -2899,7 +3005,7 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
+                                 PersistentRecords(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker);
                                  
                                  /**
                                   * Generated
@@ -2979,6 +3085,16 @@ namespace peano {
                                   */
                                   void setTotalWorkload(const double& totalWorkload) ;
                                  
+                                 /**
+                                  * Generated
+                                  */
+                                  bool getSubtreeHoldsWorker() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                                 
                                  
                               };
                               
@@ -2999,7 +3115,7 @@ namespace peano {
                               /**
                                * Generated
                                */
-                              TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload);
+                              TestCellPacked(const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker);
                               
                               /**
                                * Generated
@@ -3097,6 +3213,16 @@ namespace peano {
                               /**
                                * Generated
                                */
+                               bool getSubtreeHoldsWorker() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                              
+                              /**
+                               * Generated
+                               */
                               static std::string toString(const State& param);
                               
                               /**
@@ -3126,7 +3252,7 @@ namespace peano {
                               protected:
                                  static tarch::logging::Log _log;
                                  
-                                 int _senderRank;
+                                 int _senderDestinationRank;
                                  
                               public:
                                  
@@ -3167,9 +3293,9 @@ namespace peano {
                          * 		   2007-2009 Wolfgang Eckhardt
                          * 		   2012      Tobias Weinzierl
                          *
-                         * 		   build date: 29-11-2012 08:46
+                         * 		   build date: 20-02-2013 11:21
                          *
-                         * @date   08/02/2013 09:40
+                         * @date   21/02/2013 13:56
                          */
                         class peano::grid::tests::records::TestCell { 
                            
@@ -3190,6 +3316,7 @@ namespace peano {
                                  double _nodeWorkload;
                                  double _localWorkload;
                                  double _totalWorkload;
+                                 bool _subtreeHoldsWorker;
                                  int _numberOfLoadsFromInputStream;
                                  int _numberOfStoresToOutputStream;
                                  /**
@@ -3200,7 +3327,7 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
@@ -3273,6 +3400,16 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
+                                  bool getSubtreeHoldsWorker() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
                                   int getNumberOfLoadsFromInputStream() const ;
                                  
                                  /**
@@ -3310,7 +3447,7 @@ namespace peano {
                               /**
                                * Generated
                                */
-                              TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              TestCell(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               /**
                                * Generated
@@ -3398,6 +3535,16 @@ namespace peano {
                               /**
                                * Generated
                                */
+                               bool getSubtreeHoldsWorker() const ;
+                              
+                              /**
+                               * Generated
+                               */
+                               void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                              
+                              /**
+                               * Generated
+                               */
                                int getNumberOfLoadsFromInputStream() const ;
                               
                               /**
@@ -3447,7 +3594,7 @@ namespace peano {
                               protected:
                                  static tarch::logging::Log _log;
                                  
-                                 int _senderRank;
+                                 int _senderDestinationRank;
                                  
                               public:
                                  
@@ -3485,9 +3632,9 @@ namespace peano {
                             * 		   2007-2009 Wolfgang Eckhardt
                             * 		   2012      Tobias Weinzierl
                             *
-                            * 		   build date: 29-11-2012 08:46
+                            * 		   build date: 20-02-2013 11:21
                             *
-                            * @date   08/02/2013 09:40
+                            * @date   21/02/2013 13:56
                             */
                            class peano::grid::tests::records::TestCellPacked { 
                               
@@ -3501,6 +3648,7 @@ namespace peano {
                                     double _nodeWorkload;
                                     double _localWorkload;
                                     double _totalWorkload;
+                                    bool _subtreeHoldsWorker;
                                     int _numberOfLoadsFromInputStream;
                                     int _numberOfStoresToOutputStream;
                                     
@@ -3520,7 +3668,7 @@ namespace peano {
                                     /**
                                      * Generated
                                      */
-                                    PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    PersistentRecords(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                     
                                     /**
                                      * Generated
@@ -3593,6 +3741,16 @@ namespace peano {
                                     /**
                                      * Generated
                                      */
+                                     bool getSubtreeHoldsWorker() const ;
+                                    
+                                    /**
+                                     * Generated
+                                     */
+                                     void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                                    
+                                    /**
+                                     * Generated
+                                     */
                                      int getNumberOfLoadsFromInputStream() const ;
                                     
                                     /**
@@ -3630,7 +3788,7 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
-                                 TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 TestCellPacked(const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const bool& subtreeHoldsWorker, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
@@ -3718,6 +3876,16 @@ namespace peano {
                                  /**
                                   * Generated
                                   */
+                                  bool getSubtreeHoldsWorker() const ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
+                                  void setSubtreeHoldsWorker(const bool& subtreeHoldsWorker) ;
+                                 
+                                 /**
+                                  * Generated
+                                  */
                                   int getNumberOfLoadsFromInputStream() const ;
                                  
                                  /**
@@ -3767,7 +3935,7 @@ namespace peano {
                                  protected:
                                     static tarch::logging::Log _log;
                                     
-                                    int _senderRank;
+                                    int _senderDestinationRank;
                                     
                                  public:
                                     
@@ -3808,9 +3976,9 @@ namespace peano {
                             * 		   2007-2009 Wolfgang Eckhardt
                             * 		   2012      Tobias Weinzierl
                             *
-                            * 		   build date: 29-11-2012 08:46
+                            * 		   build date: 20-02-2013 11:21
                             *
-                            * @date   08/02/2013 09:40
+                            * @date   21/02/2013 13:56
                             */
                            class peano::grid::tests::records::TestCell { 
                               
@@ -4025,7 +4193,7 @@ namespace peano {
                                  protected:
                                     static tarch::logging::Log _log;
                                     
-                                    int _senderRank;
+                                    int _senderDestinationRank;
                                     
                                  public:
                                     
@@ -4063,9 +4231,9 @@ namespace peano {
                                * 		   2007-2009 Wolfgang Eckhardt
                                * 		   2012      Tobias Weinzierl
                                *
-                               * 		   build date: 29-11-2012 08:46
+                               * 		   build date: 20-02-2013 11:21
                                *
-                               * @date   08/02/2013 09:40
+                               * @date   21/02/2013 13:56
                                */
                               class peano::grid::tests::records::TestCellPacked { 
                                  
@@ -4282,7 +4450,7 @@ namespace peano {
                                     protected:
                                        static tarch::logging::Log _log;
                                        
-                                       int _senderRank;
+                                       int _senderDestinationRank;
                                        
                                     public:
                                        

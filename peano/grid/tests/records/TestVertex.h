@@ -35,9 +35,9 @@ namespace peano {
     * 		   2007-2009 Wolfgang Eckhardt
     * 		   2012      Tobias Weinzierl
     *
-    * 		   build date: 29-11-2012 08:46
+    * 		   build date: 20-02-2013 11:21
     *
-    * @date   08/02/2013 09:26
+    * @date   21/02/2013 13:55
     */
    class peano::grid::tests::records::TestVertex { 
       
@@ -291,7 +291,7 @@ namespace peano {
          protected:
             static tarch::logging::Log _log;
             
-            int _senderRank;
+            int _senderDestinationRank;
             
          public:
             
@@ -329,9 +329,9 @@ namespace peano {
        * 		   2007-2009 Wolfgang Eckhardt
        * 		   2012      Tobias Weinzierl
        *
-       * 		   build date: 29-11-2012 08:46
+       * 		   build date: 20-02-2013 11:21
        *
-       * @date   08/02/2013 09:26
+       * @date   21/02/2013 13:55
        */
       class peano::grid::tests::records::TestVertexPacked { 
          
@@ -585,7 +585,7 @@ namespace peano {
             protected:
                static tarch::logging::Log _log;
                
-               int _senderRank;
+               int _senderDestinationRank;
                
             public:
                
@@ -625,9 +625,9 @@ namespace peano {
           * 		   2007-2009 Wolfgang Eckhardt
           * 		   2012      Tobias Weinzierl
           *
-          * 		   build date: 29-11-2012 08:46
+          * 		   build date: 20-02-2013 11:21
           *
-          * @date   08/02/2013 09:26
+          * @date   21/02/2013 13:55
           */
          class peano::grid::tests::records::TestVertex { 
             
@@ -834,7 +834,7 @@ namespace peano {
                protected:
                   static tarch::logging::Log _log;
                   
-                  int _senderRank;
+                  int _senderDestinationRank;
                   
                public:
                   
@@ -872,9 +872,9 @@ namespace peano {
              * 		   2007-2009 Wolfgang Eckhardt
              * 		   2012      Tobias Weinzierl
              *
-             * 		   build date: 29-11-2012 08:46
+             * 		   build date: 20-02-2013 11:21
              *
-             * @date   08/02/2013 09:26
+             * @date   21/02/2013 13:55
              */
             class peano::grid::tests::records::TestVertexPacked { 
                
@@ -1081,7 +1081,7 @@ namespace peano {
                   protected:
                      static tarch::logging::Log _log;
                      
-                     int _senderRank;
+                     int _senderDestinationRank;
                      
                   public:
                      
@@ -1122,9 +1122,9 @@ namespace peano {
              * 		   2007-2009 Wolfgang Eckhardt
              * 		   2012      Tobias Weinzierl
              *
-             * 		   build date: 29-11-2012 08:46
+             * 		   build date: 20-02-2013 11:21
              *
-             * @date   08/02/2013 09:26
+             * @date   21/02/2013 13:55
              */
             class peano::grid::tests::records::TestVertex { 
                
@@ -1365,7 +1365,7 @@ namespace peano {
                   protected:
                      static tarch::logging::Log _log;
                      
-                     int _senderRank;
+                     int _senderDestinationRank;
                      
                   public:
                      
@@ -1403,9 +1403,9 @@ namespace peano {
                 * 		   2007-2009 Wolfgang Eckhardt
                 * 		   2012      Tobias Weinzierl
                 *
-                * 		   build date: 29-11-2012 08:46
+                * 		   build date: 20-02-2013 11:21
                 *
-                * @date   08/02/2013 09:26
+                * @date   21/02/2013 13:55
                 */
                class peano::grid::tests::records::TestVertexPacked { 
                   
@@ -1646,7 +1646,7 @@ namespace peano {
                      protected:
                         static tarch::logging::Log _log;
                         
-                        int _senderRank;
+                        int _senderDestinationRank;
                         
                      public:
                         
@@ -1687,9 +1687,9 @@ namespace peano {
                 * 		   2007-2009 Wolfgang Eckhardt
                 * 		   2012      Tobias Weinzierl
                 *
-                * 		   build date: 29-11-2012 08:46
+                * 		   build date: 20-02-2013 11:21
                 *
-                * @date   08/02/2013 09:26
+                * @date   21/02/2013 13:55
                 */
                class peano::grid::tests::records::TestVertex { 
                   
@@ -1909,7 +1909,7 @@ namespace peano {
                      protected:
                         static tarch::logging::Log _log;
                         
-                        int _senderRank;
+                        int _senderDestinationRank;
                         
                      public:
                         
@@ -1947,9 +1947,9 @@ namespace peano {
                    * 		   2007-2009 Wolfgang Eckhardt
                    * 		   2012      Tobias Weinzierl
                    *
-                   * 		   build date: 29-11-2012 08:46
+                   * 		   build date: 20-02-2013 11:21
                    *
-                   * @date   08/02/2013 09:26
+                   * @date   21/02/2013 13:55
                    */
                   class peano::grid::tests::records::TestVertexPacked { 
                      
@@ -2169,7 +2169,7 @@ namespace peano {
                         protected:
                            static tarch::logging::Log _log;
                            
-                           int _senderRank;
+                           int _senderDestinationRank;
                            
                         public:
                            

@@ -487,9 +487,7 @@
          clock_t      timeOutShutdown  = -1;
          bool         triggeredTimeoutWarning = false;
          
-         #ifdef Asserts
-         _senderRank = -1;
-         #endif
+         _senderDestinationRank = destination;
          
          if (exchangeOnlyAttributesMarkedWithParallelise) {
             result = MPI_Isend(
@@ -631,7 +629,7 @@
          
          delete sendRequestHandle;
          
-         _senderRank = status.MPI_SOURCE;
+         _senderDestinationRank = status.MPI_SOURCE;
          #ifdef Debug
          _log.debug("receive(int,int)", "received " + toString() ); 
          #endif
@@ -662,8 +660,8 @@
       }
       
       int peano::grid::tests::records::TestVertex::getSenderRank() const {
-         assertion( _senderRank!=-1 );
-         return _senderRank;
+         assertion( _senderDestinationRank!=-1 );
+         return _senderDestinationRank;
          
       }
    #endif
@@ -1179,9 +1177,7 @@
          clock_t      timeOutShutdown  = -1;
          bool         triggeredTimeoutWarning = false;
          
-         #ifdef Asserts
-         _senderRank = -1;
-         #endif
+         _senderDestinationRank = destination;
          
          if (exchangeOnlyAttributesMarkedWithParallelise) {
             result = MPI_Isend(
@@ -1323,7 +1319,7 @@
          
          delete sendRequestHandle;
          
-         _senderRank = status.MPI_SOURCE;
+         _senderDestinationRank = status.MPI_SOURCE;
          #ifdef Debug
          _log.debug("receive(int,int)", "received " + toString() ); 
          #endif
@@ -1354,8 +1350,8 @@
       }
       
       int peano::grid::tests::records::TestVertexPacked::getSenderRank() const {
-         assertion( _senderRank!=-1 );
-         return _senderRank;
+         assertion( _senderDestinationRank!=-1 );
+         return _senderDestinationRank;
          
       }
    #endif
@@ -1700,9 +1696,7 @@
          clock_t      timeOutShutdown  = -1;
          bool         triggeredTimeoutWarning = false;
          
-         #ifdef Asserts
-         _senderRank = -1;
-         #endif
+         _senderDestinationRank = destination;
          
          if (exchangeOnlyAttributesMarkedWithParallelise) {
             result = MPI_Isend(
@@ -1844,7 +1838,7 @@
          
          delete sendRequestHandle;
          
-         _senderRank = status.MPI_SOURCE;
+         _senderDestinationRank = status.MPI_SOURCE;
          #ifdef Debug
          _log.debug("receive(int,int)", "received " + toString() ); 
          #endif
@@ -1875,8 +1869,8 @@
       }
       
       int peano::grid::tests::records::TestVertex::getSenderRank() const {
-         assertion( _senderRank!=-1 );
-         return _senderRank;
+         assertion( _senderDestinationRank!=-1 );
+         return _senderDestinationRank;
          
       }
    #endif
@@ -2246,9 +2240,7 @@
          clock_t      timeOutShutdown  = -1;
          bool         triggeredTimeoutWarning = false;
          
-         #ifdef Asserts
-         _senderRank = -1;
-         #endif
+         _senderDestinationRank = destination;
          
          if (exchangeOnlyAttributesMarkedWithParallelise) {
             result = MPI_Isend(
@@ -2390,7 +2382,7 @@
          
          delete sendRequestHandle;
          
-         _senderRank = status.MPI_SOURCE;
+         _senderDestinationRank = status.MPI_SOURCE;
          #ifdef Debug
          _log.debug("receive(int,int)", "received " + toString() ); 
          #endif
@@ -2421,8 +2413,8 @@
       }
       
       int peano::grid::tests::records::TestVertexPacked::getSenderRank() const {
-         assertion( _senderRank!=-1 );
-         return _senderRank;
+         assertion( _senderDestinationRank!=-1 );
+         return _senderDestinationRank;
          
       }
    #endif
@@ -2861,9 +2853,7 @@ peano::grid::tests::records::TestVertexPacked peano::grid::tests::records::TestV
       clock_t      timeOutShutdown  = -1;
       bool         triggeredTimeoutWarning = false;
       
-      #ifdef Asserts
-      _senderRank = -1;
-      #endif
+      _senderDestinationRank = destination;
       
       if (exchangeOnlyAttributesMarkedWithParallelise) {
          result = MPI_Isend(
@@ -3005,7 +2995,7 @@ peano::grid::tests::records::TestVertexPacked peano::grid::tests::records::TestV
       
       delete sendRequestHandle;
       
-      _senderRank = status.MPI_SOURCE;
+      _senderDestinationRank = status.MPI_SOURCE;
       #ifdef Debug
       _log.debug("receive(int,int)", "received " + toString() ); 
       #endif
@@ -3036,8 +3026,8 @@ peano::grid::tests::records::TestVertexPacked peano::grid::tests::records::TestV
    }
    
    int peano::grid::tests::records::TestVertex::getSenderRank() const {
-      assertion( _senderRank!=-1 );
-      return _senderRank;
+      assertion( _senderDestinationRank!=-1 );
+      return _senderDestinationRank;
       
    }
 #endif
@@ -3497,9 +3487,7 @@ peano::grid::tests::records::TestVertex peano::grid::tests::records::TestVertexP
       clock_t      timeOutShutdown  = -1;
       bool         triggeredTimeoutWarning = false;
       
-      #ifdef Asserts
-      _senderRank = -1;
-      #endif
+      _senderDestinationRank = destination;
       
       if (exchangeOnlyAttributesMarkedWithParallelise) {
          result = MPI_Isend(
@@ -3641,7 +3629,7 @@ peano::grid::tests::records::TestVertex peano::grid::tests::records::TestVertexP
       
       delete sendRequestHandle;
       
-      _senderRank = status.MPI_SOURCE;
+      _senderDestinationRank = status.MPI_SOURCE;
       #ifdef Debug
       _log.debug("receive(int,int)", "received " + toString() ); 
       #endif
@@ -3672,8 +3660,8 @@ peano::grid::tests::records::TestVertex peano::grid::tests::records::TestVertexP
    }
    
    int peano::grid::tests::records::TestVertexPacked::getSenderRank() const {
-      assertion( _senderRank!=-1 );
-      return _senderRank;
+      assertion( _senderDestinationRank!=-1 );
+      return _senderDestinationRank;
       
    }
 #endif
@@ -4075,9 +4063,7 @@ void peano::grid::tests::records::TestVertex::send(int destination, int tag, boo
    clock_t      timeOutShutdown  = -1;
    bool         triggeredTimeoutWarning = false;
    
-   #ifdef Asserts
-   _senderRank = -1;
-   #endif
+   _senderDestinationRank = destination;
    
    if (exchangeOnlyAttributesMarkedWithParallelise) {
       result = MPI_Isend(
@@ -4219,7 +4205,7 @@ void peano::grid::tests::records::TestVertex::receive(int source, int tag, bool 
    
    delete sendRequestHandle;
    
-   _senderRank = status.MPI_SOURCE;
+   _senderDestinationRank = status.MPI_SOURCE;
    #ifdef Debug
    _log.debug("receive(int,int)", "received " + toString() ); 
    #endif
@@ -4250,8 +4236,8 @@ bool peano::grid::tests::records::TestVertex::isMessageInQueue(int tag, bool exc
 }
 
 int peano::grid::tests::records::TestVertex::getSenderRank() const {
-   assertion( _senderRank!=-1 );
-   return _senderRank;
+   assertion( _senderDestinationRank!=-1 );
+   return _senderDestinationRank;
    
 }
 #endif
@@ -4677,9 +4663,7 @@ void peano::grid::tests::records::TestVertexPacked::send(int destination, int ta
    clock_t      timeOutShutdown  = -1;
    bool         triggeredTimeoutWarning = false;
    
-   #ifdef Asserts
-   _senderRank = -1;
-   #endif
+   _senderDestinationRank = destination;
    
    if (exchangeOnlyAttributesMarkedWithParallelise) {
       result = MPI_Isend(
@@ -4821,7 +4805,7 @@ void peano::grid::tests::records::TestVertexPacked::receive(int source, int tag,
    
    delete sendRequestHandle;
    
-   _senderRank = status.MPI_SOURCE;
+   _senderDestinationRank = status.MPI_SOURCE;
    #ifdef Debug
    _log.debug("receive(int,int)", "received " + toString() ); 
    #endif
@@ -4852,8 +4836,8 @@ bool peano::grid::tests::records::TestVertexPacked::isMessageInQueue(int tag, bo
 }
 
 int peano::grid::tests::records::TestVertexPacked::getSenderRank() const {
-   assertion( _senderRank!=-1 );
-   return _senderRank;
+   assertion( _senderDestinationRank!=-1 );
+   return _senderDestinationRank;
    
 }
 #endif
