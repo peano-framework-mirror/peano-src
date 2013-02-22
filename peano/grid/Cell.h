@@ -245,13 +245,15 @@ class peano::grid::Cell {
      */
     void setNodeWorkload( double value );
 
-    void clearWorkload();
-    void incWorkload( const Cell& childCell );
+    void clearWorkloadAndSubtreeFlags();
+    void incWorkloadAndReduceSubtreeFlags( const Cell& childCell );
 
     /**
      * Copy mechanism. Works for both worker and master.
      */
-    void setRemoteCellWorkload( const Cell& workerCell );
+    void setRemoteCellWorkloadAndSubtreeFlags( const Cell& workerCell );
+
+    bool thisSubtreeHoldsWorker() const;
     #endif
 
     #ifdef Debug

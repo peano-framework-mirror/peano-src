@@ -26,6 +26,7 @@ peano::grid::Cell<CellData>::Cell():
   _cellData.setNodeWorkload(  0.0 );
   _cellData.setTotalWorkload( 0.0 );
   _cellData.setLocalWorkload( 0.0 );
+  _cellData.setSubtreeHoldsWorker(false);
   #endif
 }
 
@@ -312,9 +313,14 @@ bool peano::grid::Cell<CellData>::isRemote(
 
 
 #ifdef Parallel
+template <class CellData>
+bool peano::grid::Cell<CellData>::thisSubtreeHoldsWorker() const {
+  return _cellData.getSubtreeHoldsWorker();
+}
+
 
 template <class CellData>
-void peano::grid::Cell<CellData>::setRemoteCellWorkload( const Cell& workerCell ) {
+void peano::grid::Cell<CellData>::setRemoteCellWorkloadAndSubtreeFlags( const Cell& workerCell ) {
   assertion2( workerCell._cellData.getNodeWorkload()  >=0.0,  toString(), workerCell.toString() );
   assertion2( workerCell._cellData.getTotalWorkload() >=0.0, toString(), workerCell.toString() );
   assertion2( workerCell._cellData.getLocalWorkload() >=0.0, toString(), workerCell.toString() );
@@ -326,6 +332,8 @@ void peano::grid::Cell<CellData>::setRemoteCellWorkload( const Cell& workerCell 
   _cellData.setNodeWorkload(  workerCell._cellData.getNodeWorkload() );
   _cellData.setTotalWorkload( workerCell._cellData.getTotalWorkload() );
   _cellData.setLocalWorkload( workerCell._cellData.getLocalWorkload() );
+
+  _cellData.setSubtreeHoldsWorker( workerCell._cellData.getSubtreeHoldsWorker() );
 }
 
 
@@ -357,9 +365,10 @@ double peano::grid::Cell<CellData>::getTotalWorkload() const {
 
 
 template <class CellData>
-void peano::grid::Cell<CellData>::clearWorkload() {
+void peano::grid::Cell<CellData>::clearWorkloadAndSubtreeFlags() {
   _cellData.setTotalWorkload( 0.0 );
   _cellData.setLocalWorkload( 0.0 );
+  _cellData.setSubtreeHoldsWorker(false);
 
   assertion1( _cellData.getNodeWorkload()  >=0.0, toString() );
   assertion1( _cellData.getTotalWorkload() >=0.0, toString() );
@@ -368,7 +377,7 @@ void peano::grid::Cell<CellData>::clearWorkload() {
 
 
 template <class CellData>
-void peano::grid::Cell<CellData>::incWorkload( const Cell& childCell ) {
+void peano::grid::Cell<CellData>::incWorkloadAndReduceSubtreeFlags( const Cell& childCell ) {
   assertion2( _cellData.getNodeWorkload()  >=0.0,  toString(), childCell.toString() );
   assertion2( _cellData.getTotalWorkload() >=0.0, toString(), childCell.toString() );
   assertion2( _cellData.getLocalWorkload() >=0.0, toString(), childCell.toString() );
@@ -386,8 +395,12 @@ void peano::grid::Cell<CellData>::incWorkload( const Cell& childCell ) {
   assertion2( childCell._cellData.getLocalWorkload() !=std::numeric_limits<double>::infinity(), toString(), childCell.toString() );
 
   _cellData.setTotalWorkload( _cellData.getTotalWorkload() + childCell.getTotalWorkload() );
+  _cellData.setSubtreeHoldsWorker(_cellData.getSubtreeHoldsWorker() | childCell.thisSubtreeHoldsWorker());
   if ( !childCell.isAssignedToRemoteRank() ) {
     _cellData.setLocalWorkload( _cellData.getLocalWorkload() + childCell.getLocalWorkload() );
+  }
+  else {
+    _cellData.setSubtreeHoldsWorker(_cellData.getSubtreeHoldsWorker() | !isAssignedToRemoteRank());
   }
 }
 
