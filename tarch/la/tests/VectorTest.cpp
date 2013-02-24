@@ -149,7 +149,7 @@ void tarch::la::VectorTest::testVectorOperations() {
   std::ostringstream stream;
   stream << vector3;
   std::string vector3string ( stream.str() );
-  validateEquals ( vector3string, std::string("(1,2,3)") );
+  validateEquals ( vector3string, std::string("[1,2,3]") );
 }
 
 

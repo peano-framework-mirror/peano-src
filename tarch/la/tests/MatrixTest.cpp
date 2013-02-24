@@ -61,7 +61,7 @@ void tarch::la::MatrixTest::testMatrixOperations () {
   assignList(matrix2) = 1, 2, 3, 4;
   std::ostringstream stream;
   stream << matrix2;
-  validateEquals (stream.str(), std::string("((1,2),(3,4))"));
+  validateEquals (stream.str(), std::string("[[1,2],[3,4]]"));
   // Test matrix multiply scalar
   matrix2 =matrix2*2;
   validateEquals(matrix2(0,0),2);
