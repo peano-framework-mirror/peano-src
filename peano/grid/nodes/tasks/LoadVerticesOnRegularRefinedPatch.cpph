@@ -358,10 +358,14 @@ void peano::grid::nodes::tasks::LoadVerticesOnRegularRefinedPatch<Vertex,Cell,Ve
         );
       }
       else {
-        assertionEquals1(
-          _regularGridContainer.getVertex(currentLevel,positionInArray).getRefinementControl(),
-          Vertex::Records::Refined,
-          _regularGridContainer.getVertex(currentLevel,positionInArray).toString()
+        assertion7(
+          (_regularGridContainer.getVertex(currentLevel,positionInArray).getRefinementControl()==Vertex::Records::Refined) ||
+          (_regularGridContainer.getVertex(currentLevel,positionInArray).getRefinementControl()==Vertex::Records::EraseTriggered),
+          _regularGridContainer.getVertex(currentLevel,positionInArray).toString(),
+          CaseLoadPersistentVertex, CaseTakeFromTempStacks,
+          currentLevel, positionInArray,
+          cellsPositionWithinUnrolledTreeLevel,
+          currentLevel
         );
       }
     }
