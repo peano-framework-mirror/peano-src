@@ -45,7 +45,7 @@
  *   sprintf(work, "/proc/%d/stat", (int)pid);
  * does work. Typically on all UNIX systems.
  */
-#define CompilerHasProcStat
+//#define CompilerHasProcStat
 
 /**
  * UTSName header
