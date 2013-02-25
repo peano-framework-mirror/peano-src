@@ -326,11 +326,26 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
     assertion(StaticGrid);
   }
   if (StaticGrid) {
-    assertion2(  !(_counter[positionInArray]==CounterNewNode        && action._id==peano::stacks::Constants::InOutStack), CellFlagsFromEnumerator, _fineGridVerticesEnumerator.toString() );
-    assertion2(  !(_counter[positionInArray]==CounterPersistentNodeDelete && action._id==peano::stacks::Constants::InOutStack), CellFlagsFromEnumerator, _fineGridVerticesEnumerator.toString() );
-    assertion2(  !(_counter[positionInArray]==CounterNewNode), CellFlagsFromEnumerator, _fineGridVerticesEnumerator.toString() );
-    assertion2(  !(_counter[positionInArray]==CounterPersistentNodeDelete), CellFlagsFromEnumerator, _fineGridVerticesEnumerator.toString() );
-    assertion2(  !(_counter[positionInArray]==CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing), CellFlagsFromEnumerator, _fineGridVerticesEnumerator.toString() );
+    assertion4(
+      !(_counter[positionInArray]==CounterNewNode        && action._id==peano::stacks::Constants::InOutStack),
+      toString(static_cast<peano::grid::CellFlags>(CellFlagsFromEnumerator)), _fineGridVerticesEnumerator.toString(), _fineGridVertices[positionInArray].toString(), counterToString(_counter[positionInArray] )
+    );
+    assertion4(
+      !(_counter[positionInArray]==CounterPersistentNodeDelete && action._id==peano::stacks::Constants::InOutStack),
+      toString(static_cast<peano::grid::CellFlags>(CellFlagsFromEnumerator)), _fineGridVerticesEnumerator.toString(), _fineGridVertices[positionInArray].toString(), counterToString(_counter[positionInArray] )
+    );
+    assertion4(
+      !(_counter[positionInArray]==CounterNewNode),
+      toString(static_cast<peano::grid::CellFlags>(CellFlagsFromEnumerator)), _fineGridVerticesEnumerator.toString(), _fineGridVertices[positionInArray].toString(), counterToString(_counter[positionInArray] )
+    );
+    assertion4(
+      !(_counter[positionInArray]==CounterPersistentNodeDelete),
+      toString(static_cast<peano::grid::CellFlags>(CellFlagsFromEnumerator)), _fineGridVerticesEnumerator.toString(), _fineGridVertices[positionInArray].toString(), counterToString(_counter[positionInArray] )
+    );
+    assertion4(
+      !(_counter[positionInArray]==CounterNewNodeRefineDueToJoinThoughWorkerIsAlreadyErasing),
+      toString(static_cast<peano::grid::CellFlags>(CellFlagsFromEnumerator)), _fineGridVerticesEnumerator.toString(), _fineGridVertices[positionInArray].toString(), counterToString(_counter[positionInArray] )
+    );
   }
 
   const bool CaseStorePersistentVertex =                       (_counter[positionInArray]==CounterPersistentNode && action._id==peano::stacks::Constants::InOutStack);
