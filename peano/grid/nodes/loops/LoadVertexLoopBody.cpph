@@ -183,10 +183,14 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
 
   assertion(!_fineGridVertices[positionInVertexArray].isHangingNode() );
 
-  if (counterIsDelete && _fineGridVertices[positionInVertexArray].getRefinementControl()==Vertex::Records::Refined) {
-    _fineGridVertices[positionInVertexArray].erase();
-    _hasErased = true;
-    logDebug( "updateRefinementFlagsOfVertexAfterLoad()", "made vertex coarsening as parent is coarsening: " << _fineGridVertices[positionInVertexArray].toString() );
+  if (counterIsDelete) {
+    _fineGridVertices[positionInVertexArray].rollbackRefinementOrEraseTriggered();
+    if ( _fineGridVertices[positionInVertexArray].getRefinementControl()==Vertex::Records::Refined) {
+      _fineGridVertices[positionInVertexArray].erase();
+      _hasErased = true;
+    }
+    _fineGridVertices[positionInVertexArray].invalidateAdjacentCellInformation();
+    logDebug( "updateRefinementFlagsOfVertexAfterLoad()", "made vertex erasing as parent is erasing: " << _fineGridVertices[positionInVertexArray].toString() );
   }
   if ( _fineGridVertices[positionInVertexArray].switchRefinementTriggeredToRefining() ) {
     _hasRefinened = true;
@@ -281,7 +285,7 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
       case peano::geometry::GeometryHelper::EraseOutsideVertex:
         logDebug( "updateGeometry(...)", "EraseOutsideVertex" );
         assertion1( _fineGridVertices[positionInVertexArray].isOutside(),_fineGridVertices[positionInVertexArray] );
-        if (_fineGridVertices[positionInVertexArray].getRefinementControl()!=Vertex::Records::Unrefined) {
+        if (_fineGridVertices[positionInVertexArray].getRefinementControl()==Vertex::Records::Refined) {
           _hasChangedVertexState = true;
           _fineGridVertices[positionInVertexArray].erase();
         }
@@ -343,7 +347,7 @@ void peano::grid::nodes::loops::LoadVertexLoopBody<Vertex,Cell,State,VertexStack
           _fineGridPositionOfCell + positionInLocalCell
         );
         _fineGridVertices[positionInVertexArray].switchToOutside();
-        if (_fineGridVertices[positionInVertexArray].getRefinementControl()!=Vertex::Records::Unrefined) {
+        if (_fineGridVertices[positionInVertexArray].getRefinementControl()==Vertex::Records::Refined) {
           _fineGridVertices[positionInVertexArray].erase();
         }
         _hasChangedVertexState = true;
