@@ -25,7 +25,7 @@
 
  To recreate the webpage, call
  \code
- rm -rf /home/wwwsccs/html/peano3
+ rm -rf /home/wwwsccs/html/peano3/doxys
  ~/bin/doxys src/doxys.configuration
  chgrp -R wwwsccs /home/wwwsccs/html/peano3/doxys
  chmod -R a+rx /home/wwwsccs/html/peano3
