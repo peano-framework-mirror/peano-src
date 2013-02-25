@@ -34,6 +34,7 @@ void peano::grid::tests::ForkRegularTreeTest::run() {
 
 
 void peano::grid::tests::ForkRegularTreeTest::testMayForkLoadOrStoreVertexTaskOnRegularSubtree() {
+  #ifdef Dim2
   validateEquals( peano::grid::nodes::transformOracleResult(0,1,9), -1 );
   validateEquals( peano::grid::nodes::transformOracleResult(0,2,9*9), -1 );
   validateEquals( peano::grid::nodes::transformOracleResult(0,3,9*9*9), -1 );
@@ -45,6 +46,7 @@ void peano::grid::tests::ForkRegularTreeTest::testMayForkLoadOrStoreVertexTaskOn
   validateEquals( peano::grid::nodes::transformOracleResult(8,4,9*9*9*9), 4 );
 
   validateEquals( mayForkLoadOrStoreVertexTaskOnRegularSubtree(1,0,2,0,9),true);
+  #endif
 }
 
 
