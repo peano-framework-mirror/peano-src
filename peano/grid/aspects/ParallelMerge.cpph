@@ -1,6 +1,7 @@
 #include "peano/grid/SingleLevelEnumerator.h"
 
 #include "tarch/parallel/NodePool.h"
+#include "peano/parallel/AdjacencyList.h"
 
 
 template <class Vertex>
@@ -75,11 +76,8 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
   assertionVectorNumericalEquals3( localVertex._vertexData.getX(), workerVertex._vertexData.getX(),     localVertex.toString(), workerVertex.toString(), workerRank );
   assertionEquals3( localVertex._vertexData.getLevel(),            workerVertex._vertexData.getLevel(), localVertex.toString(), workerVertex.toString(), workerRank );
 
-  assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2,  localVertex.toString(), workerVertex.toString() );
-  assertion2( localVertex.isHangingNode() || localVertex._vertexData.getAdjacentCellsHeight()                    <= -2,  localVertex.toString(), workerVertex.toString() );
-  assertion3( workerVertex.isHangingNode() || workerVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration() <= -2, localVertex.toString(), workerVertex.toString(), toString(static_cast<peano::grid::CellFlags>(workerVertex._vertexData.getAdjacentCellsHeightOfPreviousIteration())) );
-  assertion2( workerVertex.isHangingNode() || workerVertex._vertexData.getAdjacentCellsHeight()                    <= -2, localVertex.toString(), workerVertex.toString() );
-  assertionEquals2( workerVertex.isHangingNode(), localVertex.isHangingNode(), localVertex.toString(), workerVertex.toString() );
+  assertion4( !localVertex.isHangingNode(),  localVertex.toString(), workerVertex.toString(), workerRank, tarch::parallel::Node::getInstance().getRank() );
+  assertion4( !workerVertex.isHangingNode(),  localVertex.toString(), workerVertex.toString(), workerRank, tarch::parallel::Node::getInstance().getRank() );
 
   assertion4(
     LocalNodeHasNotBeenResponsibleBefore ||
@@ -107,14 +105,6 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
     workerVertex.getRefinementControl()!=Vertex::Records::RefineDueToJoinThoughWorkerIsAlreadyErasing,
     localVertex.toString(), workerVertex.toString(), workerRank, tarch::parallel::Node::getInstance().getRank()
   );
-
-  localVertex._vertexData.setIsHangingNode(       workerVertex._vertexData.getIsHangingNode() );
-
-  #ifdef Debug
-  localVertex._vertexData.setX( workerVertex._vertexData.getX() );
-  localVertex._vertexData.setLevel( workerVertex._vertexData.getLevel() );
-  #endif
-
 
   // local vertex = unrefined
   if (
@@ -271,6 +261,7 @@ peano::grid::aspects::ParallelMerge::mergeWithJoinedVertexFromWorker(
       if ( !entriesAreEqual && !workersEntryIsMe) {
         localVertex._vertexData.setAdjacentRanks( i, workerVertex._vertexData.getAdjacentRanks(i) );
       }
+      assertion4( localVertex._vertexData.getAdjacentRanks(i)!=peano::parallel::UndefinedNeighbour, localVertex.toString(), workerVertex.toString(), workerRank, tarch::parallel::Node::getInstance().getRank() );
     }
   }
   else {
