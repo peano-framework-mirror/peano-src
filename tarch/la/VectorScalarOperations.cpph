@@ -81,23 +81,6 @@ tarch::la::Vector<Size,Scalar> tarch::la::operator/ (
 
 template<int Size, typename Scalar>
 tarch::la::Vector<Size,Scalar> tarch::la::operator+ (
-  Vector<Size,Scalar>&  vector,
-  const Scalar&         scalar
-) {
-  Vector<Size,Scalar> result(vector);
-  #ifdef CompilerICC
-  #pragma ivdep
-  #pragma simd
-  #endif
-  for (int i=0; i < Size; i++) {
-    result(i) = vector(i) + scalar;
-  }
-  return result;
-}
-
-
-template<int Size, typename Scalar>
-tarch::la::Vector<Size,Scalar> tarch::la::operator+ (
   const Scalar&         scalar,
   Vector<Size,Scalar>&  vector
 ) {
