@@ -146,8 +146,11 @@ class peano::grid::Vertex {
      *
      * Before we switch, we validate the following:
      *
-     * - The vertex should be boundary or outside. There's no reason to switch an inner vertex to inside.
-     * - If the vertex is a hanging vertex, we may switch to inside always. However, the underlying tree height attributes (adjacent cell heights) then have to be invalid.
+     * - The vertex should be boundary or outside. There's no reason to switch
+     *   an inner vertex to inside.
+     * - If the vertex is a hanging vertex, we may switch to inside always.
+     *   However, the underlying tree height attributes (adjacent cell heights)
+     *   then have to be invalid.
      * - Due to the switch, the adjacent cell heights should be invalidated.
      *
      * The last issue is interesting: If we switch a vertex, the geometry
@@ -209,6 +212,17 @@ class peano::grid::Vertex {
      * have a higher priority than making the grid coarser.
      */
     void erase();
+
+    /**
+     * Rollback any triggered operation.
+     *
+     * This operation is provided for the load vertex process. We recommend not
+     * to use it for any PDE solver.
+     *
+     * Furthermore, it is nop if you compile without assertions, i.e. it then
+     * does not have any semantics anymore.
+     */
+    void rollbackRefinementOrEraseTriggered();
 
     /**
      * This operation reads the refinement flag. If it is set to
@@ -273,7 +287,14 @@ class peano::grid::Vertex {
     /**
      * Invalidate all the adjacency information
      *
-     * For example done due to a merge on the worker side.
+     * The operation erases all the information about the heights and
+     * invariancies of adjacent trees. If you invalidate this information,
+     * you switch off the static tree optimisations and the recursion
+     * unrolling manually.
+     *
+     * This is for example done due to a merge on the worker side. Implicitely,
+     * any erase() or refine() call invalidates as well, so usually it is not a
+     * PDE task to invalidate any vertex anytime.
      */
     void invalidateAdjacentCellInformation();
 
