@@ -81,8 +81,8 @@ tarch::la::Vector<Size,Scalar> tarch::la::operator/ (
 
 template<int Size, typename Scalar>
 tarch::la::Vector<Size,Scalar> tarch::la::operator+ (
-  const Scalar&         scalar,
-  Vector<Size,Scalar>&  vector
+  const Scalar&               scalar,
+  const Vector<Size,Scalar>&  vector
 ) {
   return vector + scalar;
 }
