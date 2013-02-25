@@ -6,7 +6,7 @@
 PROJECT_NAME                        = Peano-Sources
 PROJECT_NUMBER                      = 
 INPUT                               = src
-OUTPUT_DIRECTORY                    = /home/wwwsccs/html/peano3
+OUTPUT_DIRECTORY                    = /home/wwwsccs/html/peano3/doxys
 GENERATE_DOXYS_HELP                 = YES
 HTML_FILE_EXTENSION                 = .html
 CUSTOM_DIR                          = 
