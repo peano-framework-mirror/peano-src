@@ -174,7 +174,7 @@ std::string peano::grid::UnrolledLevelEnumerator::toString() const {
 	  << ",adj-flags:" << _adjacentCellsHeight
 	  << ",cells-per-axis:" << _CellsPerAxis
 	  << ",vertices-per-axis:" << _VerticesPerAxis
-	  << ")";
+	  << ")[type=UnrolledLevelEnumerator]";
   return out.str();
 }
 

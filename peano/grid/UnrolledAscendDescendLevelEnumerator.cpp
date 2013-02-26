@@ -125,7 +125,7 @@ std::string peano::grid::UnrolledAscendDescendLevelEnumerator::toString() const 
 	  << ",adj-flags:" << _adjacentCellsHeight
 	  << ",cells-per-axis:" << _CellsPerAxis
 	  << ",vertices-per-axis:" << _VerticesPerAxis
-	  << ")";
+	  << ")[type=UnrolledAscendDescendLevelEnumerator]";
   return out.str();
 }
 

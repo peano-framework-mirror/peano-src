@@ -87,7 +87,7 @@ std::string peano::grid::AscendDescendLevelEnumerator::toString() const {
 	  << ",cell-size:" << _fineGridCellSize
 	  << ",level:" << _level
 	  << ",adj-flags:" << _adjacentCellsHeight
-	  << ")";
+	  << ")[type=AscendDescendLevelEnumerator]";
   return out.str();
 }
 

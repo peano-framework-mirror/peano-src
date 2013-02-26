@@ -176,7 +176,7 @@ std::string peano::grid::SingleLevelEnumerator::toString() const {
 	  << ",cell-size:" << _fineGridCellSize
 	  << ",level:" << _level
 	  << ",adj-flags:" << _adjacentCellsHeight
-	  << ")";
+	  << ")[type=SingleLevelEnumerator]";
   return out.str();
 }
 

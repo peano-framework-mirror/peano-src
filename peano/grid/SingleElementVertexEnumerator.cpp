@@ -65,7 +65,7 @@ std::string peano::grid::SingleElementVertexEnumerator::toString() const {
   std::ostringstream msg;
   msg << "(cell-size:" << _cellSize
       << ",cell-offset:" << _cellOffset
-      << ")";
+      << ")[type=SingleElementVertexEnumerator]";
   return msg.str();
 }
 
