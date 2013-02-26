@@ -288,4 +288,39 @@
   }
 
 
+#define validateNumericalVectorEqualsWithParams1(actual, valid, param0) \
+  if (!tarch::la::equals(actual, valid)) { \
+    _errors++; \
+    _error = true; \
+    std::cerr << "  numerical vector equality test failed: " << actual << " instead of " << valid << std::endl \
+              << "  file: " << __FILE__ << " \t line: " << __LINE__ << std::endl \
+              << "  statement: " << #actual << "=="  << #valid << std::endl \
+              << "  parameter " << #param0 << "=" << param0 << std::endl; \
+    return;\
+  }
+
+
+#define validateNumericalVectorEqualsWithParams2(actual, valid, param0, param1) \
+  if (!tarch::la::equals(actual, valid)) { \
+    _errors++; \
+    _error = true; \
+    std::cerr << "  numerical vector equality test failed: " << actual << " instead of " << valid << std::endl \
+              << "  file: " << __FILE__ << " \t line: " << __LINE__ << std::endl \
+              << "  statement: " << #actual << "=="  << #valid << std::endl \
+              << "  parameter " << #param0 << "=" << param0 << #param1 << "=" << param1 << std::endl; \
+    return;\
+  }
+
+
+#define validateNumericalVectorEqualsWithParams3(actual, valid, param0, param1, param2) \
+  if (!tarch::la::equals(actual, valid)) { \
+    _errors++; \
+    _error = true; \
+    std::cerr << "  numerical vector equality test failed: " << actual << " instead of " << valid << std::endl \
+              << "  file: " << __FILE__ << " \t line: " << __LINE__ << std::endl \
+              << "  statement: " << #actual << "=="  << #valid << std::endl \
+              << "  parameter " << #param0 << "=" << param0 << #param1 << "=" << param1 << #param2 << "=" << param2 <<std::endl; \
+    return;\
+  }
+
 #endif /* VALIDATEMACROS_H_ */
