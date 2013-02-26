@@ -61,6 +61,10 @@ class peano::grid::UnrolledLevelEnumerator: public peano::grid::VertexEnumerator
      * additional dependence between two types.
      *
      * Both enumerators set the state of the adjacent cells to not-stationary.
+     *
+     * @param totalHeightOfSubtree This flag is used to do some assertions, and
+     *            the operation derives the static tree flags using this
+     *            property and relativeLevelOfThisEnumerator.
      */
     UnrolledLevelEnumerator(
       const Vector&                coarsestGridCellSize,
