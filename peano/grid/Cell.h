@@ -166,6 +166,10 @@ class peano::grid::Cell {
       bool          considerJoiningNodesToBeRemote
     ) const;
 
+    bool isAssignedToRemoteRank() const {
+      return false;
+    }
+
     #ifdef Parallel
     bool isAssignedToRemoteRank() const;
 
