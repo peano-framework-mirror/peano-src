@@ -53,13 +53,10 @@ template <class Vertex, class Cell, class EventHandle>
 void peano::grid::nodes::loops::CallDescendLoopBodyOnRegularRefinedPatch<Vertex,Cell,EventHandle>::operator() (const tarch::la::Vector<DIMENSIONS, int>& i) {
   logTraceInWith2Arguments( "operator()", i, _coarseLevel );
 
-  tarch::la::Vector<DIMENSIONS,int> offsetOfCoarseGridEnumerator;
-  tarch::la::Vector<DIMENSIONS,int> positionWithinNextCoarserCell;
-
   _fineGridEnumerator.setOffset(i*3);
   _coarseGridEnumerator.setOffset(i);
 
-  const int coarseGridCellIndex = _coarseGridEnumerator.lineariseCellIndex(offsetOfCoarseGridEnumerator);
+  const int coarseGridCellIndex = _coarseGridEnumerator.lineariseCellIndex(i);
 
   Cell& currentCell = _regularGridContainer.getCell(_coarseLevel,coarseGridCellIndex);
 
