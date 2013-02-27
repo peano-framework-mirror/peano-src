@@ -218,9 +218,6 @@ class peano::grid::Vertex {
      *
      * This operation is provided for the load vertex process. We recommend not
      * to use it for any PDE solver.
-     *
-     * Furthermore, it is nop if you compile without assertions, i.e. it then
-     * does not have any semantics anymore.
      */
     void rollbackRefinementOrEraseTriggered();
 

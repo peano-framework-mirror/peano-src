@@ -245,6 +245,8 @@ void peano::grid::Vertex<VertexData>::rollbackRefinementOrEraseTriggered() {
     _vertexData.setRefinementControl( VertexData::Refined );
   }
   #endif
+
+  _vertexData.setAdjacentCellsHeight( peano::grid::NotStationary );
 }
 
 
