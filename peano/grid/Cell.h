@@ -166,10 +166,6 @@ class peano::grid::Cell {
       bool          considerJoiningNodesToBeRemote
     ) const;
 
-    bool isAssignedToRemoteRank() const {
-      return false;
-    }
-
     #ifdef Parallel
     bool isAssignedToRemoteRank() const;
 
@@ -258,6 +254,10 @@ class peano::grid::Cell {
     void setRemoteCellWorkloadAndSubtreeFlags( const Cell& workerCell );
 
     bool thisSubtreeHoldsWorker() const;
+    #else
+    bool isAssignedToRemoteRank() const {
+      return false;
+    }
     #endif
 
     #ifdef Debug
