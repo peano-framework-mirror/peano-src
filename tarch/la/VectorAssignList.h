@@ -5,6 +5,7 @@
 
 
 #include "tarch/Assertions.h"
+#include <string>
 
 
 namespace tarch {

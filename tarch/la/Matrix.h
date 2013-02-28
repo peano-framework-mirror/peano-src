@@ -19,6 +19,10 @@ namespace tarch {
 #include "tarch/la/MatrixScalarOperations.h"
 
 
+#include <string>
+
+
+
 /**
  * Static (i.e. compiletime) sized matrix type.
  */

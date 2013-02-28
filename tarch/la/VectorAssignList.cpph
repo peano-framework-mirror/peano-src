@@ -1,3 +1,7 @@
+#include <sstream>
+
+
+
 template<int Size, typename Scalar>
 tarch::la::VectorAssignList<Size,Scalar> tarch::la::assignList (
   Vector<Size,Scalar>& vector
