@@ -145,3 +145,14 @@ std::string tarch::la::Vector<Size,Scalar>::toString() const {
   os << "]";
   return os.str();
 }
+
+
+template<int Size, typename Scalar>
+template <typename NewScalarType>
+tarch::la::Vector<Size,NewScalarType> tarch::la::Vector<Size,Scalar>::convertScalar() const {
+  tarch::la::Vector<Size,NewScalarType> result;
+  for ( int i=0; i < Size; i++ ) {
+    result._values[i] = _values[i];
+  }
+  return result;
+}

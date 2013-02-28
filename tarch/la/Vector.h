@@ -107,6 +107,9 @@ class tarch::la::Vector {
     Scalar & operator() (int index);
 
     std::string toString() const;
+
+    template <typename NewScalarType>
+    tarch::la::Vector<Size,NewScalarType> convertScalar() const;
 };
 
 
