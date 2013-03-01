@@ -21,6 +21,12 @@ namespace tarch {
     );
 
     template<int Rows, int Cols, int X, typename Scalar>
+    Matrix<Rows,Cols,Scalar> multiplyComponents (
+      const Matrix<Rows,X,Scalar>& lhs,
+      const Matrix<X,Cols,Scalar>& rhs
+    );
+
+    template<int Rows, int Cols, int X, typename Scalar>
     Matrix<Rows,Cols,Scalar> operator*(
       const Matrix<Rows,X,Scalar>& lhs,
       const Matrix<X,Cols,Scalar>& rhs

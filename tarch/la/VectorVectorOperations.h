@@ -74,16 +74,6 @@ namespace tarch {
     );
 
     /**
-     * Divides every component of the vectors with each other and returns
-     * the resulting vector.
-     */
-    template<int Size, typename Scalar>
-    Vector<Size,Scalar> operator/(
-      const Vector<Size,Scalar>&  lhs,
-      const Vector<Size,Scalar>&  rhs
-    );
-
-    /**
      * Performs the dot (=inner) product of two vectors.
      */
     template<int Size, typename Scalar>
