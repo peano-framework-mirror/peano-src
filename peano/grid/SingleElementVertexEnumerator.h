@@ -62,6 +62,8 @@ class peano::grid::SingleElementVertexEnumerator: public peano::grid::VertexEnum
     virtual peano::grid::CellFlags getCellFlags() const;
 
     virtual int cell(const LocalVertexIntegerIndex& localVertexNumber) const;
+
+    virtual bool overlaps(const Vector& offset, const Vector& size) const;
 };
 
 

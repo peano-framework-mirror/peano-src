@@ -86,6 +86,8 @@ class peano::grid::UnrolledAscendDescendLevelEnumerator: public peano::grid::Ver
      * Forward to UnrolledLevelEnumerator.
      */
     int lineariseVertexIndex( const LocalVertexIntegerIndex&  vertexPosition ) const;
+
+    virtual bool overlaps(const Vector& offset, const Vector& size) const;
 };
 
 

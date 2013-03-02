@@ -115,6 +115,8 @@ class peano::grid::UnrolledLevelEnumerator: public peano::grid::VertexEnumerator
     bool isVertexAtPatchBoundaryWithinRegularSubtree(const LocalVertexIntegerIndex& localVertexNumber) const;
 
     virtual int cell(const LocalVertexIntegerIndex& localVertexNumber) const;
+
+    virtual bool overlaps(const Vector& offset, const Vector& size) const;
 };
 
 

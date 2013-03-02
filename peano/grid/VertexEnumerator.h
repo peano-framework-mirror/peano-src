@@ -172,6 +172,13 @@ class peano::grid::VertexEnumerator {
      * Only needed within Peano 3.
      */
     virtual int cell(const LocalVertexIntegerIndex& localVertexNumber) const = 0;
+
+    /**
+     * A cell enumerator does represent a cell. This operation evaluates
+     * whether this cell overlaps with a voxel identified by offset with a
+     * given size.
+     */
+    virtual bool overlaps(const Vector& offset, const Vector& size) const = 0;
 };
 
 

@@ -245,3 +245,13 @@ peano::grid::CellFlags peano::grid::SingleLevelEnumerator::getCellFlags() const 
 int peano::grid::SingleLevelEnumerator::cell(const LocalVertexIntegerIndex& localVertexNumber) const {
   return 0;
 }
+
+
+bool peano::grid::SingleLevelEnumerator::overlaps(const Vector& offset, const Vector& size) const {
+  bool result = true;
+  for (int d=0; d<DIMENSIONS; d++) {
+    result &= tarch::la::smallerEquals( offset(d),         _domainOffset(d)+(_discreteOffset(d)+1.0)*_fineGridCellSize(d));
+    result &= tarch::la::greaterEquals( offset(d)+size(d), _domainOffset(d)+_discreteOffset(d)*_fineGridCellSize(d));
+  }
+  return result;
+}

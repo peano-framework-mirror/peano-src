@@ -115,3 +115,12 @@ int peano::grid::AscendDescendLevelEnumerator::cell(const LocalVertexIntegerInde
   return result;
 }
 
+
+bool peano::grid::AscendDescendLevelEnumerator::overlaps(const Vector& offset, const Vector& size) const {
+  bool result = true;
+  for (int d=0; d<DIMENSIONS; d++) {
+    result &= tarch::la::smallerEquals( offset(d),         _domainOffset(d)+3.0*_fineGridCellSize(d) );
+    result &= tarch::la::greaterEquals( offset(d)+size(d), _domainOffset(d) );
+  }
+  return result;
+}

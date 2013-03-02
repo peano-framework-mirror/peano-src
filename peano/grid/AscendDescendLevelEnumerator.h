@@ -20,8 +20,6 @@ namespace peano {
 /**
  * Ascend/Descend Enumerator
  *
- * This enumerator is needed in Peano 3.
- *
  * @author Tobias Weinzierl
  */
 class peano::grid::AscendDescendLevelEnumerator: public peano::grid::VertexEnumerator {
@@ -64,6 +62,11 @@ class peano::grid::AscendDescendLevelEnumerator: public peano::grid::VertexEnume
     virtual peano::grid::CellFlags getCellFlags() const;
 
     int cell(const LocalVertexIntegerIndex& localVertexNumber) const;
+
+    /**
+     * Refers to the coarse grid
+     */
+    virtual bool overlaps(const Vector& offset, const Vector& size) const;
 };
 
 
