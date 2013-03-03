@@ -20,10 +20,6 @@ int peano::grid::SingleLevelEnumerator::lineariseCellIndex( const LocalVertexInt
 int peano::grid::SingleLevelEnumerator::lineariseVertexIndex( const LocalVertexIntegerIndex& vertexPosition ) {
   int base   = 1;
   int result = 0;
-
-  #ifdef CompilerICC
-  #pragma unroll (DIMENSIONS)
-  #endif
   for (int d=0; d<DIMENSIONS; d++) {
     assertion1(vertexPosition(d)>=0,vertexPosition);
     assertion1(vertexPosition(d)<=3,vertexPosition);
@@ -138,12 +134,9 @@ peano::grid::SingleLevelEnumerator::Vector peano::grid::SingleLevelEnumerator::g
 
 peano::grid::SingleLevelEnumerator::Vector peano::grid::SingleLevelEnumerator::getVertexPosition(const LocalVertexIntegerIndex& localVertexNumber ) const {
   peano::grid::SingleLevelEnumerator::Vector result( _domainOffset );
-  #ifdef CompilerICC
-  #pragma unroll (DIMENSIONS)
-  #endif
   for(int d=0; d<DIMENSIONS;d++) {
-	double delta = localVertexNumber(d) + _discreteOffset(d);
-	result(d) += delta * _fineGridCellSize(d);
+    double delta = localVertexNumber(d) + _discreteOffset(d);
+	  result(d) += delta * _fineGridCellSize(d);
   }
   return result;
 }

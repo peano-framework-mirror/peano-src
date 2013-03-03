@@ -50,12 +50,9 @@ peano::grid::AscendDescendLevelEnumerator::Vector peano::grid::AscendDescendLeve
 
 peano::grid::AscendDescendLevelEnumerator::Vector peano::grid::AscendDescendLevelEnumerator::getVertexPosition(const LocalVertexIntegerIndex& localVertexNumber ) const {
   peano::grid::AscendDescendLevelEnumerator::Vector result( _domainOffset );
-  #ifdef CompilerICC
-  #pragma unroll (DIMENSIONS)
-  #endif
   for(int d=0; d<DIMENSIONS;d++) {
-	double delta = localVertexNumber(d);
-	result(d) += delta * _fineGridCellSize(d);
+    double delta = localVertexNumber(d);
+    result(d) += delta * _fineGridCellSize(d);
   }
   return result;
 }
@@ -105,9 +102,6 @@ peano::grid::CellFlags peano::grid::AscendDescendLevelEnumerator::getCellFlags()
 int peano::grid::AscendDescendLevelEnumerator::cell(const LocalVertexIntegerIndex& localVertexNumber) const {
   int result = 0;
   int base   = 1;
-  #ifdef CompilerICC
-  #pragma unroll (DIMENSIONS)
-  #endif
   for(int d=0; d<DIMENSIONS;d++) {
     result += localVertexNumber(d) * base;
     base   *= 3;
