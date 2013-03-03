@@ -16,7 +16,7 @@ tarch::logging::Log peano::heap::Heap<Data>::_log("peano::heap::Heap");
 
 template <class Data>
 peano::heap::Heap<Data>::Heap()
-  : _heapData(), _nextIndex(0)
+  : _heapData(), _freedHeapIndices(), _nextIndex(0)
   #ifdef Parallel
     , _mpiTagForBoundaryDataExchange(tarch::parallel::Node::reserveFreeTag("heap[boundary]"))
     , _mpiTagToExchangeJoinForkData(tarch::parallel::Node::reserveFreeTag("heap[join/fork]"))
@@ -84,28 +84,29 @@ int peano::heap::Heap<Data>::createData() {
   tarch::multicore::Lock lock(_dataSemaphore);
   #endif
 
-  int index = _nextIndex;
-  _nextIndex++;
-
-  if(_nextIndex < 0) {
-    logError("getInstance()", "Overflow of heap data index.");
-    exit(-1);
+  int index;
+  if (_freedHeapIndices.empty()) {
+    index = _nextIndex;
+    _nextIndex++;
+  }
+  else {
+    index = _freedHeapIndices.front();
+    _freedHeapIndices.pop_front();
   }
 
-  _heapData[index] = new std::vector<Data>();
+  assertionMsg(_heapData.find(index) == _heapData.end(), "heap entry does exist already.");
+  _heapData.insert( typename HeapContainer::value_type(index,new std::vector<Data>()) );
 
-  assertionMsg(_heapData.find(index) != _heapData.end(), "Insertion of Heapdata not successful.");
+  assertionMsg(_heapData.find(index) != _heapData.end(), "insertion of heap data not successful.");
   assertion(index >= 0);
 
-  _numberOfAllocatedHeapObjects++;
+  _numberOfAllocatedHeapObjects += 1.0;
 
-  if(_heapData.size() > _maximumNumberOfHeapObjects) {
-    _maximumNumberOfHeapObjects = (unsigned int) _heapData.size();
+  if(static_cast<int>(_heapData.size()) > _maximumNumberOfHeapObjects) {
+    _maximumNumberOfHeapObjects = static_cast<int>(_heapData.size());
   }
 
-
-  logTraceOutWith1Argument("createData()", index);
-
+  logTraceOutWith2Arguments("createData()", index, _numberOfAllocatedHeapObjects);
   return index;
 }
 
@@ -153,10 +154,7 @@ void peano::heap::Heap<Data>::deleteData(int index) {
   delete _heapData[index];
   _heapData.erase(index);
 
-  //Rollback index counter, if last index has been deleted
-  if(index == _nextIndex-1) {
-    _nextIndex--;
-  }
+  _freedHeapIndices.push_back(index);
 
   logTraceOut("deleteData(int)");
 }

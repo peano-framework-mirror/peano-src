@@ -6,6 +6,7 @@
 #include "peano/heap/records/MetaInformation.h"
 #include <map>
 #include <vector>
+#include <list>
 #include "tarch/logging/Log.h"
 #include "tarch/services/Service.h"
 
@@ -166,11 +167,14 @@ class peano::heap::Heap: public tarch::services::Service {
      */
     static tarch::logging::Log _log;
 
+    typedef std::map<int, std::vector<Data>*>  HeapContainer;
     /**
      * Map that holds all data that is stored on the heap
      * via this class.
      */
-    std::map<int, std::vector<Data>*> _heapData;
+    HeapContainer _heapData;
+
+    std::list<int>   _freedHeapIndices;
 
     /**
      * Stores the next available index. By now the indices
@@ -208,13 +212,13 @@ class peano::heap::Heap: public tarch::services::Service {
      * Stores the maximum number of heap objects that was stored
      * in this object at any time.
      */
-    unsigned int _maximumNumberOfHeapObjects;
+    int _maximumNumberOfHeapObjects;
 
     /**
      * Stores the number of heap objects that have been allocated within
      * this object during the program's runtime.
      */
-    int _numberOfAllocatedHeapObjects;
+    double _numberOfAllocatedHeapObjects;
 
     /**
      * Name for this heap object. Used for plotting statistics.
