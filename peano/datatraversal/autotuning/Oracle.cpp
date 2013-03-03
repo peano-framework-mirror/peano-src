@@ -154,7 +154,7 @@ int peano::datatraversal::autotuning::Oracle::parallelise(int problemSize, Metho
 
   #if defined(SharedMemoryParallelisation)
   const int key = getKey(askingMethod);
-  assertion(_oracles!=0);
+  assertionMsg(_oracles!=0, "forgot to initialise shared memory environment due to setOracle()?");
   assertion(key>=0);
   assertion(key<getTotalNumberOfOracles());
 
