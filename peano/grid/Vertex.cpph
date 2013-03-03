@@ -234,7 +234,6 @@ void peano::grid::Vertex<VertexData>::erase() {
 
 template <class VertexData>
 void peano::grid::Vertex<VertexData>::rollbackRefinementOrEraseTriggered() {
-  #ifdef Asserts
   assertion2( _vertexData.getRefinementControl()!=VertexData::Refining, toString(), "tried to call erase on vertex that was already unrefined" );
   assertion2( _vertexData.getRefinementControl()!=VertexData::Erasing, toString(), "tried to call erase on vertex that was already unrefined" );
 
@@ -244,7 +243,6 @@ void peano::grid::Vertex<VertexData>::rollbackRefinementOrEraseTriggered() {
   if (_vertexData.getRefinementControl()==VertexData::EraseTriggered) {
     _vertexData.setRefinementControl( VertexData::Refined );
   }
-  #endif
 
   _vertexData.setAdjacentCellsHeight( peano::grid::NotStationary );
 }
