@@ -72,6 +72,12 @@ namespace tarch {
      */
     template<int Size, typename Scalar>
     Scalar min (const Vector<Size,Scalar>& vector);
+
+
+    template<int Size, typename Scalar>
+    Vector<Size,Scalar> invertEntries (
+      const Vector<Size,Scalar>&  vector
+    );
   }
 }
 
