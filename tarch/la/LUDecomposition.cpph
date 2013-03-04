@@ -3,7 +3,6 @@ void tarch::la::lu (
   Matrix<Rows,Rows,Scalar>&  A,
   Vector<Rows,Scalar>&       pivots
 ) {
-  // Perform LU-decomposition
   for (int k=0; k < Rows; k++){
     int maxIndex = k;
     Scalar max = std::abs(A(k,k));
@@ -23,6 +22,26 @@ void tarch::la::lu (
       A(maxIndex,j) = temp;
     }
 
+    // Compute scaling elements
+    for (int i=k+1; i < Rows; i++){
+      A(i,k) /= A(k,k);
+    }
+
+    // Subtract contributions from each line
+    for (int i=k+1; i < Rows; i++){
+      for (int j=k+1; j < Rows; j++){
+        A(i,j) -= A(i,k) * A(k,j);
+      }
+    }
+  }
+}
+
+
+template<int Rows, typename Scalar>
+void tarch::la::lu (
+  Matrix<Rows,Rows,Scalar>&  A
+) {
+  for (int k=0; k < Rows; k++){
     // Compute scaling elements
     for (int i=k+1; i < Rows; i++){
       A(i,k) /= A(k,k);
