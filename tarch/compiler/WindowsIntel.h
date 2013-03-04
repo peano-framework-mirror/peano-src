@@ -49,6 +49,9 @@
  */
 #define CompilerICC
 
+#define CompilerHasSSE
+
+
 
 /**
  * Defines whether the statement
