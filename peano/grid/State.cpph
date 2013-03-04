@@ -333,7 +333,7 @@ void peano::grid::State<StateData>::mergeWithWorkerState(const peano::grid::Stat
       workerState._stateData.getMaxMeshWidth(d) > _stateData.getMaxMeshWidth(d) ? workerState._stateData.getMaxMeshWidth(d) : _stateData.getMaxMeshWidth(d)
     );
     _stateData.setMinMeshWidth(d,
-      workerState._stateData.getMaxMeshWidth(d) < _stateData.getMaxMeshWidth(d) ? workerState._stateData.getMaxMeshWidth(d) : _stateData.getMaxMeshWidth(d)
+      workerState._stateData.getMinMeshWidth(d) < _stateData.getMinMeshWidth(d) ? workerState._stateData.getMinMeshWidth(d) : _stateData.getMinMeshWidth(d)
     );
   }
 
