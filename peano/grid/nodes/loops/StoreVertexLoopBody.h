@@ -237,7 +237,11 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
      *
      * !!! Thread-safety
      *
-     * Should be thread safe, as writes to the output stream are synchronised anyway.
+     * Should be thread safe, as writes to the output stream are synchronised
+     * anyway. The operation basically does the analysed tree grammar and its
+     * behaviour is sketched below.
+     *
+     * @image html
      */
     void updateCoarseGridTreeHeightAttributes(
       int                                       positionInVertexArray,
@@ -256,7 +260,7 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
      * refine() in touchVertexFirstTime() and the code decides to refine
      * immediately.
      *
-     * @image html StoreVertexLoopBody.png
+     * @image html StoreVertexLoopBody_invalidateCoarseGridTreeHeightAttributesIfRefined.png
      *
      * In the example above let the grey block be instationary, the blue one is
      * a regular tree. Grey is visited before blue. Within the grey block, the
