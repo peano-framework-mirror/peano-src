@@ -241,7 +241,25 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
      * anyway. The operation basically does the analysed tree grammar and its
      * behaviour is sketched below.
      *
-     * @image html
+     * @image html StoreVertexLoopBody_updateCoarseGridTreeHeightAttributes.png
+     *
+     * This sketch stems from a regular grid for the unit square. The coloured
+     * cells are inside cells. The grid is regular within the domain but very
+     * adaptive outside. The red markers are the vertex flags (with h meaning
+     * hanging and -1 only stationary) and the blue markers are the resulting
+     * cell flags.
+     *
+     * We see that the blue markers results from a minimum over all adjacent
+     * vertex markers of a cell. And we see that this is not efficient, as the
+     * boundary cells on the coarsest levels are not treated as regular blocks
+     * but as stationary adaptive grids. We loose some efficiency here. In the
+     * ideal case, there should be (for this sketch) one subgrid of height
+     * three and no other regular patches.
+     *
+     * !!! Tuning
+     *
+     * As a consequence of the situation above, we do not restrict the -1
+     * markers.
      */
     void updateCoarseGridTreeHeightAttributes(
       int                                       positionInVertexArray,

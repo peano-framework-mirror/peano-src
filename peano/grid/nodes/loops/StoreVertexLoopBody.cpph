@@ -282,26 +282,28 @@ template <class Vertex, class Cell, class State, class VertexStack, class EventH
 void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStack,EventHandle, CellFlagsFromEnumerator >::updateCoarseGridTreeHeightAttributes(int positionInVertexArray, const tarch::la::Vector<DIMENSIONS,int>&  positionInLocalCell) {
   logTraceInWith3Arguments( "updateCoarseGridTreeHeightAttributes(int)", positionInVertexArray, positionInLocalCell, _fineGridVertices[positionInVertexArray].toString() );
   const peano::grid::CellFlags originalAnalysedValue = _fineGridVertices[positionInVertexArray].getCurrentAdjacentCellsHeight();
-  dfor2(k)
-    const bool takeThisCoarseVertexIntoAccount = peano::grid::SingleLevelEnumerator::doesCoarseGridVertexInfluenceFineGridVertex(k,positionInLocalCell+_fineGridPositionOfCell);
+//  if (originalAnalysedValue!=-1) {
+    dfor2(k)
+      const bool takeThisCoarseVertexIntoAccount = peano::grid::SingleLevelEnumerator::doesCoarseGridVertexInfluenceFineGridVertex(k,positionInLocalCell+_fineGridPositionOfCell);
 
-    if (takeThisCoarseVertexIntoAccount) {
-      peano::grid::CellFlags analysedValue = originalAnalysedValue;
+      if (takeThisCoarseVertexIntoAccount) {
+        peano::grid::CellFlags analysedValue = originalAnalysedValue;
 
-      if (analysedValue>= peano::grid::Leaf) {
-        inc(analysedValue);
-        if (
-          (_coarseGridVertices[ _coarseGridVerticesEnumerator(k)].getCurrentAdjacentCellsHeight() != peano::grid::Undefined ) &&
-          (_coarseGridVertices[ _coarseGridVerticesEnumerator(k)].getCurrentAdjacentCellsHeight() != analysedValue)
-        ) {
-          analysedValue = peano::grid::StationaryButIrregular;
+        if (analysedValue>= peano::grid::Leaf) {
+          inc(analysedValue);
+          if (
+            (_coarseGridVertices[ _coarseGridVerticesEnumerator(k)].getCurrentAdjacentCellsHeight() != peano::grid::Undefined ) &&
+            (_coarseGridVertices[ _coarseGridVerticesEnumerator(k)].getCurrentAdjacentCellsHeight() != analysedValue)
+          ) {
+            analysedValue = peano::grid::StationaryButIrregular;
+          }
         }
-      }
 
-      _coarseGridVertices[ _coarseGridVerticesEnumerator(k)].setCurrentAdjacentCellsHeight(analysedValue);
-      logDebug( "updateCoarseGridTreeHeightAttributes(int)", "updated coarse grid vertex " << k << " with " << analysedValue << " to " << _coarseGridVertices[ _coarseGridVerticesEnumerator(k)].toString() );
-    }
-  enddforx
+        _coarseGridVertices[ _coarseGridVerticesEnumerator(k)].setCurrentAdjacentCellsHeight(analysedValue);
+        logDebug( "updateCoarseGridTreeHeightAttributes(int)", "updated coarse grid vertex " << k << " with " << analysedValue << " to " << _coarseGridVertices[ _coarseGridVerticesEnumerator(k)].toString() );
+      }
+    enddforx
+//  }
   logTraceOut( "updateCoarseGridTreeHeightAttributes(int)" );
 }
 
