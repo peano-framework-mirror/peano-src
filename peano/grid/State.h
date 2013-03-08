@@ -71,6 +71,8 @@ class peano::grid::State {
      */
     static tarch::logging::Log  _log;
 
+    static const int IterationsInBetweenRebalancing;
+
     #ifdef Parallel
     /*
      * So, this flag either holds all the joining ranks or all the
@@ -187,6 +189,12 @@ class peano::grid::State {
      * @return Has the grid changed the cells state in the last iteration.
      */
     bool isGridStationary() const;
+
+    /**
+     * @return If grid is stationary and no rebalancing is happing though it
+     *         would be possible to rebalance.
+     */
+    bool isGridBalanced() const;
 
     /**
      * Reset state at begin of iteration

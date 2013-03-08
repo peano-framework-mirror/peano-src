@@ -15,6 +15,10 @@ tarch::logging::Log  peano::grid::State<StateData>::_log( "peano::grid::State" )
 
 
 template <class StateData>
+const int peano::grid::State<StateData>::IterationsInBetweenRebalancing(3);
+
+
+template <class StateData>
 peano::grid::State<StateData>::State():
   _stateData() {
   _stateData.setIsTraversalInverted(false);
@@ -104,6 +108,16 @@ bool peano::grid::State<StateData>::isGridStationary() const {
       && !_stateData.getHasErased()
       && !_stateData.getHasTriggeredRefinementForNextIteration()
       && !_stateData.getHasTriggeredEraseForNextIteration();
+}
+
+
+template <class StateData>
+bool peano::grid::State<StateData>::isGridBalanced() const {
+  #ifdef Parallel
+  return isGridStationary() && _iterationCounter > IterationsInBetweenRebalancing+1;
+  #else
+  return isGridStationary();
+  #endif
 }
 
 
@@ -538,7 +552,7 @@ bool peano::grid::State<StateData>::reduceStateAndCell() const {
 
 template <class StateData>
 bool peano::grid::State<StateData>::mayForkDueToLoadBalancing() const {
-  if (_iterationCounter<3) return false;
+  if (_iterationCounter<IterationsInBetweenRebalancing) return false;
 
   return _stateData.getLoadRebalancingState() == StateData::NoRebalancing ||
          _stateData.getLoadRebalancingState() == StateData::ForkTriggered;
@@ -547,7 +561,7 @@ bool peano::grid::State<StateData>::mayForkDueToLoadBalancing() const {
 
 template <class StateData>
 bool peano::grid::State<StateData>::mayJoinDueToLoadBalancing() const {
-  if (_iterationCounter<3) return false;
+  if (_iterationCounter<IterationsInBetweenRebalancing) return false;
 
   return _stateData.getLoadRebalancingState() == StateData::NoRebalancing ||
          _stateData.getLoadRebalancingState() == StateData::JoinTriggered;
