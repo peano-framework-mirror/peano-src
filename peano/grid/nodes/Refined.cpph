@@ -572,16 +572,21 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
   }
 
   zfor3(k,loopDirection2) 
-    const int   kScalar                  = SingleLevelEnumerator::lineariseCellIndex( k );
+    const int  kScalar = SingleLevelEnumerator::lineariseCellIndex( k );
     for (int d=0; d<DIMENSIONS; d++) {
       assertionEquals( descendingGridEnumerator[kScalar].getOffset()(d), k(d) );
     }
     updateRefinedEnumeratorsCellFlag(state,descendingGridVertices,descendingGridEnumerator[kScalar]);
     Cell&       currentCell              = descendingFineGridCells[kScalar];
     #if defined(Parallel) && defined(UseRecursionUnrollingOnRegularPatches)
-    const bool  mayEvaluateStaticSubtree = currentCell.isRefined() && !currentCell.isAssignedToRemoteRank();
+    const bool  mayEvaluateStaticSubtree =
+      currentCell.isRefined() &&
+      !currentCell.isAssignedToRemoteRank() &&
+      currentCell.isInside();
     #elif defined(UseRecursionUnrollingOnRegularPatches)
-    const bool  mayEvaluateStaticSubtree = currentCell.isRefined();
+    const bool  mayEvaluateStaticSubtree =
+      currentCell.isRefined() &&
+      currentCell.isInside();
     #endif
     if ( currentCell.isLeaf() ) {
       _leafNode.traverse( state, currentCell, descendingGridVertices, descendingGridEnumerator[kScalar], fineGridCell, fineGridVertices, fineGridVerticesEnumerator, k );
