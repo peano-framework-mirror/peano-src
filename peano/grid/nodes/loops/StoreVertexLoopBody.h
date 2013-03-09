@@ -258,8 +258,15 @@ class peano::grid::nodes::loops::StoreVertexLoopBody {
      *
      * !!! Tuning
      *
-     * As a consequence of the situation above, we do not restrict the -1
-     * markers.
+     * We can tune up the code significantly, if we realise the following two
+     * constraints:
+     *
+     * - Outer fine grid vertices may influence exclusively outer fine grid vertices.
+     * - Inner and boundary fine grid vertices influence coarser vertices.
+     *
+     * This is possible as the domain covered by Peano grids (the volume) grows
+     * montonically with each additional grid level, i.e. a grid of level k
+     * always covers at least the domain covered by a grid of level k-1.
      */
     void updateCoarseGridTreeHeightAttributes(
       int                                       positionInVertexArray,
