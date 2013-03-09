@@ -118,3 +118,14 @@ bool peano::grid::AscendDescendLevelEnumerator::overlaps(const Vector& offset, c
   }
   return result;
 }
+
+
+bool peano::grid::AscendDescendLevelEnumerator::isVertexAtPatchBoundaryWithinRegularSubtree(const LocalVertexIntegerIndex& localVertexNumber) const {
+  bool result = false;
+  for (int d=0; d<DIMENSIONS; d++) {
+    result |= localVertexNumber(d) == 0;
+    result |= localVertexNumber(d) == 3;
+  }
+  return result;
+}
+

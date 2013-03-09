@@ -183,3 +183,14 @@ bool peano::grid::UnrolledAscendDescendLevelEnumerator::overlaps(const Vector& o
   }
   return result;
 }
+
+
+bool peano::grid::UnrolledAscendDescendLevelEnumerator::isVertexAtPatchBoundaryWithinRegularSubtree(const LocalVertexIntegerIndex& localVertexNumber) const {
+  bool result = false;
+  for (int d=0; d<DIMENSIONS; d++) {
+    result |= localVertexNumber(d)+_discreteOffset(d) == 0;
+    assertionEquals(getCellsPerAxis(), getVerticesPerAxis()-1);
+    result |= localVertexNumber(d)+_discreteOffset(d) == getCellsPerAxis();
+  }
+  return result;
+}

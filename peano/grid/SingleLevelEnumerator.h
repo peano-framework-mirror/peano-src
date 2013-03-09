@@ -164,6 +164,8 @@ class peano::grid::SingleLevelEnumerator: public peano::grid::VertexEnumerator {
     virtual int cell(const LocalVertexIntegerIndex& localVertexNumber) const;
 
     virtual bool overlaps(const Vector& offset, const Vector& size) const;
+
+    virtual bool isVertexAtPatchBoundaryWithinRegularSubtree(const LocalVertexIntegerIndex& localVertexNumber) const;
 };
 
 

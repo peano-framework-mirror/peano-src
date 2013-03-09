@@ -88,6 +88,8 @@ class peano::grid::UnrolledAscendDescendLevelEnumerator: public peano::grid::Ver
     int lineariseVertexIndex( const LocalVertexIntegerIndex&  vertexPosition ) const;
 
     virtual bool overlaps(const Vector& offset, const Vector& size) const;
+
+    virtual bool isVertexAtPatchBoundaryWithinRegularSubtree(const LocalVertexIntegerIndex& localVertexNumber) const;
 };
 
 

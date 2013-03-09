@@ -179,6 +179,14 @@ class peano::grid::VertexEnumerator {
      * given size.
      */
     virtual bool overlaps(const Vector& offset, const Vector& size) const = 0;
+
+    /**
+     * Each enumerator corresponds to a patch. This one might be trivial, i.e.
+     * have exactly one cell, it might be the standard @f$ 3^d @f$ patch, or it
+     * might be bigger due to recursion unrolling. Anyway, this operation tells
+     * you whether the vertex at localVertexNumber is at the patch boundary.
+     */
+    virtual bool isVertexAtPatchBoundaryWithinRegularSubtree(const LocalVertexIntegerIndex& localVertexNumber) const = 0;
 };
 
 

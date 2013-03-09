@@ -148,3 +148,8 @@ bool peano::grid::SingleElementVertexEnumerator::overlaps(const Vector& offset, 
   }
   return result;
 }
+
+
+bool peano::grid::SingleElementVertexEnumerator::isVertexAtPatchBoundaryWithinRegularSubtree(const LocalVertexIntegerIndex& localVertexNumber) const {
+  return true;
+}
