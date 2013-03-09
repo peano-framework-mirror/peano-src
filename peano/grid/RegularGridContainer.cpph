@@ -53,7 +53,7 @@ std::string peano::grid::RegularGridContainer<Vertex,Cell>::toString() const {
   }
   result << ")";
 
-  return result.str();;
+  return result.str();
 }
 
 
