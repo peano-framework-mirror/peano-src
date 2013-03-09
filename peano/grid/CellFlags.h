@@ -34,6 +34,12 @@ namespace peano {
       peano::grid::CellFlags min( const peano::grid::CellFlags& lhs, const peano::grid::CellFlags& rhs);
 
       void inc( peano::grid::CellFlags& value);
+
+      /**
+       * Creates a legend of all the cell flag states. Used by the
+       * visualisation, e.g., to plot legends.
+       */
+      std::string getCellFlagsLegend();
   }
 }
 

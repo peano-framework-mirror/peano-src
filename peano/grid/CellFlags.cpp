@@ -38,3 +38,41 @@ peano::grid::CellFlags peano::grid::min( const peano::grid::CellFlags& lhs, cons
 void peano::grid::inc( peano::grid::CellFlags& value) {
   value = static_cast<peano::grid::CellFlags>( static_cast<int>(value)+1 );
 }
+
+
+
+
+std::string peano::grid::getCellFlagsLegend() {
+  std::ostringstream msg;
+  msg << "adjacent-trees("
+
+      << static_cast<int>(NotStationaryDueToInvalidation)
+      <<  "="
+      << toString(NotStationaryDueToInvalidation)
+
+      << ","
+      << static_cast<int>(NotStationary)
+      << "="
+      << toString(NotStationary)
+
+      << ","
+      << static_cast<int>(StationaryWithParallelBoundary)
+      << "="
+      << toString(StationaryWithParallelBoundary)
+
+      << ","
+      << static_cast<int>(StationaryButIrregular)
+      << "="
+      << toString(StationaryButIrregular)
+
+      << ","
+      << static_cast<int>(Leaf)
+      << "="
+      << toString(Leaf)
+
+      << ",>"
+      << static_cast<int>(Leaf)
+      << "=regular-subtree)";
+  return msg.str();
+}
+
