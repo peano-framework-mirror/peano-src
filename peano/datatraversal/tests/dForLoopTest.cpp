@@ -95,7 +95,7 @@ void peano::datatraversal::tests::dForLoopTest::testParallelReduction() {
 
   TestLoopBody testLoopBody;
   TestLoopBody::resetGlobalCounter();
-  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize);
+  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize, false);
 
   std::vector<peano::datatraversal::dForRange> ranges = loop.createRangesVector(range, grainSize);
 
