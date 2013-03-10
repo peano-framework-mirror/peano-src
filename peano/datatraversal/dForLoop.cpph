@@ -24,38 +24,54 @@ template <class LoopBody>
 peano::datatraversal::dForLoop<LoopBody>::dForLoop(
   const tarch::la::Vector<DIMENSIONS,int>&  range,
   LoopBody&                                 body,
-  int                                       grainSize
+  int                                       grainSize,
+  bool                                      useSixPowerDColouring
 ) {
 	assertion( grainSize >= 0 );
 	if (grainSize>0) {
     #ifdef SharedTBB
-      logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "tbb" );
+	  if (useSixPowerDColouring) {
+	    assertionMsg( "dForLoop(...)", "not implemented yet" );
+	  }
+	  else {
+      logTraceInWith4Arguments( "dForLoop(...)", range, grainSize, "tbb", "embarassingly parallel" );
       dForLoopInstance loopInstance(body);
-	  	tbb::parallel_reduce(
-  		  dForRange( range, grainSize ),
-  		  loopInstance
-  		);
+      tbb::parallel_reduce(
+        dForRange( range, grainSize ),
+        loopInstance
+      );
+	  }
     #elif SharedOMP
-	  	logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "omp" );
-		
-	  	dForLoopInstance loopInstance(body);
+    if (useSixPowerDColouring) {
+      assertionMsg( "dForLoop(...)", "not implemented yet" );
+    }
+    else {
+      logTraceInWith4Arguments( "dForLoop(...)", range, grainSize, "omp", "embarassingly parallel" );
 
-	  	std::vector<dForRange> ranges = createRangesVector(range, grainSize);
+      dForLoopInstance loopInstance(body);
+
+      std::vector<dForRange> ranges = createRangesVector(range, grainSize);
 
       #pragma omp parallel for schedule(dynamic, 1) firstprivate(loopInstance)
       for( int i=0; i < (int)(ranges.size()); i++ ){
         loopInstance(ranges[i]);
       }
+    }
     #elif SharedCobra
-      logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "cobra" );
+      if (useSixPowerDColouring) {
+        assertionMsg( "dForLoop(...)", "not implemented yet" );
+      }
+      else {
+        logTraceInWith4Arguments( "dForLoop(...)", range, grainSize, "cobra", "embarassingly parallel" );
 
-      tarch::multicore::cobra::Core::getInstance().getScheduler().call([&](::cobra::continuator& ctr) {
-        realiseParallelForAsTaskBipartitioning(
-          peano::datatraversal::dForRange( range, grainSize ),
-          ctr,
-          dForLoopInstance(body)
-        );
-      });
+        tarch::multicore::cobra::Core::getInstance().getScheduler().call([&](::cobra::continuator& ctr) {
+          realiseParallelForAsTaskBipartitioning(
+            peano::datatraversal::dForRange( range, grainSize ),
+            ctr,
+            dForLoopInstance(body)
+          );
+        });
+      }
     #else
 		logTraceInWith3Arguments( "dForLoop(...)", range, grainSize, "no-parallelisation" );
 		dfor(i,range) {

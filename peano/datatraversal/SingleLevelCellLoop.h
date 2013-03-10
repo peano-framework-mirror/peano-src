@@ -36,7 +36,8 @@ class peano::datatraversal::SingleLevelCellLoop {
     void runParallel(
       LoopBody&                                 loopBody,
       const tarch::la::Vector<DIMENSIONS,int>&  range,
-      int                                       grainSize
+      int                                       grainSize,
+      bool                                      useSixPowerDColouring
     );
 
      class dForLoopInstance {
@@ -99,7 +100,8 @@ class peano::datatraversal::SingleLevelCellLoop {
     SingleLevelCellLoop(
       const tarch::la::Vector<DIMENSIONS,int>&  range,
       LoopBody&                                 loopBody,
-      int                                       grainSize
+      int                                       grainSize,
+      bool                                      useSixPowerDColouring
     );
 
     /**

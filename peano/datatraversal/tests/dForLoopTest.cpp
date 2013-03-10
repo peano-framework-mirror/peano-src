@@ -38,7 +38,7 @@ void peano::datatraversal::tests::dForLoopTest::testCreateRangesVectorGrainSize1
   int grainSize = 1;
 
   TestLoopBody testLoopBody;
-  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize);
+  peano::datatraversal::dForLoop<TestLoopBody> loop(range, testLoopBody, grainSize, false);
 
   std::vector<peano::datatraversal::dForRange> ranges = loop.createRangesVector(range, grainSize);
 

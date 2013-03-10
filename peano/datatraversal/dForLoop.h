@@ -187,7 +187,8 @@ class peano::datatraversal::dForLoop {
     dForLoop(
       const tarch::la::Vector<DIMENSIONS,int>&  range,
       LoopBody&                                 body,
-      int                                       grainSize
+      int                                       grainSize,
+      bool                                      useSixPowerDColouring
     );
 };
 

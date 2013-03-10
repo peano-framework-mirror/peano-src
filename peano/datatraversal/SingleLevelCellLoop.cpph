@@ -7,13 +7,14 @@ template <class LoopBody>
 peano::datatraversal::SingleLevelCellLoop<LoopBody>::SingleLevelCellLoop(
   const tarch::la::Vector<DIMENSIONS,int>&  range,
   LoopBody&                                 loopBody,
-  int                                       grainSize
+  int                                       grainSize,
+  bool                                      useSixPowerDColouring
 ) {
   assertion( tarch::la::volume(range)!=0 );
 
   #if defined(SharedMemoryParallelisation)
   if (grainSize>0 && tarch::la::volume(range)>1 ) {
-    runParallel(loopBody,range,grainSize);
+    runParallel(loopBody,range,grainSize,useSixPowerDColouring);
   }
   else {
     runSequentially(loopBody,range);
@@ -39,10 +40,15 @@ template <class LoopBody>
 void peano::datatraversal::SingleLevelCellLoop<LoopBody>::runParallel(
   LoopBody&                                 loopBody,
   const tarch::la::Vector<DIMENSIONS,int>&  range,
-  int                                       grainSize
+  int                                       grainSize,
+  bool                                      useSixPowerDColouring
 ) {
   for (int d=0; d<DIMENSIONS; d++) {
     assertion2( range(d)>=2, range, grainSize );
+  }
+
+  if (useSixPowerDColouring) {
+    assertionMsg( false, "not implemented yet" );
   }
 
   dfor2(k)

@@ -6,7 +6,7 @@
 #include <sstream>
 
 
-peano::MappingSpecification::MappingSpecification(peano::MappingSpecification::Manipulates manipulates_, bool multithreading_, bool restartable_):
+peano::MappingSpecification::MappingSpecification(peano::MappingSpecification::Manipulates manipulates_, peano::MappingSpecification::Multithreading multithreading_, bool restartable_):
   manipulates(manipulates_),
   multithreading(multithreading_),
   restartable(restartable_) {
@@ -29,8 +29,18 @@ std::string peano::MappingSpecification::toString() const {
       msg << "whole tree";
       break;
   }
-  msg << ",multithreading=" << multithreading
-      << ",restartable=" << restartable
+  msg << ",multithreading=";
+  switch (multithreading) {
+    case SERIAL:
+      msg << "serial";
+      break;
+    case AVOID_FINE_GRID_RACES:
+      msg << "avoid-fine-grid-races";
+      break;
+    case AVOID_COARSE_GRID_RACES:
+      msg << "avoid-coarse-grid-races";
+  }
+  msg << ",restartable=" << restartable
       << ")";
   return msg.str();
 }
@@ -45,7 +55,11 @@ peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, co
     (rhs.manipulates==peano::MappingSpecification::ONLY_LEAVES || lhs.manipulates==peano::MappingSpecification::ONLY_LEAVES) ? peano::MappingSpecification::ONLY_LEAVES :
     peano::MappingSpecification::NOP;
 
-  bool multithreading = lhs.multithreading && rhs.multithreading;
+  peano::MappingSpecification::Multithreading multithreading =
+    (rhs.multithreading==peano::MappingSpecification::SERIAL || lhs.multithreading==peano::MappingSpecification::SERIAL) ? peano::MappingSpecification::SERIAL :
+    (rhs.multithreading==peano::MappingSpecification::AVOID_COARSE_GRID_RACES || lhs.multithreading==peano::MappingSpecification::AVOID_COARSE_GRID_RACES) ? peano::MappingSpecification::AVOID_COARSE_GRID_RACES :
+    peano::MappingSpecification::AVOID_FINE_GRID_RACES;
+
   bool restartable    = lhs.restartable    && rhs.restartable;
 
   peano::MappingSpecification result(manipulates,multithreading,restartable);
@@ -55,5 +69,5 @@ peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, co
 
 
 peano::MappingSpecification peano::MappingSpecification::getMostGeneralSpecification() {
-  return MappingSpecification(NOP,true,true);
+  return MappingSpecification(NOP,peano::MappingSpecification::AVOID_FINE_GRID_RACES,true);
 }

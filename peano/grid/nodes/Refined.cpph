@@ -360,7 +360,8 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
         FOUR_POWER_D,
         peano::datatraversal::autotuning::SetCounter
-      )
+      ),
+      false
     );
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::SetCounter);
   #if !defined(Asserts)
