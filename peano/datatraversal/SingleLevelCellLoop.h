@@ -44,9 +44,13 @@ class peano::datatraversal::SingleLevelCellLoop {
        private:
          LoopBody                                 _loopBody;
          const tarch::la::Vector<DIMENSIONS,int>  _offset;
+         /**
+          * Should be set to 2 for @f$ 2^d @f$ colouring.
+          */
+         const int                                _padding;
 
        public:
-         dForLoopInstance( const LoopBody& loopBody, const tarch::la::Vector<DIMENSIONS,int>& offset );
+         dForLoopInstance( const LoopBody& loopBody, const tarch::la::Vector<DIMENSIONS,int>& offset, int padding );
 
          #if defined(SharedTBB)
          typedef tbb::split   SplitFlag;
