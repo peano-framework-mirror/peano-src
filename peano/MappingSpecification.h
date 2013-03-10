@@ -23,8 +23,8 @@ namespace peano {
 ||             || ONLY_LEAVES | Algorithm's semantics is preserved, if Peano kicks out the whole function call for refined vertices of cells that have solely refined vertices around them.
 ||             || WHOLE_TREE  | No events are eliminated.
 || multithreading || SERIAL | Do not run these operation in parallel on a shared memory machine. Application hence doesn't need semaphores.
-||                || AVOID_FINE_GRID_RACES  | Peano can try to speed up the application due to multithreading. It ensures that events such as
-||                || AVOID_COARSE_GRID_RACES  | Peano can try to speed up the application due to multithreading.
+||                || AVOID_FINE_GRID_RACES  | Peano can try to speed up the application due to multithreading. It ensures that events are invoked such that the coarse grid data (of enterCell, e.g.) is not shared with another thread. Is stronger than AVOID_COARSE_GRID_RACES, i.e. ensures this data consistency as well.
+||                || AVOID_COARSE_GRID_RACES  | Peano can try to speed up the application due to multithreading. However, Peano ensures that events are invoked such that the fine grid data (of enterCell, e.g.) is not shared with another thread.
 || restartable    || false | May not try to recover if core fails.
 ||                || true  | If the operation is deployed to a thread of its own and this thread creashes, Peano may reexecute this operation. Consequently, some operations might be called multiple times due to a hardware failure, but the code is resiliency safe, i.e. does not crash due to simple hardware errors.
  *
