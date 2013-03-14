@@ -26,8 +26,20 @@ namespace peano {
   namespace heap {
     template<class Data>
     class Heap;
+
+    /**
+     * Flags to specify which kind of message is sent or
+     * received.
+     */
+    enum MessageType {
+      NeighbourCommunication,
+      ForkOrJoinCommunication,
+      MasterWorkerCommunication
+    };
   }
 }
+
+
 
 
 /**
@@ -150,6 +162,12 @@ class peano::heap::Heap: public tarch::services::Service {
        */
       int             _rank;
 
+      /**
+       * Used to differentiate between neighbour communication, master-worker
+       * communication and fork/join communication messages.
+       */
+//      int             _mpiTag;
+
       #if defined(Parallel) && defined(ParallelExchangePackedRecords)
       typedef typename Data::Packed  MPIData;
       #else
@@ -188,15 +206,18 @@ class peano::heap::Heap: public tarch::services::Service {
     /**
      * MPI tag used for sending data.
      */
-    int _mpiTagForBoundaryDataExchange;
-    int _mpiTagToExchangeJoinForkData;
+    int _mpiTagForNeighbourDataExchange;
+    int _mpiTagForMasterWorkerDataExchange;
+    int _mpiTagToExchangeForkJoinData;
     #endif
 
-    std::vector<SendReceiveTask> _synchronousSendTasks;
-    std::vector<SendReceiveTask> _asynchronousSendTasks;
+    std::vector<SendReceiveTask> _neighbourDataSendTasks;
+    std::vector<SendReceiveTask> _masterWorkerDataSendTasks;
+    std::vector<SendReceiveTask> _forkJoinDataSendTasks;
 
-    std::vector<SendReceiveTask> _receiveDeployTasks[2];
-    std::vector<SendReceiveTask> _synchronousReceiveTasks;
+    std::vector<SendReceiveTask> _neighbourDataReceiveTasks[2];
+    std::vector<SendReceiveTask> _masterWorkerDataReceiveTasks;
+    std::vector<SendReceiveTask> _forkJoinDataReceiveTasks;
 
     /**
      * Is either 0 or 1 and identifies which element of _receiveDeployTasks
@@ -226,7 +247,7 @@ class peano::heap::Heap: public tarch::services::Service {
     std::string _name;
 
     /**
-     * Shall the deploy buffer be read in reverse order?
+     * Shall the deploy buffer data be read in reverse order?
      *
      * Usually, the elements of the deploy buffer are delivered in reverse
      * order compared to the order they are received. See the class
@@ -236,10 +257,10 @@ class peano::heap::Heap: public tarch::services::Service {
      * the heap, this flag has to be set to false.
      *
      * As a consequence, this flag is by default true. If you finishedToSendOrReceiveHeapData()
-     * and the content of the receive buffer is moved to the deploy buffer (due
+     * and the content of the receive buffer is moved to the buffer (due
      * to a transition of _currentReceiveBuffer to 1 or 0, respectively), this
      * flag also is set true. If no switching is performed in
-     * relesaseMessages() as the deploy buffer still was filled but the receive
+     * relesaseMessages() as the buffer still was filled but the receive
      * buffer was empty, solely this flag is inverted.
      */
     bool  _readDeployBufferInReverseOrder;
@@ -264,10 +285,10 @@ class peano::heap::Heap: public tarch::services::Service {
      */
     void plotStatistics();
 
-    int findMessageFromRankInDeployBuffer(int ofRank) const;
+    int findMessageFromRankInNeighbourDataDeployBuffer(int ofRank) const;
 
     /**
-     * Find Message in Synchronous Buffer
+     * Find Message in Buffer for Master Worker or Fork Join Data
      *
      * !!! Realisation Details
      *
@@ -286,7 +307,7 @@ class peano::heap::Heap: public tarch::services::Service {
      *
      * @return -1 if no message found
      */
-    int findMessageFromRankInSynchronousBuffer(int ofRank);
+    int findMessageFromRankInMasterWorkerOrForkJoinDataBuffer(int ofRank, std::vector<SendReceiveTask>& tasks);
 
     void removeMessageFromBuffer(int messageNumber, std::vector<SendReceiveTask>& tasks);
 
@@ -356,7 +377,7 @@ class peano::heap::Heap: public tarch::services::Service {
       int                                           fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  position,
       int                                           level,
-      bool                                          isExchangedSynchronously
+      MessageType                                   messageType
     );
 
     void sendData(
@@ -364,25 +385,29 @@ class peano::heap::Heap: public tarch::services::Service {
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS, double>&  position,
       int                                           level,
-      bool                                          isExchangedSynchronously
+      MessageType                                   messageType
     );
     #endif
 
-    std::vector< Data > receiveAsynchronousData(
+    std::vector< Data > receiveNeighbourData(
       int fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  position,
-      int                                           level,
-      bool                                          isExchangedSynchronously
+      int                                           level
     );
 
-    std::vector< Data > receiveSynchronousData(
+    std::vector< Data > receiveMasterWorkerOrForkJoinData(
       int fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  position,
       int                                           level,
-      bool                                          isExchangedSynchronously
+      MessageType                                   messageType
     );
 
     void receiveDanglingMessages(int tag, std::vector<SendReceiveTask>& taskQueue);
+
+    /**
+     * Returns the correct MPI tag for the given message type.
+     */
+    int getTagForMessageType(MessageType messageType);
 
   public:
     /**
@@ -474,7 +499,7 @@ class peano::heap::Heap: public tarch::services::Service {
      * once.
      */
     #if !defined(Asserts)
-    void sendData(int index, int toRank, bool isExchangedSynchronously);
+    void sendData(int index, int toRank, MessageType messageType);
     #else
     /**
      * @see Heap
@@ -484,7 +509,7 @@ class peano::heap::Heap: public tarch::services::Service {
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS, double>&  position,
       int                                           level,
-      bool                                          isExchangedSynchronously
+      MessageType                                   messageType
     );
     #endif
 
@@ -502,7 +527,7 @@ class peano::heap::Heap: public tarch::services::Service {
      * is not const as it frees data of the local buffers.
      */
     #if !defined(Asserts)
-    std::vector< Data > receiveData(int fromRank, bool isExchangedSynchronously);
+    std::vector< Data > receiveData(int fromRank, MessageType messageType);
     #else
     /**
      * @see Heap
@@ -512,7 +537,7 @@ class peano::heap::Heap: public tarch::services::Service {
       int                                           fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  position,
       int                                           level,
-      bool                                          isExchangedSynchronously
+      MessageType                                   messageType
     );
     #endif
 
@@ -521,8 +546,10 @@ class peano::heap::Heap: public tarch::services::Service {
      */
     virtual void receiveDanglingMessages();
 
-    int getSizeOfReceiveBuffer() const;
+    int getSizeOfForkJoinDataBuffer() const;
+    int getSizeOfMasterWorkerDataBuffer() const;
     int getSizeOfDeployBuffer() const;
+    int getSizeOfReceiveBuffer() const;
     int getSizeOfSendBuffer() const;
 
     std::string toString() const;
