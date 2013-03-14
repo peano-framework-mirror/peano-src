@@ -301,6 +301,9 @@ void peano::grid::nodes::loops::StoreVertexLoopBody<Vertex,Cell,State,VertexStac
 
       if (
         !_fineGridVertices[positionInVertexArray].isOutside() ||
+        #ifdef Parallel
+        _fineGridVertices[positionInVertexArray].isAdjacentToRemoteRank() ||
+        #endif
         _coarseGridVertices[ _coarseGridVerticesEnumerator(k)].isOutside()
       ) {
         _coarseGridVertices[ _coarseGridVerticesEnumerator(k)].setCurrentAdjacentCellsHeight(analysedValue);
