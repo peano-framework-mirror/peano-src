@@ -55,8 +55,6 @@ class peano::parallel::Partitioner {
     static void initDatatypes();
     static void shutdownDatatypes();
 
-    static tarch::la::Vector<DIMENSIONS,double> getDomainSizeOfForkMessage( const peano::parallel::messages::ForkMessage& forkMessage );
-
     /**
      * Construct partitioner
      *

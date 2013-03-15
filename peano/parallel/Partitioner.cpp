@@ -36,18 +36,11 @@ void peano::parallel::Partitioner::shutdownDatatypes() {
 }
 
 
-tarch::la::Vector<DIMENSIONS,double> peano::parallel::Partitioner::getDomainSizeOfForkMessage( const peano::parallel::messages::ForkMessage& forkMessage ) {
-  tarch::la::Vector<DIMENSIONS,double> result;
-
-  for (int d=0; d<DIMENSIONS; d++) {
-    result(d) = forkMessage.getNumberOfGridPoints(d)-1;
-    result(d) *= forkMessage.getH(d);
-  }
-  return result;
-}
 
 
 tarch::logging::Log peano::parallel::Partitioner::_log( "peano::parallel::Partitioner" );
+
+
 
 peano::parallel::Partitioner::Partitioner( const std::bitset<THREE_POWER_D>& localCellsOfPatch ):
   _ranks(),
@@ -121,10 +114,8 @@ void peano::parallel::Partitioner::sendForkMessages(
       peano::parallel::messages::ForkMessage message;
 
       message.setH(h);
-      message.setIsForkOfExistingDatastructure(true);
-      #ifdef Debug
-      message.setNumberOfGridPoints(2);
-      #endif
+      message.setPositionOfFineGridCellRelativeToCoarseGridCell(k);
+
       std::bitset<DIMENSIONS> evenFlags = bitfieldOfCoarseLevelLevel;
       for (int d=0; d<DIMENSIONS; d++) {
         if (k(d)==1) evenFlags.flip(d);
