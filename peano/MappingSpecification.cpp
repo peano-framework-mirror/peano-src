@@ -19,25 +19,25 @@ std::string peano::MappingSpecification::toString() const {
 
   msg << "(manipulates=";
   switch (manipulates) {
-    case NOP:
+    case Nop:
       msg << "nop";
       break;
-    case ONLY_LEAVES:
+    case OnlyLeaves:
       msg << "only leaves";
       break;
-    case WHOLE_TREE:
+    case WholeTree:
       msg << "whole tree";
       break;
   }
   msg << ",multithreading=";
   switch (multithreading) {
-    case SERIAL:
+    case Serial:
       msg << "serial";
       break;
-    case AVOID_FINE_GRID_RACES:
+    case AvoidFineGridRaces:
       msg << "avoid-fine-grid-races";
       break;
-    case AVOID_COARSE_GRID_RACES:
+    case AvoidCoarseGridRaces:
       msg << "avoid-coarse-grid-races";
   }
   msg << ",restartable=" << restartable
@@ -51,14 +51,14 @@ peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, co
   logTraceInWith2Arguments("operator&()", lhs.toString(), rhs.toString() );
 
   peano::MappingSpecification::Manipulates manipulates =
-    (rhs.manipulates==peano::MappingSpecification::WHOLE_TREE  || lhs.manipulates==peano::MappingSpecification::WHOLE_TREE)  ? peano::MappingSpecification::WHOLE_TREE  :
-    (rhs.manipulates==peano::MappingSpecification::ONLY_LEAVES || lhs.manipulates==peano::MappingSpecification::ONLY_LEAVES) ? peano::MappingSpecification::ONLY_LEAVES :
-    peano::MappingSpecification::NOP;
+    (rhs.manipulates==peano::MappingSpecification::WholeTree  || lhs.manipulates==peano::MappingSpecification::WholeTree)  ? peano::MappingSpecification::WholeTree  :
+    (rhs.manipulates==peano::MappingSpecification::OnlyLeaves || lhs.manipulates==peano::MappingSpecification::OnlyLeaves) ? peano::MappingSpecification::OnlyLeaves :
+    peano::MappingSpecification::Nop;
 
   peano::MappingSpecification::Multithreading multithreading =
-    (rhs.multithreading==peano::MappingSpecification::SERIAL || lhs.multithreading==peano::MappingSpecification::SERIAL) ? peano::MappingSpecification::SERIAL :
-    (rhs.multithreading==peano::MappingSpecification::AVOID_COARSE_GRID_RACES || lhs.multithreading==peano::MappingSpecification::AVOID_COARSE_GRID_RACES) ? peano::MappingSpecification::AVOID_COARSE_GRID_RACES :
-    peano::MappingSpecification::AVOID_FINE_GRID_RACES;
+    (rhs.multithreading==peano::MappingSpecification::Serial || lhs.multithreading==peano::MappingSpecification::Serial) ? peano::MappingSpecification::Serial :
+    (rhs.multithreading==peano::MappingSpecification::AvoidCoarseGridRaces || lhs.multithreading==peano::MappingSpecification::AvoidCoarseGridRaces) ? peano::MappingSpecification::AvoidCoarseGridRaces :
+    peano::MappingSpecification::AvoidFineGridRaces;
 
   bool restartable    = lhs.restartable    && rhs.restartable;
 
@@ -69,5 +69,5 @@ peano::MappingSpecification operator&(const peano::MappingSpecification& lhs, co
 
 
 peano::MappingSpecification peano::MappingSpecification::getMostGeneralSpecification() {
-  return MappingSpecification(NOP,peano::MappingSpecification::AVOID_FINE_GRID_RACES,true);
+  return MappingSpecification(Nop,peano::MappingSpecification::AvoidFineGridRaces,true);
 }
