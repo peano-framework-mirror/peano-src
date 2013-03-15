@@ -321,6 +321,11 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     );
 
     logDebug( "updateCellsParallelStateAfterLoadForRootOfDeployedSubtree()", "send cell " << fineGridCell.toString() << " to rank " << currentWorker );
+    coarseGridCell.send(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+    dfor2(k)
+      logDebug( "updateCellsParallelStateAfterLoadForRootOfDeployedSubtree()", "send vertex " << fineGridVertices[ fineGridVerticesEnumerator(k) ].toString() << " to rank " << currentWorker );
+      coarseGridVertices[ coarseGridVerticesEnumerator(k) ].send(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+    enddforx
     fineGridCell.send(currentWorker,peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
     dfor2(k)
       logDebug( "updateCellsParallelStateAfterLoadForRootOfDeployedSubtree()", "send vertex " << fineGridVertices[ fineGridVerticesEnumerator(k) ].toString() << " to rank " << currentWorker );
@@ -355,7 +360,13 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
         enddforx
         logDebug( "updateCellsParallelStateAfterLoadIfStateIsForking(...)", "- cell: " << fineGridCell.toString() );
 
-        _eventHandle.prepareCopyToRemoteNode(fineGridCell,*p);
+        _eventHandle.prepareCopyToRemoteNode(
+          fineGridCell,
+          *p,
+          fineGridVerticesEnumerator.getCellCenter(),
+          fineGridVerticesEnumerator.getCellSize(),
+          fineGridVerticesEnumerator.getLevel()
+        );
 
         peano::parallel::JoinDataBufferPool::getInstance().sendCell(fineGridCell,adjacencyBitset,*p);
 
@@ -382,7 +393,13 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
             // this vertex after this iteration. And if I switch a vertex to outside, it has to be invalidated
             // before (see assertion).
             fineGridVertices[ fineGridVerticesEnumerator(k) ].invalidateAdjacentCellInformation();
-            _eventHandle.prepareCopyToRemoteNode(fineGridVertices[fineGridVerticesEnumerator(k)],*p);
+            _eventHandle.prepareCopyToRemoteNode(
+              fineGridVertices[fineGridVerticesEnumerator(k)],
+              *p,
+              fineGridVerticesEnumerator.getVertexPosition(k),
+              fineGridVerticesEnumerator.getCellSize(),
+              fineGridVerticesEnumerator.getLevel()
+            );
             peano::parallel::JoinDataBufferPool::getInstance().sendVertex(fineGridVertices[fineGridVerticesEnumerator(k)],*p);
             logDebug( "updateCellsParallelStateAfterLoadIfStateIsForking()", "due to fork sent vertex " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() << " to rank " << *p );
             // any destruction of a vertex due to a fork is done in StoreVertexLoopBody
@@ -623,7 +640,13 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     enddforx
     const std::bitset<NUMBER_OF_VERTICES_PER_ELEMENT> adjacencyBitset   = peano::grid::aspects::VertexStateAnalysis::whichPersistentVerticesAreAdjacentToRank(tarch::parallel::Node::getInstance().getRank(),fineGridVertices,fineGridVerticesEnumerator);
     if (adjacencyBitset.any()) {
-      _eventHandle.prepareCopyToRemoteNode(fineGridCell,tarch::parallel::NodePool::getInstance().getMasterRank());
+      _eventHandle.prepareCopyToRemoteNode(
+        fineGridCell,
+        tarch::parallel::NodePool::getInstance().getMasterRank(),
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getCellSize(),
+        fineGridVerticesEnumerator.getLevel()
+      );
       peano::parallel::JoinDataBufferPool::getInstance().sendCell(fineGridCell,adjacencyBitset,tarch::parallel::NodePool::getInstance().getMasterRank());
 
       _eventHandle.destroyCell(
@@ -640,7 +663,13 @@ void peano::grid::nodes::Node<Vertex,Cell,State,VertexStack,CellStack,EventHandl
       dfor2(k)
         if (adjacencyBitset[kScalar]) {
           fineGridVertices[ fineGridVerticesEnumerator(k) ].invalidateAdjacentCellInformation();
-          _eventHandle.prepareCopyToRemoteNode(fineGridVertices[fineGridVerticesEnumerator(k)],tarch::parallel::NodePool::getInstance().getMasterRank());
+          _eventHandle.prepareCopyToRemoteNode(
+            fineGridVertices[fineGridVerticesEnumerator(k)],
+            tarch::parallel::NodePool::getInstance().getMasterRank(),
+            fineGridVerticesEnumerator.getVertexPosition(k),
+            fineGridVerticesEnumerator.getCellSize(),
+            fineGridVerticesEnumerator.getLevel()
+          );
           peano::parallel::JoinDataBufferPool::getInstance().sendVertex(fineGridVertices[fineGridVerticesEnumerator(k)],tarch::parallel::NodePool::getInstance().getMasterRank());
            logDebug( "updateCellsParallelStateAfterLoadIfNodeIsJoiningWithMaster()", "due to join sent vertex " << fineGridVertices[fineGridVerticesEnumerator(k)].toString() << " to rank " << tarch::parallel::NodePool::getInstance().getMasterRank() );
         }
