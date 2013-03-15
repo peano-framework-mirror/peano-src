@@ -39,7 +39,7 @@ void peano::grid::nodes::tasks::InvokeLeaveCell< Vertex, Cell, State, EventHandl
   // vertices are refined are to be excluded. This check is rather expensive,
   // so I do that simple one.
   const bool InvokeEventAccordingToSpecification =
-    _threadLocalEventHandle.leaveCellSpecification().manipulates != peano::MappingSpecification::NOP;
+    _threadLocalEventHandle.leaveCellSpecification().manipulates != peano::MappingSpecification::Nop;
 
   if (invokeEvent && InvokeEventAccordingToSpecification) {
     _threadLocalEventHandle.leaveCell(

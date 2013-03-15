@@ -32,8 +32,8 @@ peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::Descend(
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVerticesFirstTime(int level) {
   const bool runOperation =
-    (_eventHandle.touchVertexFirstTimeSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
-    (_eventHandle.touchVertexFirstTimeSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && level == _treeDepth);
+    (_eventHandle.touchVertexFirstTimeSpecification().manipulates == peano::MappingSpecification::WholeTree) ||
+    (_eventHandle.touchVertexFirstTimeSpecification().manipulates == peano::MappingSpecification::OnlyLeaves && level == _treeDepth);
 
   if (runOperation) {
     #if !defined(SharedMemoryParallelisation)
@@ -50,7 +50,7 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVer
 
     const tarch::la::Vector<DIMENSIONS,int> NumberOfVertices      = _gridContainer.getNumberOfVertices(level);
     const int                               sharedMemoryGrainSize =
-      _eventHandle.touchVertexFirstTimeSpecification().multithreading == peano::MappingSpecification::SERIAL ? 0 :
+      _eventHandle.touchVertexFirstTimeSpecification().multithreading == peano::MappingSpecification::Serial ? 0 :
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
         tarch::la::volume(NumberOfVertices),peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid
       );
@@ -59,7 +59,7 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVer
       NumberOfVertices,
       _touchVertexFirstTimeLoopBody,
       sharedMemoryGrainSize,
-      _eventHandle.touchVertexFirstTimeSpecification().multithreading == peano::MappingSpecification::AVOID_COARSE_GRID_RACES
+      _eventHandle.touchVertexFirstTimeSpecification().multithreading == peano::MappingSpecification::AvoidCoarseGridRaces
     );
     if (_eventHandle.touchVertexFirstTimeSpecification().multithreading) {
       peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallTouchFirstTimeOnRegularStationaryGrid);
@@ -71,13 +71,13 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::touchVer
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCells(int level) {
   const bool runOperation =
-    (_eventHandle.enterCellSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
-    (_eventHandle.enterCellSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && level == _treeDepth);
+    (_eventHandle.enterCellSpecification().manipulates == peano::MappingSpecification::WholeTree) ||
+    (_eventHandle.enterCellSpecification().manipulates == peano::MappingSpecification::OnlyLeaves && level == _treeDepth);
 
   if (runOperation) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfCells         = _gridContainer.getNumberOfCells(level);
     const int                               sharedMemoryGrainSize =
-      _eventHandle.enterCellSpecification().multithreading == peano::MappingSpecification::SERIAL ? 0 :
+      _eventHandle.enterCellSpecification().multithreading == peano::MappingSpecification::Serial ? 0 :
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
         tarch::la::volume(NumberOfCells) / TWO_POWER_D, peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid
       );
@@ -86,7 +86,7 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCel
       NumberOfCells,
       _enterCellLoopBody,
       sharedMemoryGrainSize,
-      _eventHandle.touchVertexFirstTimeSpecification().multithreading == peano::MappingSpecification::AVOID_COARSE_GRID_RACES
+      _eventHandle.touchVertexFirstTimeSpecification().multithreading == peano::MappingSpecification::AvoidCoarseGridRaces
     );
     if (_eventHandle.enterCellSpecification().multithreading) {
       peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(peano::datatraversal::autotuning::CallEnterCellOnRegularStationaryGrid);
@@ -98,13 +98,13 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::enterCel
 template <class Vertex, class Cell, class State, class EventHandle>
 void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::descend(int fineGridLevel) {
   const bool runOperation =
-    (_eventHandle.descendSpecification().manipulates == peano::MappingSpecification::WHOLE_TREE) ||
-    (_eventHandle.descendSpecification().manipulates == peano::MappingSpecification::ONLY_LEAVES && fineGridLevel == _treeDepth);
+    (_eventHandle.descendSpecification().manipulates == peano::MappingSpecification::WholeTree) ||
+    (_eventHandle.descendSpecification().manipulates == peano::MappingSpecification::OnlyLeaves && fineGridLevel == _treeDepth);
 
   if (runOperation) {
     const tarch::la::Vector<DIMENSIONS,int> NumberOfCoarseGridCells = _gridContainer.getNumberOfCells(fineGridLevel-1);
     const int                               sharedMemoryGrainSize   =
-      _eventHandle.descendSpecification().multithreading == peano::MappingSpecification::SERIAL ? 0 :
+      _eventHandle.descendSpecification().multithreading == peano::MappingSpecification::Serial ? 0 :
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
         tarch::la::volume(NumberOfCoarseGridCells) / TWO_POWER_D, peano::datatraversal::autotuning::DescendOnRegularStationaryGrid 
       );
@@ -142,9 +142,9 @@ void peano::grid::nodes::tasks::Descend<Vertex,Cell,State,EventHandle>::operator
 
 
   const bool skipCoarseLevelsCompletely =
-    (_eventHandle.touchVertexFirstTimeSpecification().manipulates != peano::MappingSpecification::WHOLE_TREE) &&
-    (_eventHandle.enterCellSpecification().manipulates            != peano::MappingSpecification::WHOLE_TREE) &&
-    (_eventHandle.descendSpecification().manipulates              != peano::MappingSpecification::WHOLE_TREE);
+    (_eventHandle.touchVertexFirstTimeSpecification().manipulates != peano::MappingSpecification::WholeTree) &&
+    (_eventHandle.enterCellSpecification().manipulates            != peano::MappingSpecification::WholeTree) &&
+    (_eventHandle.descendSpecification().manipulates              != peano::MappingSpecification::WholeTree);
 
 
   if (skipCoarseLevelsCompletely) {
