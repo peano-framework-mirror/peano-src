@@ -61,13 +61,14 @@ template <class Vertex, class Cell, class State, class VertexStack, class CellSt
 void peano::grid::Grid<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::restart(
   const tarch::la::Vector<DIMENSIONS,double>&  domainSize,
   const tarch::la::Vector<DIMENSIONS,double>&  domainOffset,
-  int                                          domainLevel
+  int                                          domainLevel,
+  tarch::la::Vector<DIMENSIONS,int>            positionOfCentralElementWithRespectToCoarserRemoteLevel
 ) {
   #ifdef Parallel
   logTraceInWith3Arguments( "restart(...)", domainSize, domainOffset, domainLevel );
   assertion( !tarch::parallel::Node::getInstance().isGlobalMaster() );
 
-  _root.restart(domainSize,domainOffset,domainLevel);
+  _root.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
 
   peano::parallel::JoinDataBufferPool::getInstance().createVertexBufferManually<Vertex>( true, tarch::parallel::NodePool::getInstance().getMasterRank());
   peano::parallel::JoinDataBufferPool::getInstance().createCellBufferManually<Cell>( true, tarch::parallel::NodePool::getInstance().getMasterRank());

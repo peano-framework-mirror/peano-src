@@ -30,6 +30,11 @@ class peano::grid::SingleElementVertexEnumerator: public peano::grid::VertexEnum
     Vector                   _cellOffset;
     int                      _level;
   public:
+    /**
+     * Constructor
+     *
+     * Set all values directly. They are just copied.
+     */
     SingleElementVertexEnumerator(
       const Vector &  cellSize,
       const Vector &  cellOffset,

@@ -164,7 +164,8 @@ class peano::grid::Grid {
     void restart(
       const tarch::la::Vector<DIMENSIONS,double>&  domainSize,
       const tarch::la::Vector<DIMENSIONS,double>&  domainOffset,
-      int                                          domainLevel
+      int                                          domainLevel,
+      tarch::la::Vector<DIMENSIONS,int>            positionOfCentralElementWithRespectToCoarserRemoteLevel
     );
 
     /**

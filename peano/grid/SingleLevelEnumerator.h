@@ -67,6 +67,10 @@ class peano::grid::SingleLevelEnumerator: public peano::grid::VertexEnumerator {
     /**
      * Construct Enumerator
      *
+     * Construct the enumerator at hands of the data of the coarser enumerator,
+     * i.e. the resulting enumerator will have only one third of the specified
+     * cell size and one level bigger.
+     *
      * Typically, you hand in the coarse node's x and h. It did not provide a
      * constructor taking a state directly as this would introduce an
      * additional dependence between two types.
