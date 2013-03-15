@@ -32,9 +32,9 @@ namespace peano {
  * 		   2007-2009 Wolfgang Eckhardt
  * 		   2012      Tobias Weinzierl
  *
- * 		   build date: 29-11-2012 08:46
+ * 		   build date: 20-02-2013 11:21
  *
- * @date   30/11/2012 10:38
+ * @date   15/03/2013 11:51
  */
 class peano::parallel::messages::ForkMessage { 
    
@@ -45,10 +45,9 @@ class peano::parallel::messages::ForkMessage {
       struct PersistentRecords {
          tarch::la::Vector<DIMENSIONS,double> _domainOffset;
          tarch::la::Vector<DIMENSIONS,double> _h;
-         tarch::la::Vector<DIMENSIONS,int> _numberOfGridPoints;
-         bool _isForkOfExistingDatastructure;
          tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> _adjacencyData;
          int _level;
+         tarch::la::Vector<DIMENSIONS,int> _positionOfFineGridCellRelativeToCoarseGridCell;
          /**
           * Generated
           */
@@ -57,7 +56,7 @@ class peano::parallel::messages::ForkMessage {
          /**
           * Generated
           */
-         PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints, const bool& isForkOfExistingDatastructure, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level);
+         PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level, const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell);
          
           tarch::la::Vector<DIMENSIONS,double> getDomainOffset() const ;
          
@@ -66,20 +65,6 @@ class peano::parallel::messages::ForkMessage {
           tarch::la::Vector<DIMENSIONS,double> getH() const ;
          
           void setH(const tarch::la::Vector<DIMENSIONS,double>& h) ;
-         
-          tarch::la::Vector<DIMENSIONS,int> getNumberOfGridPoints() const ;
-         
-          void setNumberOfGridPoints(const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints) ;
-         
-         /**
-          * Generated
-          */
-          bool getIsForkOfExistingDatastructure() const ;
-         
-         /**
-          * Generated
-          */
-          void setIsForkOfExistingDatastructure(const bool& isForkOfExistingDatastructure) ;
          
           tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> getAdjacencyData() const ;
          
@@ -94,6 +79,10 @@ class peano::parallel::messages::ForkMessage {
           * Generated
           */
           void setLevel(const int& level) ;
+         
+          tarch::la::Vector<DIMENSIONS,int> getPositionOfFineGridCellRelativeToCoarseGridCell() const ;
+         
+          void setPositionOfFineGridCellRelativeToCoarseGridCell(const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell) ;
          
          
       };
@@ -115,7 +104,7 @@ class peano::parallel::messages::ForkMessage {
       /**
        * Generated
        */
-      ForkMessage(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints, const bool& isForkOfExistingDatastructure, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level);
+      ForkMessage(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level, const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell);
       
       /**
        * Generated
@@ -138,24 +127,6 @@ class peano::parallel::messages::ForkMessage {
       
        void setH(int elementIndex, const double& h) ;
       
-       tarch::la::Vector<DIMENSIONS,int> getNumberOfGridPoints() const ;
-      
-       void setNumberOfGridPoints(const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints) ;
-      
-       int getNumberOfGridPoints(int elementIndex) const ;
-      
-       void setNumberOfGridPoints(int elementIndex, const int& numberOfGridPoints) ;
-      
-      /**
-       * Generated
-       */
-       bool getIsForkOfExistingDatastructure() const ;
-      
-      /**
-       * Generated
-       */
-       void setIsForkOfExistingDatastructure(const bool& isForkOfExistingDatastructure) ;
-      
        tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> getAdjacencyData() const ;
       
        void setAdjacencyData(const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData) ;
@@ -173,6 +144,14 @@ class peano::parallel::messages::ForkMessage {
        * Generated
        */
        void setLevel(const int& level) ;
+      
+       tarch::la::Vector<DIMENSIONS,int> getPositionOfFineGridCellRelativeToCoarseGridCell() const ;
+      
+       void setPositionOfFineGridCellRelativeToCoarseGridCell(const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell) ;
+      
+       int getPositionOfFineGridCellRelativeToCoarseGridCell(int elementIndex) const ;
+      
+       void setPositionOfFineGridCellRelativeToCoarseGridCell(int elementIndex, const int& positionOfFineGridCellRelativeToCoarseGridCell) ;
       
       /**
        * Generated
@@ -196,7 +175,7 @@ class peano::parallel::messages::ForkMessage {
       protected:
          static tarch::logging::Log _log;
          
-         int _senderRank;
+         int _senderDestinationRank;
          
       public:
          
@@ -234,9 +213,9 @@ class peano::parallel::messages::ForkMessage {
     * 		   2007-2009 Wolfgang Eckhardt
     * 		   2012      Tobias Weinzierl
     *
-    * 		   build date: 29-11-2012 08:46
+    * 		   build date: 20-02-2013 11:21
     *
-    * @date   30/11/2012 10:38
+    * @date   15/03/2013 11:51
     */
    class peano::parallel::messages::ForkMessagePacked { 
       
@@ -245,10 +224,9 @@ class peano::parallel::messages::ForkMessage {
          struct PersistentRecords {
             tarch::la::Vector<DIMENSIONS,double> _domainOffset;
             tarch::la::Vector<DIMENSIONS,double> _h;
-            tarch::la::Vector<DIMENSIONS,int> _numberOfGridPoints;
-            bool _isForkOfExistingDatastructure;
             tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> _adjacencyData;
             int _level;
+            tarch::la::Vector<DIMENSIONS,int> _positionOfFineGridCellRelativeToCoarseGridCell;
             /**
              * Generated
              */
@@ -257,7 +235,7 @@ class peano::parallel::messages::ForkMessage {
             /**
              * Generated
              */
-            PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints, const bool& isForkOfExistingDatastructure, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level);
+            PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level, const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell);
             
              tarch::la::Vector<DIMENSIONS,double> getDomainOffset() const ;
             
@@ -266,20 +244,6 @@ class peano::parallel::messages::ForkMessage {
              tarch::la::Vector<DIMENSIONS,double> getH() const ;
             
              void setH(const tarch::la::Vector<DIMENSIONS,double>& h) ;
-            
-             tarch::la::Vector<DIMENSIONS,int> getNumberOfGridPoints() const ;
-            
-             void setNumberOfGridPoints(const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints) ;
-            
-            /**
-             * Generated
-             */
-             bool getIsForkOfExistingDatastructure() const ;
-            
-            /**
-             * Generated
-             */
-             void setIsForkOfExistingDatastructure(const bool& isForkOfExistingDatastructure) ;
             
              tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> getAdjacencyData() const ;
             
@@ -294,6 +258,10 @@ class peano::parallel::messages::ForkMessage {
              * Generated
              */
              void setLevel(const int& level) ;
+            
+             tarch::la::Vector<DIMENSIONS,int> getPositionOfFineGridCellRelativeToCoarseGridCell() const ;
+            
+             void setPositionOfFineGridCellRelativeToCoarseGridCell(const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell) ;
             
             
          };
@@ -315,7 +283,7 @@ class peano::parallel::messages::ForkMessage {
          /**
           * Generated
           */
-         ForkMessagePacked(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints, const bool& isForkOfExistingDatastructure, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level);
+         ForkMessagePacked(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level, const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell);
          
          /**
           * Generated
@@ -338,24 +306,6 @@ class peano::parallel::messages::ForkMessage {
          
           void setH(int elementIndex, const double& h) ;
          
-          tarch::la::Vector<DIMENSIONS,int> getNumberOfGridPoints() const ;
-         
-          void setNumberOfGridPoints(const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints) ;
-         
-          int getNumberOfGridPoints(int elementIndex) const ;
-         
-          void setNumberOfGridPoints(int elementIndex, const int& numberOfGridPoints) ;
-         
-         /**
-          * Generated
-          */
-          bool getIsForkOfExistingDatastructure() const ;
-         
-         /**
-          * Generated
-          */
-          void setIsForkOfExistingDatastructure(const bool& isForkOfExistingDatastructure) ;
-         
           tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> getAdjacencyData() const ;
          
           void setAdjacencyData(const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData) ;
@@ -373,6 +323,14 @@ class peano::parallel::messages::ForkMessage {
           * Generated
           */
           void setLevel(const int& level) ;
+         
+          tarch::la::Vector<DIMENSIONS,int> getPositionOfFineGridCellRelativeToCoarseGridCell() const ;
+         
+          void setPositionOfFineGridCellRelativeToCoarseGridCell(const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell) ;
+         
+          int getPositionOfFineGridCellRelativeToCoarseGridCell(int elementIndex) const ;
+         
+          void setPositionOfFineGridCellRelativeToCoarseGridCell(int elementIndex, const int& positionOfFineGridCellRelativeToCoarseGridCell) ;
          
          /**
           * Generated
@@ -396,7 +354,7 @@ class peano::parallel::messages::ForkMessage {
          protected:
             static tarch::logging::Log _log;
             
-            int _senderRank;
+            int _senderDestinationRank;
             
          public:
             

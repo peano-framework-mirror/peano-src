@@ -168,9 +168,7 @@ peano::parallel::messages::LoadBalancingMessagePacked peano::parallel::messages:
       clock_t      timeOutShutdown  = -1;
       bool         triggeredTimeoutWarning = false;
       
-      #ifdef Asserts
-      _senderRank = -1;
-      #endif
+      _senderDestinationRank = destination;
       
       if (exchangeOnlyAttributesMarkedWithParallelise) {
          result = MPI_Isend(
@@ -312,7 +310,7 @@ peano::parallel::messages::LoadBalancingMessagePacked peano::parallel::messages:
       
       delete sendRequestHandle;
       
-      _senderRank = status.MPI_SOURCE;
+      _senderDestinationRank = status.MPI_SOURCE;
       #ifdef Debug
       _log.debug("receive(int,int)", "received " + toString() ); 
       #endif
@@ -343,8 +341,8 @@ peano::parallel::messages::LoadBalancingMessagePacked peano::parallel::messages:
    }
    
    int peano::parallel::messages::LoadBalancingMessage::getSenderRank() const {
-      assertion( _senderRank!=-1 );
-      return _senderRank;
+      assertion( _senderDestinationRank!=-1 );
+      return _senderDestinationRank;
       
    }
 #endif
@@ -518,9 +516,7 @@ peano::parallel::messages::LoadBalancingMessage peano::parallel::messages::LoadB
       clock_t      timeOutShutdown  = -1;
       bool         triggeredTimeoutWarning = false;
       
-      #ifdef Asserts
-      _senderRank = -1;
-      #endif
+      _senderDestinationRank = destination;
       
       if (exchangeOnlyAttributesMarkedWithParallelise) {
          result = MPI_Isend(
@@ -662,7 +658,7 @@ peano::parallel::messages::LoadBalancingMessage peano::parallel::messages::LoadB
       
       delete sendRequestHandle;
       
-      _senderRank = status.MPI_SOURCE;
+      _senderDestinationRank = status.MPI_SOURCE;
       #ifdef Debug
       _log.debug("receive(int,int)", "received " + toString() ); 
       #endif
@@ -693,8 +689,8 @@ peano::parallel::messages::LoadBalancingMessage peano::parallel::messages::LoadB
    }
    
    int peano::parallel::messages::LoadBalancingMessagePacked::getSenderRank() const {
-      assertion( _senderRank!=-1 );
-      return _senderRank;
+      assertion( _senderDestinationRank!=-1 );
+      return _senderDestinationRank;
       
    }
 #endif

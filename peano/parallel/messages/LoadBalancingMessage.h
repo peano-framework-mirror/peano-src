@@ -32,9 +32,9 @@ namespace peano {
  * 		   2007-2009 Wolfgang Eckhardt
  * 		   2012      Tobias Weinzierl
  *
- * 		   build date: 29-11-2012 08:46
+ * 		   build date: 20-02-2013 11:21
  *
- * @date   30/11/2012 10:38
+ * @date   15/03/2013 11:51
  */
 class peano::parallel::messages::LoadBalancingMessage { 
    
@@ -123,7 +123,7 @@ class peano::parallel::messages::LoadBalancingMessage {
       protected:
          static tarch::logging::Log _log;
          
-         int _senderRank;
+         int _senderDestinationRank;
          
       public:
          
@@ -161,9 +161,9 @@ class peano::parallel::messages::LoadBalancingMessage {
     * 		   2007-2009 Wolfgang Eckhardt
     * 		   2012      Tobias Weinzierl
     *
-    * 		   build date: 29-11-2012 08:46
+    * 		   build date: 20-02-2013 11:21
     *
-    * @date   30/11/2012 10:38
+    * @date   15/03/2013 11:51
     */
    class peano::parallel::messages::LoadBalancingMessagePacked { 
       
@@ -250,7 +250,7 @@ class peano::parallel::messages::LoadBalancingMessage {
          protected:
             static tarch::logging::Log _log;
             
-            int _senderRank;
+            int _senderDestinationRank;
             
          public:
             

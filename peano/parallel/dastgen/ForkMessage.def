@@ -35,20 +35,6 @@ class peano::parallel::messages::ForkMessage {
   parallelise persistent double h[DIMENSIONS];
   
   /**
-   * Number of grid points of new partition. For the regular grid, the new 
-   * subdomain might have any size. For the spacetree grid, the new subdomain 
-   * has one, two, or three, or any multiplication of these sizes. While the 
-   * subdomain implicitly follows the spacefilling curve, it is always 
-   * rectangular.
-   */
-  parallelise persistent int    numberOfGridPoints[DIMENSIONS];
-
-  /**
-   * Flag 
-   */
-  parallelise persistent bool   isForkOfExistingDatastructure;
-  
-  /**
    * Adjancency information
    *
    * !!! Semantics regular grid
@@ -69,4 +55,6 @@ class peano::parallel::messages::ForkMessage {
    * Level of the fork. Only relevant for spacetree. 
    */
   parallelise persistent int    level;
+
+  parallelise persistent int    positionOfFineGridCellRelativeToCoarseGridCell[DIMENSIONS];
 };

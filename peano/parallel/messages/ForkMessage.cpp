@@ -5,13 +5,12 @@ peano::parallel::messages::ForkMessage::PersistentRecords::PersistentRecords() {
 }
 
 
-peano::parallel::messages::ForkMessage::PersistentRecords::PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints, const bool& isForkOfExistingDatastructure, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level):
+peano::parallel::messages::ForkMessage::PersistentRecords::PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level, const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell):
 _domainOffset(domainOffset),
 _h(h),
-_numberOfGridPoints(numberOfGridPoints),
-_isForkOfExistingDatastructure(isForkOfExistingDatastructure),
 _adjacencyData(adjacencyData),
-_level(level) {
+_level(level),
+_positionOfFineGridCellRelativeToCoarseGridCell(positionOfFineGridCellRelativeToCoarseGridCell) {
    
 }
 
@@ -40,30 +39,6 @@ _level(level) {
 
 
 
- tarch::la::Vector<DIMENSIONS,int> peano::parallel::messages::ForkMessage::PersistentRecords::getNumberOfGridPoints() const  {
-   return _numberOfGridPoints;
-}
-
-
-
- void peano::parallel::messages::ForkMessage::PersistentRecords::setNumberOfGridPoints(const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints)  {
-   _numberOfGridPoints = (numberOfGridPoints);
-}
-
-
-
- bool peano::parallel::messages::ForkMessage::PersistentRecords::getIsForkOfExistingDatastructure() const  {
-   return _isForkOfExistingDatastructure;
-}
-
-
-
- void peano::parallel::messages::ForkMessage::PersistentRecords::setIsForkOfExistingDatastructure(const bool& isForkOfExistingDatastructure)  {
-   _isForkOfExistingDatastructure = isForkOfExistingDatastructure;
-}
-
-
-
  tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> peano::parallel::messages::ForkMessage::PersistentRecords::getAdjacencyData() const  {
    return _adjacencyData;
 }
@@ -87,19 +62,31 @@ _level(level) {
 }
 
 
+
+ tarch::la::Vector<DIMENSIONS,int> peano::parallel::messages::ForkMessage::PersistentRecords::getPositionOfFineGridCellRelativeToCoarseGridCell() const  {
+   return _positionOfFineGridCellRelativeToCoarseGridCell;
+}
+
+
+
+ void peano::parallel::messages::ForkMessage::PersistentRecords::setPositionOfFineGridCellRelativeToCoarseGridCell(const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell)  {
+   _positionOfFineGridCellRelativeToCoarseGridCell = (positionOfFineGridCellRelativeToCoarseGridCell);
+}
+
+
 peano::parallel::messages::ForkMessage::ForkMessage() {
    
 }
 
 
 peano::parallel::messages::ForkMessage::ForkMessage(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._domainOffset, persistentRecords._h, persistentRecords._numberOfGridPoints, persistentRecords._isForkOfExistingDatastructure, persistentRecords._adjacencyData, persistentRecords._level) {
+_persistentRecords(persistentRecords._domainOffset, persistentRecords._h, persistentRecords._adjacencyData, persistentRecords._level, persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell) {
    
 }
 
 
-peano::parallel::messages::ForkMessage::ForkMessage(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints, const bool& isForkOfExistingDatastructure, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level):
-_persistentRecords(domainOffset, h, numberOfGridPoints, isForkOfExistingDatastructure, adjacencyData, level) {
+peano::parallel::messages::ForkMessage::ForkMessage(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level, const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell):
+_persistentRecords(domainOffset, h, adjacencyData, level, positionOfFineGridCellRelativeToCoarseGridCell) {
    
 }
 
@@ -167,48 +154,6 @@ peano::parallel::messages::ForkMessage::~ForkMessage() { }
 
 
 
- tarch::la::Vector<DIMENSIONS,int> peano::parallel::messages::ForkMessage::getNumberOfGridPoints() const  {
-   return _persistentRecords._numberOfGridPoints;
-}
-
-
-
- void peano::parallel::messages::ForkMessage::setNumberOfGridPoints(const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints)  {
-   _persistentRecords._numberOfGridPoints = (numberOfGridPoints);
-}
-
-
-
- int peano::parallel::messages::ForkMessage::getNumberOfGridPoints(int elementIndex) const  {
-   assertion(elementIndex>=0);
-   assertion(elementIndex<DIMENSIONS);
-   return _persistentRecords._numberOfGridPoints[elementIndex];
-   
-}
-
-
-
- void peano::parallel::messages::ForkMessage::setNumberOfGridPoints(int elementIndex, const int& numberOfGridPoints)  {
-   assertion(elementIndex>=0);
-   assertion(elementIndex<DIMENSIONS);
-   _persistentRecords._numberOfGridPoints[elementIndex]= numberOfGridPoints;
-   
-}
-
-
-
- bool peano::parallel::messages::ForkMessage::getIsForkOfExistingDatastructure() const  {
-   return _persistentRecords._isForkOfExistingDatastructure;
-}
-
-
-
- void peano::parallel::messages::ForkMessage::setIsForkOfExistingDatastructure(const bool& isForkOfExistingDatastructure)  {
-   _persistentRecords._isForkOfExistingDatastructure = isForkOfExistingDatastructure;
-}
-
-
-
  tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> peano::parallel::messages::ForkMessage::getAdjacencyData() const  {
    return _persistentRecords._adjacencyData;
 }
@@ -251,6 +196,36 @@ peano::parallel::messages::ForkMessage::~ForkMessage() { }
 
 
 
+ tarch::la::Vector<DIMENSIONS,int> peano::parallel::messages::ForkMessage::getPositionOfFineGridCellRelativeToCoarseGridCell() const  {
+   return _persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell;
+}
+
+
+
+ void peano::parallel::messages::ForkMessage::setPositionOfFineGridCellRelativeToCoarseGridCell(const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell)  {
+   _persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell = (positionOfFineGridCellRelativeToCoarseGridCell);
+}
+
+
+
+ int peano::parallel::messages::ForkMessage::getPositionOfFineGridCellRelativeToCoarseGridCell(int elementIndex) const  {
+   assertion(elementIndex>=0);
+   assertion(elementIndex<DIMENSIONS);
+   return _persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell[elementIndex];
+   
+}
+
+
+
+ void peano::parallel::messages::ForkMessage::setPositionOfFineGridCellRelativeToCoarseGridCell(int elementIndex, const int& positionOfFineGridCellRelativeToCoarseGridCell)  {
+   assertion(elementIndex>=0);
+   assertion(elementIndex<DIMENSIONS);
+   _persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell[elementIndex]= positionOfFineGridCellRelativeToCoarseGridCell;
+   
+}
+
+
+
 
 std::string peano::parallel::messages::ForkMessage::toString() const {
    std::ostringstream stringstr;
@@ -272,14 +247,6 @@ void peano::parallel::messages::ForkMessage::toString (std::ostream& out) const 
    }
    out << getH(DIMENSIONS-1) << "]";
    out << ",";
-   out << "numberOfGridPoints:[";
-   for (int i = 0; i < DIMENSIONS-1; i++) {
-      out << getNumberOfGridPoints(i) << ",";
-   }
-   out << getNumberOfGridPoints(DIMENSIONS-1) << "]";
-   out << ",";
-   out << "isForkOfExistingDatastructure:" << getIsForkOfExistingDatastructure();
-   out << ",";
    out << "adjacencyData:[";
    for (int i = 0; i < TWO_POWER_D_TIMES_TWO_POWER_D-1; i++) {
       out << getAdjacencyData(i) << ",";
@@ -287,6 +254,12 @@ void peano::parallel::messages::ForkMessage::toString (std::ostream& out) const 
    out << getAdjacencyData(TWO_POWER_D_TIMES_TWO_POWER_D-1) << "]";
    out << ",";
    out << "level:" << getLevel();
+   out << ",";
+   out << "positionOfFineGridCellRelativeToCoarseGridCell:[";
+   for (int i = 0; i < DIMENSIONS-1; i++) {
+      out << getPositionOfFineGridCellRelativeToCoarseGridCell(i) << ",";
+   }
+   out << getPositionOfFineGridCellRelativeToCoarseGridCell(DIMENSIONS-1) << "]";
    out <<  ")";
 }
 
@@ -299,10 +272,9 @@ peano::parallel::messages::ForkMessagePacked peano::parallel::messages::ForkMess
    return ForkMessagePacked(
       getDomainOffset(),
       getH(),
-      getNumberOfGridPoints(),
-      getIsForkOfExistingDatastructure(),
       getAdjacencyData(),
-      getLevel()
+      getLevel(),
+      getPositionOfFineGridCellRelativeToCoarseGridCell()
    );
 }
 
@@ -317,24 +289,22 @@ peano::parallel::messages::ForkMessagePacked peano::parallel::messages::ForkMess
       {
          ForkMessage dummyForkMessage[2];
          
-         const int Attributes = 7;
+         const int Attributes = 6;
          MPI_Datatype subtypes[Attributes] = {
             MPI_DOUBLE,		 //domainOffset
             MPI_DOUBLE,		 //h
-            MPI_INT,		 //numberOfGridPoints
-            MPI_CHAR,		 //isForkOfExistingDatastructure
             MPI_INT,		 //adjacencyData
             MPI_INT,		 //level
+            MPI_INT,		 //positionOfFineGridCellRelativeToCoarseGridCell
             MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
             DIMENSIONS,		 //domainOffset
             DIMENSIONS,		 //h
-            DIMENSIONS,		 //numberOfGridPoints
-            1,		 //isForkOfExistingDatastructure
             TWO_POWER_D_TIMES_TWO_POWER_D,		 //adjacencyData
             1,		 //level
+            DIMENSIONS,		 //positionOfFineGridCellRelativeToCoarseGridCell
             1		 // end/displacement flag
          };
          
@@ -344,11 +314,10 @@ peano::parallel::messages::ForkMessagePacked peano::parallel::messages::ForkMess
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]))), &base);
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._domainOffset[0]))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._h[0]))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._numberOfGridPoints[0]))), 		&disp[2] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._isForkOfExistingDatastructure))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._adjacencyData[0]))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._level))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyForkMessage[1]._persistentRecords._domainOffset[0])), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._adjacencyData[0]))), 		&disp[2] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._level))), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell[0]))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyForkMessage[1]._persistentRecords._domainOffset[0])), 		&disp[5] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -363,24 +332,22 @@ peano::parallel::messages::ForkMessagePacked peano::parallel::messages::ForkMess
       {
          ForkMessage dummyForkMessage[2];
          
-         const int Attributes = 7;
+         const int Attributes = 6;
          MPI_Datatype subtypes[Attributes] = {
             MPI_DOUBLE,		 //domainOffset
             MPI_DOUBLE,		 //h
-            MPI_INT,		 //numberOfGridPoints
-            MPI_CHAR,		 //isForkOfExistingDatastructure
             MPI_INT,		 //adjacencyData
             MPI_INT,		 //level
+            MPI_INT,		 //positionOfFineGridCellRelativeToCoarseGridCell
             MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
             DIMENSIONS,		 //domainOffset
             DIMENSIONS,		 //h
-            DIMENSIONS,		 //numberOfGridPoints
-            1,		 //isForkOfExistingDatastructure
             TWO_POWER_D_TIMES_TWO_POWER_D,		 //adjacencyData
             1,		 //level
+            DIMENSIONS,		 //positionOfFineGridCellRelativeToCoarseGridCell
             1		 // end/displacement flag
          };
          
@@ -390,11 +357,10 @@ peano::parallel::messages::ForkMessagePacked peano::parallel::messages::ForkMess
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]))), &base);
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._domainOffset[0]))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._h[0]))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._numberOfGridPoints[0]))), 		&disp[2] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._isForkOfExistingDatastructure))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._adjacencyData[0]))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._level))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyForkMessage[1]._persistentRecords._domainOffset[0])), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._adjacencyData[0]))), 		&disp[2] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._level))), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessage[0]._persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell[0]))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyForkMessage[1]._persistentRecords._domainOffset[0])), 		&disp[5] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -426,9 +392,7 @@ peano::parallel::messages::ForkMessagePacked peano::parallel::messages::ForkMess
       clock_t      timeOutShutdown  = -1;
       bool         triggeredTimeoutWarning = false;
       
-      #ifdef Asserts
-      _senderRank = -1;
-      #endif
+      _senderDestinationRank = destination;
       
       if (exchangeOnlyAttributesMarkedWithParallelise) {
          result = MPI_Isend(
@@ -570,7 +534,7 @@ peano::parallel::messages::ForkMessagePacked peano::parallel::messages::ForkMess
       
       delete sendRequestHandle;
       
-      _senderRank = status.MPI_SOURCE;
+      _senderDestinationRank = status.MPI_SOURCE;
       #ifdef Debug
       _log.debug("receive(int,int)", "received " + toString() ); 
       #endif
@@ -601,8 +565,8 @@ peano::parallel::messages::ForkMessagePacked peano::parallel::messages::ForkMess
    }
    
    int peano::parallel::messages::ForkMessage::getSenderRank() const {
-      assertion( _senderRank!=-1 );
-      return _senderRank;
+      assertion( _senderDestinationRank!=-1 );
+      return _senderDestinationRank;
       
    }
 #endif
@@ -613,13 +577,12 @@ peano::parallel::messages::ForkMessagePacked::PersistentRecords::PersistentRecor
 }
 
 
-peano::parallel::messages::ForkMessagePacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints, const bool& isForkOfExistingDatastructure, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level):
+peano::parallel::messages::ForkMessagePacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level, const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell):
 _domainOffset(domainOffset),
 _h(h),
-_numberOfGridPoints(numberOfGridPoints),
-_isForkOfExistingDatastructure(isForkOfExistingDatastructure),
 _adjacencyData(adjacencyData),
-_level(level) {
+_level(level),
+_positionOfFineGridCellRelativeToCoarseGridCell(positionOfFineGridCellRelativeToCoarseGridCell) {
    
 }
 
@@ -648,30 +611,6 @@ _level(level) {
 
 
 
- tarch::la::Vector<DIMENSIONS,int> peano::parallel::messages::ForkMessagePacked::PersistentRecords::getNumberOfGridPoints() const  {
-   return _numberOfGridPoints;
-}
-
-
-
- void peano::parallel::messages::ForkMessagePacked::PersistentRecords::setNumberOfGridPoints(const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints)  {
-   _numberOfGridPoints = (numberOfGridPoints);
-}
-
-
-
- bool peano::parallel::messages::ForkMessagePacked::PersistentRecords::getIsForkOfExistingDatastructure() const  {
-   return _isForkOfExistingDatastructure;
-}
-
-
-
- void peano::parallel::messages::ForkMessagePacked::PersistentRecords::setIsForkOfExistingDatastructure(const bool& isForkOfExistingDatastructure)  {
-   _isForkOfExistingDatastructure = isForkOfExistingDatastructure;
-}
-
-
-
  tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> peano::parallel::messages::ForkMessagePacked::PersistentRecords::getAdjacencyData() const  {
    return _adjacencyData;
 }
@@ -695,19 +634,31 @@ _level(level) {
 }
 
 
+
+ tarch::la::Vector<DIMENSIONS,int> peano::parallel::messages::ForkMessagePacked::PersistentRecords::getPositionOfFineGridCellRelativeToCoarseGridCell() const  {
+   return _positionOfFineGridCellRelativeToCoarseGridCell;
+}
+
+
+
+ void peano::parallel::messages::ForkMessagePacked::PersistentRecords::setPositionOfFineGridCellRelativeToCoarseGridCell(const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell)  {
+   _positionOfFineGridCellRelativeToCoarseGridCell = (positionOfFineGridCellRelativeToCoarseGridCell);
+}
+
+
 peano::parallel::messages::ForkMessagePacked::ForkMessagePacked() {
    
 }
 
 
 peano::parallel::messages::ForkMessagePacked::ForkMessagePacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._domainOffset, persistentRecords._h, persistentRecords._numberOfGridPoints, persistentRecords._isForkOfExistingDatastructure, persistentRecords._adjacencyData, persistentRecords._level) {
+_persistentRecords(persistentRecords._domainOffset, persistentRecords._h, persistentRecords._adjacencyData, persistentRecords._level, persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell) {
    
 }
 
 
-peano::parallel::messages::ForkMessagePacked::ForkMessagePacked(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints, const bool& isForkOfExistingDatastructure, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level):
-_persistentRecords(domainOffset, h, numberOfGridPoints, isForkOfExistingDatastructure, adjacencyData, level) {
+peano::parallel::messages::ForkMessagePacked::ForkMessagePacked(const tarch::la::Vector<DIMENSIONS,double>& domainOffset, const tarch::la::Vector<DIMENSIONS,double>& h, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& adjacencyData, const int& level, const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell):
+_persistentRecords(domainOffset, h, adjacencyData, level, positionOfFineGridCellRelativeToCoarseGridCell) {
    
 }
 
@@ -775,48 +726,6 @@ peano::parallel::messages::ForkMessagePacked::~ForkMessagePacked() { }
 
 
 
- tarch::la::Vector<DIMENSIONS,int> peano::parallel::messages::ForkMessagePacked::getNumberOfGridPoints() const  {
-   return _persistentRecords._numberOfGridPoints;
-}
-
-
-
- void peano::parallel::messages::ForkMessagePacked::setNumberOfGridPoints(const tarch::la::Vector<DIMENSIONS,int>& numberOfGridPoints)  {
-   _persistentRecords._numberOfGridPoints = (numberOfGridPoints);
-}
-
-
-
- int peano::parallel::messages::ForkMessagePacked::getNumberOfGridPoints(int elementIndex) const  {
-   assertion(elementIndex>=0);
-   assertion(elementIndex<DIMENSIONS);
-   return _persistentRecords._numberOfGridPoints[elementIndex];
-   
-}
-
-
-
- void peano::parallel::messages::ForkMessagePacked::setNumberOfGridPoints(int elementIndex, const int& numberOfGridPoints)  {
-   assertion(elementIndex>=0);
-   assertion(elementIndex<DIMENSIONS);
-   _persistentRecords._numberOfGridPoints[elementIndex]= numberOfGridPoints;
-   
-}
-
-
-
- bool peano::parallel::messages::ForkMessagePacked::getIsForkOfExistingDatastructure() const  {
-   return _persistentRecords._isForkOfExistingDatastructure;
-}
-
-
-
- void peano::parallel::messages::ForkMessagePacked::setIsForkOfExistingDatastructure(const bool& isForkOfExistingDatastructure)  {
-   _persistentRecords._isForkOfExistingDatastructure = isForkOfExistingDatastructure;
-}
-
-
-
  tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> peano::parallel::messages::ForkMessagePacked::getAdjacencyData() const  {
    return _persistentRecords._adjacencyData;
 }
@@ -859,6 +768,36 @@ peano::parallel::messages::ForkMessagePacked::~ForkMessagePacked() { }
 
 
 
+ tarch::la::Vector<DIMENSIONS,int> peano::parallel::messages::ForkMessagePacked::getPositionOfFineGridCellRelativeToCoarseGridCell() const  {
+   return _persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell;
+}
+
+
+
+ void peano::parallel::messages::ForkMessagePacked::setPositionOfFineGridCellRelativeToCoarseGridCell(const tarch::la::Vector<DIMENSIONS,int>& positionOfFineGridCellRelativeToCoarseGridCell)  {
+   _persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell = (positionOfFineGridCellRelativeToCoarseGridCell);
+}
+
+
+
+ int peano::parallel::messages::ForkMessagePacked::getPositionOfFineGridCellRelativeToCoarseGridCell(int elementIndex) const  {
+   assertion(elementIndex>=0);
+   assertion(elementIndex<DIMENSIONS);
+   return _persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell[elementIndex];
+   
+}
+
+
+
+ void peano::parallel::messages::ForkMessagePacked::setPositionOfFineGridCellRelativeToCoarseGridCell(int elementIndex, const int& positionOfFineGridCellRelativeToCoarseGridCell)  {
+   assertion(elementIndex>=0);
+   assertion(elementIndex<DIMENSIONS);
+   _persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell[elementIndex]= positionOfFineGridCellRelativeToCoarseGridCell;
+   
+}
+
+
+
 
 std::string peano::parallel::messages::ForkMessagePacked::toString() const {
    std::ostringstream stringstr;
@@ -880,14 +819,6 @@ void peano::parallel::messages::ForkMessagePacked::toString (std::ostream& out) 
    }
    out << getH(DIMENSIONS-1) << "]";
    out << ",";
-   out << "numberOfGridPoints:[";
-   for (int i = 0; i < DIMENSIONS-1; i++) {
-      out << getNumberOfGridPoints(i) << ",";
-   }
-   out << getNumberOfGridPoints(DIMENSIONS-1) << "]";
-   out << ",";
-   out << "isForkOfExistingDatastructure:" << getIsForkOfExistingDatastructure();
-   out << ",";
    out << "adjacencyData:[";
    for (int i = 0; i < TWO_POWER_D_TIMES_TWO_POWER_D-1; i++) {
       out << getAdjacencyData(i) << ",";
@@ -895,6 +826,12 @@ void peano::parallel::messages::ForkMessagePacked::toString (std::ostream& out) 
    out << getAdjacencyData(TWO_POWER_D_TIMES_TWO_POWER_D-1) << "]";
    out << ",";
    out << "level:" << getLevel();
+   out << ",";
+   out << "positionOfFineGridCellRelativeToCoarseGridCell:[";
+   for (int i = 0; i < DIMENSIONS-1; i++) {
+      out << getPositionOfFineGridCellRelativeToCoarseGridCell(i) << ",";
+   }
+   out << getPositionOfFineGridCellRelativeToCoarseGridCell(DIMENSIONS-1) << "]";
    out <<  ")";
 }
 
@@ -907,10 +844,9 @@ peano::parallel::messages::ForkMessage peano::parallel::messages::ForkMessagePac
    return ForkMessage(
       getDomainOffset(),
       getH(),
-      getNumberOfGridPoints(),
-      getIsForkOfExistingDatastructure(),
       getAdjacencyData(),
-      getLevel()
+      getLevel(),
+      getPositionOfFineGridCellRelativeToCoarseGridCell()
    );
 }
 
@@ -925,24 +861,22 @@ peano::parallel::messages::ForkMessage peano::parallel::messages::ForkMessagePac
       {
          ForkMessagePacked dummyForkMessagePacked[2];
          
-         const int Attributes = 7;
+         const int Attributes = 6;
          MPI_Datatype subtypes[Attributes] = {
             MPI_DOUBLE,		 //domainOffset
             MPI_DOUBLE,		 //h
-            MPI_INT,		 //numberOfGridPoints
-            MPI_CHAR,		 //isForkOfExistingDatastructure
             MPI_INT,		 //adjacencyData
             MPI_INT,		 //level
+            MPI_INT,		 //positionOfFineGridCellRelativeToCoarseGridCell
             MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
             DIMENSIONS,		 //domainOffset
             DIMENSIONS,		 //h
-            DIMENSIONS,		 //numberOfGridPoints
-            1,		 //isForkOfExistingDatastructure
             TWO_POWER_D_TIMES_TWO_POWER_D,		 //adjacencyData
             1,		 //level
+            DIMENSIONS,		 //positionOfFineGridCellRelativeToCoarseGridCell
             1		 // end/displacement flag
          };
          
@@ -952,11 +886,10 @@ peano::parallel::messages::ForkMessage peano::parallel::messages::ForkMessagePac
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]))), &base);
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._domainOffset[0]))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._h[0]))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._numberOfGridPoints[0]))), 		&disp[2] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._isForkOfExistingDatastructure))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._adjacencyData[0]))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._level))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyForkMessagePacked[1]._persistentRecords._domainOffset[0])), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._adjacencyData[0]))), 		&disp[2] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._level))), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell[0]))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyForkMessagePacked[1]._persistentRecords._domainOffset[0])), 		&disp[5] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -971,24 +904,22 @@ peano::parallel::messages::ForkMessage peano::parallel::messages::ForkMessagePac
       {
          ForkMessagePacked dummyForkMessagePacked[2];
          
-         const int Attributes = 7;
+         const int Attributes = 6;
          MPI_Datatype subtypes[Attributes] = {
             MPI_DOUBLE,		 //domainOffset
             MPI_DOUBLE,		 //h
-            MPI_INT,		 //numberOfGridPoints
-            MPI_CHAR,		 //isForkOfExistingDatastructure
             MPI_INT,		 //adjacencyData
             MPI_INT,		 //level
+            MPI_INT,		 //positionOfFineGridCellRelativeToCoarseGridCell
             MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
             DIMENSIONS,		 //domainOffset
             DIMENSIONS,		 //h
-            DIMENSIONS,		 //numberOfGridPoints
-            1,		 //isForkOfExistingDatastructure
             TWO_POWER_D_TIMES_TWO_POWER_D,		 //adjacencyData
             1,		 //level
+            DIMENSIONS,		 //positionOfFineGridCellRelativeToCoarseGridCell
             1		 // end/displacement flag
          };
          
@@ -998,11 +929,10 @@ peano::parallel::messages::ForkMessage peano::parallel::messages::ForkMessagePac
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]))), &base);
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._domainOffset[0]))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._h[0]))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._numberOfGridPoints[0]))), 		&disp[2] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._isForkOfExistingDatastructure))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._adjacencyData[0]))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._level))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyForkMessagePacked[1]._persistentRecords._domainOffset[0])), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._adjacencyData[0]))), 		&disp[2] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._level))), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyForkMessagePacked[0]._persistentRecords._positionOfFineGridCellRelativeToCoarseGridCell[0]))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyForkMessagePacked[1]._persistentRecords._domainOffset[0])), 		&disp[5] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -1034,9 +964,7 @@ peano::parallel::messages::ForkMessage peano::parallel::messages::ForkMessagePac
       clock_t      timeOutShutdown  = -1;
       bool         triggeredTimeoutWarning = false;
       
-      #ifdef Asserts
-      _senderRank = -1;
-      #endif
+      _senderDestinationRank = destination;
       
       if (exchangeOnlyAttributesMarkedWithParallelise) {
          result = MPI_Isend(
@@ -1178,7 +1106,7 @@ peano::parallel::messages::ForkMessage peano::parallel::messages::ForkMessagePac
       
       delete sendRequestHandle;
       
-      _senderRank = status.MPI_SOURCE;
+      _senderDestinationRank = status.MPI_SOURCE;
       #ifdef Debug
       _log.debug("receive(int,int)", "received " + toString() ); 
       #endif
@@ -1209,8 +1137,8 @@ peano::parallel::messages::ForkMessage peano::parallel::messages::ForkMessagePac
    }
    
    int peano::parallel::messages::ForkMessagePacked::getSenderRank() const {
-      assertion( _senderRank!=-1 );
-      return _senderRank;
+      assertion( _senderDestinationRank!=-1 );
+      return _senderDestinationRank;
       
    }
 #endif
