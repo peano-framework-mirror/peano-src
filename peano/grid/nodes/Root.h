@@ -51,6 +51,16 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
      */
     Cell    _coarseGridCell;
 
+    /**
+     * Holds the relative position of the level one central cell to the master
+     * cell. In the serial code, on the master, and technically, the central
+     * cell is always the middle one in the @f$ 3^d @f$ patch. However, in the
+     * multigrid code, it might not be the middle one on the worker. In this
+     * case, this field holds this information from the master and is used to
+     * reconstruct the coarse grid enumerator accordingly.
+     */
+    tarch::la::Vector<DIMENSIONS,int>     _positionOfRootCellRelativeToCoarserCellOnMaster;
+
     #ifdef Parallel
     /**
      * These vertices are the @f$ 2^d @f$ vertices adjacent to the central
@@ -89,6 +99,14 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
 
     LeafNode&                             _leafNode;
     RefinedNode&                          _refinedNode;
+
+    /**
+     * Create enumerator that corresponds to the coarsest grid of the tree,
+     * i.e. the grid that does not belong to the current rank anymore in a
+     * parallel situation.
+     */
+    SingleLevelEnumerator getCoarseGridEnumerator() const;
+    SingleLevelEnumerator getLevelOneGridEnumerator() const;
 
     /**
      * Initialise fine grid cells
@@ -251,7 +269,8 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
     void setCoarsestLevelAttributes(
       const tarch::la::Vector<DIMENSIONS,double>&  sizeOfCentralElement,
       const tarch::la::Vector<DIMENSIONS,double>&  offsetOfCentralElement,
-      int                                          levelOfCentralElement
+      int                                          levelOfCentralElement,
+      const tarch::la::Vector<DIMENSIONS,int>&     positionOfFineGridCellRelativeToCoarseGridCell
     );
   public:
     /**
@@ -321,7 +340,8 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
     void restart(
       const tarch::la::Vector<DIMENSIONS,double>&  sizeOfCentralElement,
       const tarch::la::Vector<DIMENSIONS,double>&  offsetOfCentralElement,
-      int                                          levelOfCentralElement
+      int                                          levelOfCentralElement,
+      const tarch::la::Vector<DIMENSIONS,int>&     positionOfFineGridCellRelativeToCoarseGridCell
     );
     #endif
 
