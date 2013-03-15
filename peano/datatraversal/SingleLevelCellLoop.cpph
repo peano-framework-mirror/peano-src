@@ -86,8 +86,8 @@ peano::datatraversal::SingleLevelCellLoop<LoopBody>::dForLoopInstance::dForLoopI
   _offset(instance._offset),
   _padding(instance._padding) {
   for (int d=0; d<DIMENSIONS; d++) {
-    assertion1( _offset(d)>=0, _offset );
-    assertion1( _offset(d)<=1, _offset );
+    assertion2( _offset(d)>=0, _offset, _padding );
+    assertion2( _offset(d)<_padding, _offset, _padding);
   }
 }
 
