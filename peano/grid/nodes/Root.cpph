@@ -47,22 +47,24 @@ template <class Vertex, class Cell, class State, class VertexStack, class CellSt
 void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::setCoarsestLevelAttributes(
   const tarch::la::Vector<DIMENSIONS,double>&   domainSize,
   const tarch::la::Vector<DIMENSIONS,double>&   domainOffset,
-  int                                           levelOfCentralElement
+  int                                           levelOfCentralElement,
+  const tarch::la::Vector<DIMENSIONS,int>&      positionOfFineGridCellRelativeToCoarseGridCell
 ) {
   logTraceInWith3Arguments( "setCoarsestLevelAttributes(...)", domainSize, domainOffset, levelOfCentralElement );
 
   assertion( levelOfCentralElement>0 );
 
-  _sizeOfEnclosingCoarseCell   = domainSize * 3.0;
-  _offsetOfEnclosingCoarseCell = domainOffset - domainSize;
-  _levelOfEnclosingCell        = levelOfCentralElement-1;
+  _sizeOfEnclosingCoarseCell                       = domainSize * 3.0;
+  _offsetOfEnclosingCoarseCell                     = domainOffset - domainSize;
+  _levelOfEnclosingCell                            = levelOfCentralElement-1;
+  _positionOfRootCellRelativeToCoarserCellOnMaster = positionOfFineGridCellRelativeToCoarseGridCell;
 
   _coarseGridCell.switchToRoot(_levelOfEnclosingCell);
 
   #ifdef Asserts
-  SingleLevelEnumerator coarseGridEnumerator( _sizeOfEnclosingCoarseCell*3.0, _offsetOfEnclosingCoarseCell, _levelOfEnclosingCell );
+  SingleLevelEnumerator coarseGridEnumerator( getCoarseGridEnumeratorForLocalData() );
   dfor2(k)
-    _coarseGridVertices[kScalar].setPosition( coarseGridEnumerator.getVertexPosition(k), _levelOfEnclosingCell );
+    _coarseGridVertices[kScalar].setPosition( coarseGridEnumerator.getVertexPosition(k), coarseGridEnumerator.getLevel() );
   enddforx
   #endif
 
@@ -93,7 +95,7 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 ) {
   logTraceInWith4Arguments( "restart()", state, domainSize, domainOffset, levelOfCentralElement );
 
-  setCoarsestLevelAttributes(domainSize,domainOffset,levelOfCentralElement);
+  setCoarsestLevelAttributes(domainSize,domainOffset,levelOfCentralElement,tarch::la::Vector<DIMENSIONS,int>(1));
 
   _cellTraversal.initialiseWithPeanoSFC(peano::grid::aspects::CellPeanoCurve::getLoopDirection(_coarseGridCell, state.isTraversalInverted()));
 
@@ -114,11 +116,12 @@ template <class Vertex, class Cell, class State, class VertexStack, class CellSt
 void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::restart(
   const tarch::la::Vector<DIMENSIONS,double>&  sizeOfCentralElement,
   const tarch::la::Vector<DIMENSIONS,double>&  offsetOfCentralElement,
-  int                                          levelOfCentralElement
+  int                                          levelOfCentralElement,
+  const tarch::la::Vector<DIMENSIONS,int>&     positionOfFineGridCellRelativeToCoarseGridCell
 ) {
   logTraceInWith3Arguments( "restart()", sizeOfCentralElement, offsetOfCentralElement, levelOfCentralElement );
 
-  setCoarsestLevelAttributes(sizeOfCentralElement,offsetOfCentralElement,levelOfCentralElement);
+  setCoarsestLevelAttributes(sizeOfCentralElement,offsetOfCentralElement,levelOfCentralElement,positionOfFineGridCellRelativeToCoarseGridCell);
 
   _cellTraversal.reset();
 
@@ -132,13 +135,47 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
 
 template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+peano::grid::SingleLevelEnumerator  peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::getCoarseGridEnumeratorForLocalData() const {
+  return SingleLevelEnumerator(_sizeOfEnclosingCoarseCell*3.0,_offsetOfEnclosingCoarseCell,_levelOfEnclosingCell-1);
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+peano::grid::SingleElementVertexEnumerator  peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::getCoarseGridEnumeratorForReceivedData() const {
+  SingleElementVertexEnumerator::Vector offsetOnMaster;
+  for (int d=0; d<DIMENSIONS; d++) {
+    offsetOnMaster(d) = _offsetOfEnclosingCoarseCell(d) +
+      (1 - _positionOfRootCellRelativeToCoarserCellOnMaster(d)) * _sizeOfEnclosingCoarseCell(d) / 3.0;
+  }
+  return SingleElementVertexEnumerator(_sizeOfEnclosingCoarseCell,offsetOnMaster,_levelOfEnclosingCell);
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+peano::grid::SingleLevelEnumerator peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::getLevelOneGridEnumeratorForLocalData() const {
+  return SingleLevelEnumerator(_sizeOfEnclosingCoarseCell,_offsetOfEnclosingCoarseCell,_levelOfEnclosingCell);
+}
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
+peano::grid::SingleElementVertexEnumerator  peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::getLevelOneGridEnumeratorForReceivedData() const {
+  return SingleElementVertexEnumerator(
+    _sizeOfEnclosingCoarseCell/3.0,
+    _offsetOfEnclosingCoarseCell + _sizeOfEnclosingCoarseCell/3.0,
+    _levelOfEnclosingCell+1
+  );
+}
+
+
+
+template <class Vertex, class Cell, class State, class VertexStack, class CellStack, class EventHandle>
 void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandle>::prepareLevelOneVertices(
   Vertex  fineGridVertices[FOUR_POWER_D],
   int     counter[FOUR_POWER_D]
 ) {
   logTraceInWith1Argument( "prepareLevelOneVertices(...)", Base::_vertexStack.isInputStackEmpty() );
 
-  SingleLevelEnumerator fineGridEnumerator(  _sizeOfEnclosingCoarseCell, _offsetOfEnclosingCoarseCell, _levelOfEnclosingCell );
+  SingleLevelEnumerator fineGridEnumerator( getLevelOneGridEnumeratorForLocalData() );
   dfor4(k)
     #ifdef Asserts
     fineGridEnumerator.setOffset(k);
@@ -197,6 +234,19 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     !tarch::parallel::Node::getInstance().isGlobalMaster() &&
     !state.isJoiningWithMaster()
   ) {
+    Cell    coarseGridCellFromMaster;
+    Vertex  coarseVertexFromMaster[TWO_POWER_D];
+
+    coarseGridCellFromMaster.receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+    logDebug( "receiveCellAndVerticesFromMaster(...)", "received cell " << coarseGridCellFromMaster.toString() << " from master" );
+    dfor2(i)
+      coarseVertexFromMaster[iScalar].receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
+      logDebug(
+        "receiveCellAndVerticesFromMaster(...)",
+        "received vertex " << coarseVertexFromMaster[iScalar].toString() << " from master and stored it in _masterVertex " << iScalar
+      );
+    }
+
     _masterCell.receive(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
     logDebug( "receiveCellAndVerticesFromMaster(...)", "received cell " << _masterCell.toString() << " from master" );
     dfor2(i)
@@ -219,11 +269,14 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     Base::_eventHandle.receiveDataFromMaster(
       _masterCell,
       _masterVertices,
-      peano::grid::SingleElementVertexEnumerator(
-        _sizeOfEnclosingCoarseCell / 3.0,
-        _offsetOfEnclosingCoarseCell + _sizeOfEnclosingCoarseCell / 3.0,
-        _levelOfEnclosingCell+1
-      )
+      getLevelOneGridEnumeratorForReceivedData(),
+      coarseVertexFromMaster,
+      getCoarseGridEnumeratorForReceivedData(),
+      coarseGridCellFromMaster,
+      _coarseGridVertices,
+      getCoarseGridEnumeratorForLocalData(),
+      _coarseGridCell,
+      _positionOfRootCellRelativeToCoarserCellOnMaster
     );
 
     tarch::parallel::Node::getInstance().ensureThatMessageQueuesAreEmpty(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag());
@@ -246,10 +299,15 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     !tarch::parallel::Node::getInstance().isGlobalMaster() &&
     !state.isJoiningWithMaster()
   ) {
+    SingleElementVertexEnumerator levelOneEnumerator( getLevelOneGridEnumeratorForReceivedData() );
+
     if (currentLevelOneCell==tarch::la::Vector<DIMENSIONS,int>(1)) {
       Base::_eventHandle.mergeWithWorker(
         fineGridCell,
-        _masterCell
+        _masterCell,
+        levelOneEnumerator.getCellCenter(),
+        levelOneEnumerator.getCellSize(),
+        levelOneEnumerator.getLevel()
       );
     }
 
@@ -279,7 +337,10 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
 
           Base::_eventHandle.mergeWithWorker(
             fineGridVertices[currentVertexIndexInLevelOnePatch],
-            _masterVertices[currentVertexsIndexInMasterVertexArray]
+            _masterVertices[currentVertexsIndexInMasterVertexArray],
+            levelOneEnumerator.getVertexPosition(i),
+            levelOneEnumerator.getCellSize(),
+            levelOneEnumerator.getLevel()
           );
 
           logDebug(
@@ -309,7 +370,15 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     state.reduceStateAndCell() &&
     !tarch::parallel::Node::getInstance().isGlobalMaster()
   ) {
-    Base::_eventHandle.prepareSendToMaster(centralFineGridCell,fineGridVertices,centralFineGridVerticesEnumerator);
+    Base::_eventHandle.prepareSendToMaster(
+      centralFineGridCell,
+      fineGridVertices,
+      centralFineGridVerticesEnumerator,
+      _coarseGridVertices,
+      getCoarseGridEnumeratorForLocalData(),
+      _coarseGridCell,
+      _positionOfRootCellRelativeToCoarserCellOnMaster
+    );
 
     logDebug( "sendCellAndVerticesToMaster(...)", "send cell " << centralFineGridCell.toString() << " to master" );
     centralFineGridCell.send(tarch::parallel::NodePool::getInstance().getMasterRank(),peano::parallel::SendReceiveBufferPool::getInstance().getIterationManagementTag(),true);
@@ -386,8 +455,8 @@ void peano::grid::nodes::Root<Vertex,Cell,State,VertexStack,CellStack,EventHandl
     counter
   );
 
-  SingleLevelEnumerator        coarseGridEnumerator( _sizeOfEnclosingCoarseCell*3.0, _offsetOfEnclosingCoarseCell, _levelOfEnclosingCell-1 );
-  SingleLevelEnumerator        fineGridEnumerator( coarseGridEnumerator.getRefinedEnumerator() );
+  SingleLevelEnumerator  coarseGridEnumerator( getCoarseGridEnumeratorForLocalData() );
+  SingleLevelEnumerator  fineGridEnumerator( getLevelOneGridEnumeratorForLocalData() );
 
   Base::_eventHandle.beginIteration(state);
 

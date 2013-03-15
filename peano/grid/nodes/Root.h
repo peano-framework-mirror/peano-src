@@ -86,7 +86,7 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
      *
      * @see receiveCellAndVerticesFromMaster()
      */
-    Vertex  _masterVertices[FOUR_POWER_D];
+    Vertex  _masterVertices[TWO_POWER_D];
     bool    _haveMergedMasterVertex[FOUR_POWER_D];
     Cell    _masterCell;
     #endif
@@ -100,13 +100,10 @@ class peano::grid::nodes::Root: public peano::grid::nodes::Node<Vertex,Cell,Stat
     LeafNode&                             _leafNode;
     RefinedNode&                          _refinedNode;
 
-    /**
-     * Create enumerator that corresponds to the coarsest grid of the tree,
-     * i.e. the grid that does not belong to the current rank anymore in a
-     * parallel situation.
-     */
-    SingleLevelEnumerator getCoarseGridEnumerator() const;
-    SingleLevelEnumerator getLevelOneGridEnumerator() const;
+    SingleLevelEnumerator          getCoarseGridEnumeratorForLocalData() const;
+    SingleElementVertexEnumerator  getCoarseGridEnumeratorForReceivedData() const;
+    SingleLevelEnumerator          getLevelOneGridEnumeratorForLocalData() const;
+    SingleElementVertexEnumerator  getLevelOneGridEnumeratorForReceivedData() const;
 
     /**
      * Initialise fine grid cells
