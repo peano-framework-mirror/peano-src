@@ -558,7 +558,7 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
 
   const AscendDescendLevelEnumerator descendingAscendDescendEnumerator(descendingGridEnumerator[0]);
   if (
-    Base::_eventHandle.descendSpecification().manipulates != peano::MappingSpecification::NOP &&
+    Base::_eventHandle.descendSpecification().manipulates != peano::MappingSpecification::Nop &&
     fineGridCell.isInside() &&
     !fineGridCell.isRemote( state, true, false )
   ) {
@@ -617,7 +617,7 @@ void peano::grid::nodes::Refined<Vertex,Cell,State,VertexStack,CellStack,EventHa
   #endif
 
   if (
-    Base::_eventHandle.ascendSpecification().manipulates != peano::MappingSpecification::NOP &&
+    Base::_eventHandle.ascendSpecification().manipulates != peano::MappingSpecification::Nop &&
     fineGridCell.isInside() &&
     !fineGridCell.isRemote( state, true, false )
   ) {
