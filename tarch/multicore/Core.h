@@ -1,8 +1,8 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#if !defined( _TARCH_MULTICORE_OMP_CORE_H_) && defined(SharedOMP)
-#define _TARCH_MULTICORE_OMP_CORE_H_
-
+#include "tarch/multicore/MulticoreDefinitions.h"
+#if !defined( _TARCH_MULTICORE_CORE_H_) && !defined(SharedMemoryParallelisation)
+#define _TARCH_MULTICORE_CORE_H_
 
 
 namespace tarch {
@@ -13,18 +13,20 @@ namespace tarch {
 
 
 /**
- * OpenMP Core
+ * Core
  *
- * Abstraction of the OpenMP system. This class is a singleton.
+ * Any shared memory implementation has to provide a singleton Core. Its full
+ * qualified name is tarch::multicore::Core. If no shared memory variant is
+ * switched on, this is the default Core implementation that does nothing.
  *
- * @author Kristof Unterweger
+ * @author Tobias Weinzierl
  */
 class tarch::multicore::Core {
   private:
     Core();
-
-    int _numberOfThreads;
   public:
+    static const int UseDefaultNumberOfThreads;
+
     /**
      * Destructor
      */
@@ -36,15 +38,14 @@ class tarch::multicore::Core {
     static Core& getInstance();
 
     /**
-     * Configures the whole thing. If numberOfThreads equals 0, the core is
+     * Configure the whole thing. If numberOfThreads equals 0, the core is
      * using the number of standard threads.
+     *
      *
      * @param numberOfThreads Numer of threads that shall be used. This
      *        parameter either is greater than zero (which defines the number
-     *        of threads) or it equals zero which means that the code should
-     *        use the default number of threads. The latter value fits to the
-     *        semantics of
-     *        tarch::multicore::configurations::CoreConfiguration::getNumberOfThreads()
+     *        of threads) or it equals DefaultNumberOfThreads which means that the code should
+     *        use the default number of threads.
      */
     void configure( int numberOfThreads );
 
@@ -54,19 +55,19 @@ class tarch::multicore::Core {
     void shutDown();
 
     /**
-     * Returns the number of threads that is used by OpenMP. This routine usually
-     * is not of interest at all as OpenMP should do all the thread management
+     * @return Shared memory environment is up and runnning.
+     */
+    bool isInitialised() const;
+
+    /**
+     * Returns the number of threads that is used by TBB. This routine usually
+     * is not of interest at all as TBB should do all the thread management
      * automatically. However, the user interface plots some information on the
      * number of threads used, and sometimes I found it useful.
      *
      * @return Number of threads available.
      */
     int getNumberOfThreads() const;
-
-    /**
-     * @return Shared memory environment is up and runnning.
-     */
-    bool isInitialised() const;
 };
 
 
