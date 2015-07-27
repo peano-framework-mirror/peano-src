@@ -1,5 +1,5 @@
-#ifndef _PEANO_HEAP_RECORDS_DOUBLEHEAPDATA_H
-#define _PEANO_HEAP_RECORDS_DOUBLEHEAPDATA_H
+#ifndef _PEANO_HEAP_RECORDS_CHARHEAPDATA_H
+#define _PEANO_HEAP_RECORDS_CHARHEAPDATA_H
 
 #include "peano/utils/Globals.h"
 #include "tarch/compiler/CompilerSpecificSettings.h"
@@ -20,8 +20,8 @@
 namespace peano {
    namespace heap {
       namespace records {
-         class DoubleHeapData;
-         class DoubleHeapDataPacked;
+         class CharHeapData;
+         class CharHeapDataPacked;
       }
    }
 }
@@ -34,16 +34,16 @@ namespace peano {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   25/07/2015 13:44
+ * @date   25/07/2015 13:49
  */
-class peano::heap::records::DoubleHeapData { 
+class peano::heap::records::CharHeapData { 
    
    public:
       
-      typedef peano::heap::records::DoubleHeapDataPacked Packed;
+      typedef peano::heap::records::CharHeapDataPacked Packed;
       
       struct PersistentRecords {
-         double _u;
+         signed char _u;
          /**
           * Generated
           */
@@ -52,17 +52,17 @@ class peano::heap::records::DoubleHeapData {
          /**
           * Generated
           */
-         PersistentRecords(const double& u);
+         PersistentRecords(const signed char& u);
          
          /**
           * Generated
           */
-          double getU() const ;
+          signed char getU() const ;
          
          /**
           * Generated
           */
-          void setU(const double& u) ;
+          void setU(const signed char& u) ;
          
          
       };
@@ -78,32 +78,32 @@ class peano::heap::records::DoubleHeapData {
       /**
        * Generated
        */
-      DoubleHeapData();
+      CharHeapData();
       
       /**
        * Generated
        */
-      DoubleHeapData(const PersistentRecords& persistentRecords);
+      CharHeapData(const PersistentRecords& persistentRecords);
       
       /**
        * Generated
        */
-      DoubleHeapData(const double& u);
+      CharHeapData(const signed char& u);
       
       /**
        * Generated
        */
-      ~DoubleHeapData();
+      ~CharHeapData();
       
       /**
        * Generated
        */
-       double getU() const ;
+       signed char getU() const ;
       
       /**
        * Generated
        */
-       void setU(const double& u) ;
+       void setU(const signed char& u) ;
       
       /**
        * Generated
@@ -120,7 +120,7 @@ class peano::heap::records::DoubleHeapData {
       /**
        * Generated
        */
-      DoubleHeapDataPacked convert() const;
+      CharHeapDataPacked convert() const;
       
       
    #ifdef Parallel
@@ -168,14 +168,14 @@ class peano::heap::records::DoubleHeapData {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   25/07/2015 13:44
+          * @date   25/07/2015 13:49
           */
-         class peano::heap::records::DoubleHeapDataPacked { 
+         class peano::heap::records::CharHeapDataPacked { 
             
             public:
                
                struct PersistentRecords {
-                  double _u;
+                  signed char _u;
                   /**
                    * Generated
                    */
@@ -184,17 +184,17 @@ class peano::heap::records::DoubleHeapData {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const double& u);
+                  PersistentRecords(const signed char& u);
                   
                   /**
                    * Generated
                    */
-                   double getU() const ;
+                   signed char getU() const ;
                   
                   /**
                    * Generated
                    */
-                   void setU(const double& u) ;
+                   void setU(const signed char& u) ;
                   
                   
                };
@@ -206,32 +206,32 @@ class peano::heap::records::DoubleHeapData {
                /**
                 * Generated
                 */
-               DoubleHeapDataPacked();
+               CharHeapDataPacked();
                
                /**
                 * Generated
                 */
-               DoubleHeapDataPacked(const PersistentRecords& persistentRecords);
+               CharHeapDataPacked(const PersistentRecords& persistentRecords);
                
                /**
                 * Generated
                 */
-               DoubleHeapDataPacked(const double& u);
+               CharHeapDataPacked(const signed char& u);
                
                /**
                 * Generated
                 */
-               ~DoubleHeapDataPacked();
+               ~CharHeapDataPacked();
                
                /**
                 * Generated
                 */
-                double getU() const ;
+                signed char getU() const ;
                
                /**
                 * Generated
                 */
-                void setU(const double& u) ;
+                void setU(const signed char& u) ;
                
                /**
                 * Generated
@@ -248,7 +248,7 @@ class peano::heap::records::DoubleHeapData {
                /**
                 * Generated
                 */
-               DoubleHeapData convert() const;
+               CharHeapData convert() const;
                
                
             #ifdef Parallel
