@@ -1,20 +1,19 @@
+#include "peano/heap/SendReceiveTask.h"
+
 #include "tarch/la/VectorCompare.h"
 
-template <class Data>
-tarch::logging::Log  peano::heap::SendReceiveTask<Data>::_log( "peano::heap::SendReceiveTask<Data>" );
+tarch::logging::Log  peano::heap::SendReceiveTask<double>::_log( "peano::heap::SendReceiveTask<double>" );
 
 
 #ifdef Asserts
-template <class Data>
-peano::heap::SendReceiveTask<Data>::SendReceiveTask():
+peano::heap::SendReceiveTask<double>::SendReceiveTask():
   _rank(-1),
   _data(0) {
 }
 #endif
 
 
-template<class Data>
-bool peano::heap::SendReceiveTask<Data>::fits(
+bool peano::heap::SendReceiveTask<double>::fits(
   const tarch::la::Vector<DIMENSIONS, double>&  position,
   int                                           level
 ) const {
@@ -31,8 +30,7 @@ bool peano::heap::SendReceiveTask<Data>::fits(
 }
 
 
-template<class Data>
-void peano::heap::SendReceiveTask<Data>::setInvalid() {
+void peano::heap::SendReceiveTask<double>::setInvalid() {
    #if defined(Asserts)
   _metaInformation.setLevel(-1);
   #endif
@@ -41,8 +39,7 @@ void peano::heap::SendReceiveTask<Data>::setInvalid() {
 }
 
 
-template <class Data>
-void peano::heap::SendReceiveTask<Data>::freeMemoryOfSendTask() {
+void peano::heap::SendReceiveTask<double>::freeMemoryOfSendTask() {
   if (_freeDataPointer && _metaInformation.getLength()>0) {
     delete[] _data;
   }
@@ -50,37 +47,35 @@ void peano::heap::SendReceiveTask<Data>::freeMemoryOfSendTask() {
 
 
 
-template <class Data>
-void peano::heap::SendReceiveTask<Data>::sendDataDirectlyFromBuffer(const std::vector<Data>& data) {
+void peano::heap::SendReceiveTask<double>::sendDataDirectlyFromBuffer(const std::vector<double>& data) {
   assertion( !data.empty() );
   assertion( _data==0 );
 
   _freeDataPointer = false;
-  _data            = const_cast< Data* >( data.data() );
+  _data            = const_cast< double* >( data.data() );
 }
 
 
-template <class Data>
-void peano::heap::SendReceiveTask<Data>::wrapData(const std::vector<Data>& data) {
+void peano::heap::SendReceiveTask<double>::wrapData(const std::vector<double>& data) {
   assertion( !data.empty() );
   assertion( _data==0 );
 
   _freeDataPointer = true;
 
-  _data = new MPIData[data.size()];
+  _data = new double[data.size()];
   for (int i=0; i<static_cast<int>( data.size() ); i++) {
     _data[i] = data[i];
   }
 }
 
 
-template <class Data>
-void peano::heap::SendReceiveTask<Data>::triggerSend(int tag) {
+void peano::heap::SendReceiveTask<double>::triggerSend(int tag) {
   assertion( _data!=nullptr );
   assertion( _metaInformation.getLength()>0 );
 
+  #ifdef Parallel
   const int result = MPI_Isend(
-    _data, _metaInformation.getLength(), MPIData::Datatype, _rank,
+    _data, _metaInformation.getLength(), MPI_DOUBLE, _rank,
     tag,
     tarch::parallel::Node::getInstance().getCommunicator(), &_request
   );
@@ -91,19 +86,22 @@ void peano::heap::SendReceiveTask<Data>::triggerSend(int tag) {
       << _rank << ": " << tarch::parallel::MPIReturnValueToString(result)
     );
   }
+  #else
+  assertionMsg( false, "should not be called if compiled without -DParallel" );
+  #endif
 }
 
 
-template <class Data>
-void peano::heap::SendReceiveTask<Data>::triggerReceive(int tag) {
+void peano::heap::SendReceiveTask<double>::triggerReceive(int tag) {
   assertion( _rank >= 0 );
   assertion( _data==0 );
 
+  #ifdef Parallel
   logTraceInWith2Arguments( "triggerReceive(int)", tag, _metaInformation.toString() );
-  _data = new typename SendReceiveTask<Data>::MPIData[ _metaInformation.getLength() ];
+  _data = new typename SendReceiveTask<double>::MPIdouble[ _metaInformation.getLength() ];
 
   const int  result = MPI_Irecv(
-    _data, _metaInformation.getLength(), MPIData::Datatype,
+    _data, _metaInformation.getLength(), MPIdouble::doubletype,
     _rank, tag, tarch::parallel::Node::getInstance().getCommunicator(),
     &_request
   );
@@ -115,14 +113,16 @@ void peano::heap::SendReceiveTask<Data>::triggerReceive(int tag) {
     );
   }
   logTraceOut( "triggerReceive(int)" );
+  #else
+  assertionMsg( false, "should not be called if compiled without -DParallel" );
+  #endif
 }
 
 
-template <class Data>
-std::vector<Data> peano::heap::SendReceiveTask<Data>::unwrapDataAndFreeMemory() {
-  logTraceInWith1Argument( "unwrapDataAndFreeMemory()", _metaInformation.toString() );
+std::vector<double> peano::heap::SendReceiveTask<double>::unwrapDataAndFreeMemory() {
+  logTraceInWith1Argument( "unwrapdoubleAndFreeMemory()", _metaInformation.toString() );
 
-  std::vector<Data> result;
+  std::vector<double> result;
 
   assertion( _metaInformation.getLength()>=0 );
   if (_metaInformation.getLength()>0) {
@@ -134,13 +134,12 @@ std::vector<Data> peano::heap::SendReceiveTask<Data>::unwrapDataAndFreeMemory() 
     delete[] _data;
   }
 
-  logTraceOutWith1Argument( "unwrapDataAndFreeMemory()", result.size() );
+  logTraceOutWith1Argument( "unwrapdoubleAndFreeMemory()", result.size() );
   return result;
 }
 
 
-template <class Data>
-std::string peano::heap::SendReceiveTask<Data>::toString() const {
+std::string peano::heap::SendReceiveTask<double>::toString() const {
   std::ostringstream out;
   out << "(" << _metaInformation.toString() << ",rank=" << _rank << ",data=" << (_data==nullptr ? "no" : "yes") << ")";
   return out.str();
