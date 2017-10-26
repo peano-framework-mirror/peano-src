@@ -1,14 +1,26 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#if !defined(_TARCH_MULTICORE_TBB_CORE_H_) && defined(SharedTBB)
+#if !defined(_TARCH_MULTICORE_TBB_CORE_H_) && defined(SharedTBBInvade)
 #define _TARCH_MULTICORE_TBB_CORE_H_
 
-
-#include <tbb/task_scheduler_init.h>
 
 #include "tarch/logging/Log.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
+
+#if defined(Asserts)
+  #if !defined(SHM_INVADE_DEBUG) || SHM_INVADE_DEBUG<2
+    #warning It is recommended to set compile flag SHM_INVADE_DEBUG to 2 or bigger if you compile Peano with Asserts
+  #endif
+#endif
+
+#if defined(Debug)
+  #if !defined(SHM_INVADE_DEBUG) || SHM_INVADE_DEBUG<4
+    #warning It is recommended to set compile flag SHM_INVADE_DEBUG to 4 or bigger if you compile Peano with Debug
+  #endif
+#endif
+
+#include "shminvade/SHMInvade.hpp"
 
 
 namespace tarch {
@@ -19,23 +31,20 @@ namespace tarch {
 
 
 /**
- * TBB Core
+ * TBB Core for our invasive wrapper.
  *
- * Abstraction of the TBB routines. This class is a singleton.
+ * This class is a singleton.
  *
  * @author Tobias Weinzierl
  */
 class tarch::multicore::Core {
   private:
+    SHMInvadeRoot _invadeRoot;
+
     Core();
 
     static tarch::logging::Log  _log;
-
-    int                         _numberOfThreads;
-    ::tbb::task_scheduler_init  _task_scheduler_init;
   public:
-    static const int UseDefaultNumberOfThreads;
-
     /**
      * Destructor
      */
@@ -64,7 +73,7 @@ class tarch::multicore::Core {
     void shutDown();
 
     /**
-     * @return Shared memory environment is up and runnning.
+     * @return Shared memory environment is up and running.
      */
     bool isInitialised() const;
 

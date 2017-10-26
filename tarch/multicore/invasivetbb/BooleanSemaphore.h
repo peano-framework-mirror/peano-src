@@ -1,6 +1,6 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#if !defined( _TARCH_MULTICORE_BOOLEAN_SEMAPHORE_TBB_H_) && defined(SharedTBB)
+#if !defined( _TARCH_MULTICORE_BOOLEAN_SEMAPHORE_TBB_H_) && defined(SharedTBBInvade)
 #define _TARCH_MULTICORE_BOOLEAN_SEMAPHORE_TBB_H_
 
 
@@ -74,4 +74,5 @@ class tarch::multicore::BooleanSemaphore {
     static void sendTaskToBack();
 
 };
+
 #endif
