@@ -7,8 +7,6 @@ import performanceanalysis_output
 import performanceanalysis_global_plotter
 import performanceanalysis_analysis
 import performanceanalysis_concurrency
-import performanceanalysis_dd
-import performanceanalysis_griddata
 
 
 import gc
@@ -48,80 +46,7 @@ numberOfThreads = performanceanalysis_parser.getNumberOfThreads(args.file)
 
 performanceanalysis_output.writeHeader(outFile,args.file,numberOfRanks,numberOfThreads);
 
-(parents,levels,offset,volume,nodes) = performanceanalysis_parser.getLogicalTopology(numberOfRanks,dim,args.file,".");
-(volumes,overlaps,work)              = performanceanalysis_analysis.computeVolumesOverlapsWork(numberOfRanks,parents,offset,volume,dim,args.domainoffset,args.domainsize)
-
-performanceanalysis_global_plotter.plotLogicalTopology(numberOfRanks,performanceanalysis_output.getOutputDirectory(args.file)+"/topology",parents,levels,offset,volume);
-
-performanceanalysis_global_plotter.plotWorkloadAndResponsibilityDistributionPerRank(numberOfRanks,performanceanalysis_output.getOutputDirectory(args.file)+"/workload-per-rank",volumes,overlaps,work);
-performanceanalysis_global_plotter.plotWorkloadAndResponsibilityDistributionPerNode(numberOfRanks,performanceanalysis_output.getOutputDirectory(args.file)+"/workload-per-node",work,nodes);
-
-for l in range(1,max(levels)+1):
- if dim==2:
-  performanceanalysis_dd.plot2dDomainDecompositionOnLevel(l,numberOfRanks,args.domainoffset,args.domainsize,offset,volume,levels,nodes,performanceanalysis_output.getOutputDirectory(args.file)+"/dd")
- if dim==3:
-  performanceanalysis_dd.plot3dDomainDecompositionOnLevel(l,numberOfRanks,args.domainoffset,args.domainsize,offset,volume,levels,nodes,performanceanalysis_output.getOutputDirectory(args.file)+"/dd")
-
-if dim==2:
-  performanceanalysis_dd.plot2dDomainDecomposition(numberOfRanks,args.domainoffset,args.domainsize,offset,volume,levels,nodes,performanceanalysis_output.getOutputDirectory(args.file)+"/dd")
-#if dim==3:
-#  performanceanalysis_dd.plot3dDomainDecomposition(numberOfRanks,args.domainoffset,args.domainsize,offset,volume,levels,nodes,performanceanalysis_output.getOutputDirectory(args.file)+"/dd")
-
-
-performanceanalysis_dd.printNodeTable(outFile,numberOfRanks,parents,nodes)
-
-outFile.write( "<h2>Fork history</h2>" )
-performanceanalysis_dd.extractForkHistory(outFile,args.file,numberOfRanks)
-
-
 beginIterations = performanceanalysis_parser.getBeginIterations(args.file,numberOfThreads>1)
-performanceanalysis_global_plotter.plotWalltimeOverview(performanceanalysis_output.getOutputDirectory(args.file)+"/walltime",beginIterations)
-
-
-(
-  numberOfInnerLeafCells,
-  numberOfInnerCells,
-  numberOfOuterLeafCells,
-  numberOfOuterCells,
-  numberOfLocalCells,
-  tTotal
-) = performanceanalysis_parser.getCellsPerRank(args.file,numberOfRanks)
-
-performanceanalysis_griddata.plotGridEntities(
-  performanceanalysis_output.getOutputDirectory(args.file)+"/inner-leaf-cells",
-  numberOfRanks,
-  numberOfInnerLeafCells,
-  tTotal)
-
-performanceanalysis_griddata.plotGridEntities(
-  performanceanalysis_output.getOutputDirectory(args.file)+"/inner-cells",
-  numberOfRanks,
-  numberOfInnerCells,
-  tTotal)
-
-performanceanalysis_griddata.plotGridEntities(
-  performanceanalysis_output.getOutputDirectory(args.file)+"/outer-leaf-cells",
-  numberOfRanks,
-  numberOfOuterLeafCells,
-  tTotal)
-
-performanceanalysis_griddata.plotGridEntities(
-  performanceanalysis_output.getOutputDirectory(args.file)+"/outer-cells",
-  numberOfRanks,
-  numberOfOuterCells,
-  tTotal)
-
-performanceanalysis_griddata.plotGridEntities(
-  performanceanalysis_output.getOutputDirectory(args.file)+"/local-cells",
-  numberOfRanks,
-  numberOfLocalCells,
-  tTotal)
-
-performanceanalysis_output.processTemplateFile(
- scriptLocation + "/performanceanalysis.template",outFile,
- {"_IMAGE_DIRECTORY_" : performanceanalysis_output.getOutputDirectory(args.file)}
-)
-
 if numberOfRanks<=1:
   (timeStamps,measuredConcurrencyLevels,obtainedConcurrencyLevels,maxConcurrencyLevels,
     maxPotentialConcurrencyLevels,numberOfBackgroundTasks,timeAveragedConcurrencyLevels,
@@ -152,3 +77,4 @@ else:
     outFile.write( "</a>" )
 
 performanceanalysis_output.writeTrailer(outFile)
+
