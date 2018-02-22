@@ -1,30 +1,14 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef _TARCH_MULTICORE_CORE_H_
+#if !defined( _TARCH_MULTICORE_CORE_H_ ) && defined(SharedCPP)
 #define _TARCH_MULTICORE_CORE_H_
 
 
 namespace tarch {
   namespace multicore {
     class Core;
-
-    /**
-     * Gives you the CPU number on which your current execution is running.
-     * This is a wrapper around a UNIX operation and thus might not be
-     * available on all machines - notably not on MAC.
-     */
-    int getCPUNumber();
   }
 }
-
-
-#if defined(SharedTBB)
-#include "tarch/multicore/tbb/Core.h"
-#elif SharedOMP
-#include "tarch/multicore/omp/Core.h"
-#elif SharedCPP
-#include "tarch/multicore/cpp/Core.h"
-#else
 
 
 /**
@@ -38,6 +22,7 @@ namespace tarch {
  */
 class tarch::multicore::Core {
   private:
+	int    _numberOfThreads;
     Core();
   public:
     static constexpr int UseDefaultNumberOfThreads = 0;
@@ -83,8 +68,9 @@ class tarch::multicore::Core {
      * @return Number of threads available.
      */
     int getNumberOfThreads() const;
+
+    void pinThreads(bool value);
 };
 
 
-#endif
 #endif
